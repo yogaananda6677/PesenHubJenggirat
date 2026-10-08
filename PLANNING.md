@@ -1,65 +1,39 @@
-# Rencana Implementasi & Jadwal Eksekusi — PesenHub Jenggirat
+# Rencana Implementasi & Penyesuaian Arsitektur — PesenHub Jenggirat
 
-## Tahapan Eksekusi
-
-### Fase 1: Setup Repository & Git
-- [x] Susun PRD lengkap di `PesenHubJenggirat/PRD.md`
-- [x] Buat rencana implementasi (`PLANNING.md`)
-- [ ] Buat remote repositori GitHub `yogaananda6677/PesenHubJenggirat` via `gh repo create`
-- [ ] Push commit inisial dokumen dan struktur proyek ke GitHub
-- [ ] Buat GitHub Issues untuk pembagian tugas (Task Yoga & Task Rydo)
-
-### Fase 2: Setup Proyek Android (Gaya Modul PM & PML)
-- [ ] Inisialisasi struktur Android Gradle di `PesenHubJenggirat/app`
-- [ ] Setup `settings.gradle.kts` & `build.gradle.kts` dengan dependency:
-  - Firebase BoM (Firestore, Auth, FCM, In-App Messaging)
-  - Supabase Storage & Postgrest
-  - Volley
-  - OSMdroid & AirLocation (GPS / OpenStreetMap modul Bab 13)
-  - ZXing Embedded (QR Code modul Bab 10)
-  - ViewBinding enabled
-- [ ] Setup `AndroidManifest.xml` lengkap dengan permission:
-  - Internet, Access Fine Location, Camera, Read/Write Storage, Post Notifications
-- [ ] Setup resource tema, warna, dan strings modul
-
-### Fase 3: Pengerjaan Bagian Yoga (Core, POS Kasir, SQLite & Web)
-- [ ] `DBOpenHelper.kt` (SQLite lokal sesuai Bab 08 PM)
-- [ ] `KasirFragment.kt` + `fragment_kasir.xml`:
-  - RadioButton (pembayaran tunai/QRIS)
-  - CheckBox (topping martabak)
-  - AutoCompleteTextView (nama pelanggan)
-  - Spinner (kategori menu)
-  - EditText & Button
-- [ ] `MenuFragment.kt` + `LaporanFragment.kt`:
-  - DatePickerDialog & TimePickerDialog
-  - Camera & Gallery picker (Supabase Storage upload)
-- [ ] Web Customer (`web/index.html` + `web/app.js`):
-  - Halaman pemesanan web yang langsung terhubung ke Firestore
-
-### Fase 4: Pengerjaan Bagian Rydo (KDS Antrean, Auth, QR, Peta & Notifikasi)
-- [ ] `AntrianFragment.kt` + `fragment_antrian.xml`:
-  - ListView pesanan
-  - ContextMenu (long click item pesanan)
-  - PopupMenu (update status pesanan)
-- [ ] `LoginActivity.kt` + Firebase Authentication & SharedPreferences
-- [ ] `QRScanActivity.kt` & QR Generator
-- [ ] `MapsActivity.kt` (OSMdroid MapView + GPS)
-- [ ] `PesenHubFCMService.kt` + MediaPlayer notifikasi suara
-- [ ] Slide presentasi UTS
+## 💡 Keputusan Desain & Penyesuaian Baru:
+1. **Penyimpanan Data Utama:**
+   - **Cloud Firestore** adalah basis data utama untuk data transaksi kasir, katalog menu, dan pesanan pelanggan (Android & Web berbagi Firestore yang sama secara realtime).
+2. **Penyimpanan Media & Gambar:**
+   - **Supabase Storage** digunakan khusus untuk menyimpan foto menu martabak & terang bulan (di-upload dari kamera/galeri kasir).
+3. **Penyimpanan Riwayat Selesai (Offline/Arsip):**
+   - **SQLite (`DBOpenHelper`)** digunakan khusus menyimpan **arsip riwayat transaksi yang sudah selesai (`COMPLETED`)**. Data riwayat bersifat final / read-only sehingga sangat cocok di-cache ke SQLite lokal.
+4. **Sesi Pengguna:**
+   - **Firebase Authentication** untuk login kasir/admin.
+   - **SharedPreferences** untuk menyimpan username/email kasir (dengan CheckBox "Ingat Username", jika dicentang disimpan, jika tidak dicentang dihapus).
+5. **Alur Web & QR Code (Opsi Rencana Lanjutan):**
+   - Pelanggan memesan via Web Customer Ordering (tersimpan ke Firestore).
+   - QR Code dibuat berdasarkan `orderId`. Pelanggan dapat menunjukkan QR code tersebut di outlet saat mengambil pesanan, dan kasir melakukan scan verifikasi. Aset QR code juga dapat diarsipkan ke Supabase Storage (opsi fase berikutnya).
 
 ---
 
-## Daftar GitHub Issues yang Akan Dibuat
-1. **[Core] Setup Android Project, Gradle Dependencies & Module Convention** (Assignee: Yoga)
-2. **[Feature] SQLite Database Local Cache via DBOpenHelper** (Assignee: Yoga)
-3. **[Feature] POS Kasir UI with RadioButton, CheckBox, AutoComplete, Spinner** (Assignee: Yoga)
-4. **[Feature] Firestore Integration for Menu & Orders** (Assignee: Yoga)
-5. **[Feature] Menu Management with Camera, Gallery & Supabase Storage** (Assignee: Yoga)
-6. **[Feature] Laporan Penjualan with DatePickerDialog & TimePickerDialog** (Assignee: Yoga)
-7. **[Feature] Customer Web Application integrated with Firestore** (Assignee: Yoga)
-8. **[Feature] KDS Antrean with ListView, ContextMenu & PopupMenu** (Assignee: Rydo)
-9. **[Feature] Firebase Authentication & SharedPreferences Session** (Assignee: Rydo)
-10. **[Feature] QR Code Generation & Camera QR Scanner** (Assignee: Rydo)
-11. **[Feature] GPS & OpenStreetMap (OSMdroid) Outlet Location** (Assignee: Rydo)
-12. **[Feature] Firebase Cloud Messaging (FCM), In-App Messaging & Audio Alert** (Assignee: Rydo)
-13. **[Docs] Technical Documentation & Presentation Slides** (Assignee: Yoga & Rydo)
+## 📋 Status Pengerjaan (Progress):
+
+### Milik Yoga (Selesai):
+- [x] Setup proyek di `/home/yoga/Data/Project/PesenHubJenggirat` (ViewBinding + DataBinding aktif).
+- [x] `LoginActivity.kt` + `activity_login.xml`:
+  - Firebase Authentication (`signInWithEmailAndPassword`, `createUserWithEmailAndPassword`).
+  - SharedPreferences untuk opsi centang "Ingat Username".
+- [x] `KasirFragment.kt` + `fragment_kasir.xml`:
+  - Data pesanan dan katalog menu langsung tersinkronisasi realtime ke **Cloud Firestore**.
+  - Form POS lengkap (RadioButton bayar, CheckBox topping, AutoComplete pelanggan, Spinner kategori).
+- [x] `DBOpenHelper.kt`:
+  - Tabel `riwayat_transaksi` untuk mengarsipkan pesanan yang sudah selesai (read-only history).
+- [x] `web/index.html` & `web/app.js`:
+  - Web Customer Ordering langsung terhubung ke Firestore.
+
+### Milik Rydo (Siap Dikerjakan dengan Panduan & Prompt AI):
+- [ ] Issue #8: KDS Antrean Pesanan Dapur (`AntrianFragment`, `ListView`, `ContextMenu`, `PopupMenu`).
+- [ ] Issue #10: Modul QR Code Generator & Scanner kamera pengambilan pesanan.
+- [ ] Issue #11: Peta Lokasi Outlet GPS & OSMdroid (`MapView`, `OverlayItem`).
+- [ ] Issue #12: Firebase Cloud Messaging (FCM), In-App Messaging & Audio Alert (`MediaPlayer`).
+- [ ] Issue #13: Dokumen teknis dan slide presentasi UTS.

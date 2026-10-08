@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="32dp"
+    android:background="@color/background">
+
+    <TextView
+        android:id="@+id/txTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="PesenHub Jenggirat"
+        android:textSize="28sp"
+        android:textStyle="bold"
+        android:textColor="@color/primary"
+        android:layout_marginBottom="4dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Login Kasir &amp; Operator Outlet"
+        android:textSize="14sp"
+        android:textColor="#757575"
+        android:layout_marginBottom="32dp" />
+
+    <EditText
+        android:id="@+id/edUsername"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Email / Username Kasir"
+        android:inputType="textEmailAddress"
+        android:padding="12dp"
+        android:background="@android:color/white"
+        android:layout_marginBottom="12dp" />
+
+    <EditText
+        android:id="@+id/edPassword"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Password"
+        android:inputType="textPassword"
+        android:padding="12dp"
+        android:background="@android:color/white"
+        android:layout_marginBottom="8dp" />
+
+    <CheckBox
+        android:id="@+id/cbIngatUsername"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Ingat Username (SharedPreferences)"
+        android:layout_marginBottom="24dp" />
+
+    <Button
+        android:id="@+id/btnLogin"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="MASUK (LOGIN)"
+        android:backgroundTint="@color/primary"
+        android:padding="12dp" />
+
+    <TextView
+        android:id="@+id/txDaftarBaru"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Belum punya akun? Buat akun kasir baru"
+        android:textColor="@color/primary"
+        android:layout_marginTop="16dp"
+        android:padding="8dp" />
+
+</LinearLayout>
