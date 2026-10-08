@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:background="@android:color/white"
+    android:padding="12dp"
+    android:gravity="center_vertical">
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/txOrderNumber"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="#ORD-001"
+                android:textStyle="bold"
+                android:textColor="@color/primary"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/txCustomerName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="Yoga Ananda"
+                android:textStyle="bold"
+                android:textColor="#212121"
+                android:textSize="14sp" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/txMenuDetail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Martabak Telur Spesial (Keju)"
+            android:textColor="#424242"
+            android:textSize="13sp"
+            android:layout_marginTop="2dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="4dp">
+
+            <TextView
+                android:id="@+id/txStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="MASUK"
+                android:textStyle="bold"
+                android:textSize="11sp"
+                android:paddingHorizontal="6dp"
+                android:paddingVertical="2dp"
+                android:background="#FFE082" />
+
+            <TextView
+                android:id="@+id/txSource"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Sumber: WEB"
+                android:textColor="#757575"
+                android:textSize="11sp"
+                android:layout_marginStart="8dp" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Tombol Opsi PopupMenu (Titik Tiga) -->
+    <ImageButton
+        android:id="@+id/btnOpsi"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:src="@android:drawable/ic_menu_more"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="Opsi Status Pesanan" />
+
+</LinearLayout>

@@ -56,7 +56,7 @@ class MainActivity : AppCompatActivity() {
                     true
                 }
                 R.id.nav_antrian -> {
-                    Toast.makeText(this, "Modul Antrean KDS (Task Rydo)", Toast.LENGTH_SHORT).show()
+                    gantiFragment(AntrianFragment())
                     true
                 }
                 R.id.nav_menu -> {
