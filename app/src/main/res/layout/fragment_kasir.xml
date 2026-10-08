@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/background"
+    android:padding="8dp">
+
+    <!-- Form Input Pelanggan -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="@color/surface"
+        android:padding="8dp">
+
+        <AutoCompleteTextView
+            android:id="@+id/autoNamaPelanggan"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="Nama Pelanggan"
+            android:completionThreshold="1"
+            android:inputType="textPersonName"
+            android:padding="8dp" />
+
+        <EditText
+            android:id="@+id/edtHpPelanggan"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:hint="Nomor HP"
+            android:inputType="phone"
+            android:padding="8dp" />
+    </LinearLayout>
+
+    <!-- Filter Spinner Kategori -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="@color/surface"
+        android:paddingHorizontal="8dp"
+        android:paddingVertical="4dp"
+        android:layout_marginTop="4dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Kategori: "
+            android:textStyle="bold" />
+
+        <Spinner
+            android:id="@+id/spKategori"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:padding="4dp" />
+    </LinearLayout>
+
+    <!-- CheckBox Topping / Modifier -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="@color/surface"
+        android:padding="8dp"
+        android:layout_marginTop="4dp">
+
+        <CheckBox
+            android:id="@+id/cbKeju"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Extra Keju (+5k)" />
+
+        <CheckBox
+            android:id="@+id/cbCoklat"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="Extra Coklat (+4k)" />
+
+        <CheckBox
+            android:id="@+id/cbPedas"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="Pedas Level 2" />
+    </LinearLayout>
+
+    <!-- Pilihan Menu & ListView -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Daftar Menu Tersedia (Pilih Item):"
+        android:textStyle="bold"
+        android:layout_marginTop="8dp"
+        android:textColor="@color/primary" />
+
+    <ListView
+        android:id="@+id/lsMenu"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="@color/surface"
+        android:layout_marginTop="4dp" />
+
+    <!-- RadioGroup Pembayaran -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="@color/surface"
+        android:padding="8dp"
+        android:layout_marginTop="4dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Bayar: "
+            android:textStyle="bold" />
+
+        <RadioGroup
+            android:id="@+id/rgBayar"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/rbTunai"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Tunai"
+                android:checked="true" />
+
+            <RadioButton
+                android:id="@+id/rbQris"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:text="QRIS" />
+        </RadioGroup>
+    </LinearLayout>
+
+    <EditText
+        android:id="@+id/edtCatatan"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Catatan Pesanan"
+        android:background="@color/surface"
+        android:padding="8dp"
+        android:layout_marginTop="4dp" />
+
+    <Button
+        android:id="@+id/btnSimpanPesanan"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Simpan Pesanan Kasir (SQLite + Firestore)"
+        android:backgroundTint="@color/primary"
+        android:layout_marginTop="8dp" />
+
+</LinearLayout>

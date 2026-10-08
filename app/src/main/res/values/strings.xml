@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">PesenHub Jenggirat</string>
+    <string name="menu_kasir">Kasir</string>
+    <string name="menu_antrian">Antrean</string>
+    <string name="menu_menu">Menu</string>
+    <string name="menu_laporan">Laporan</string>
+</resources>
