@@ -10,9 +10,10 @@
 4. **Sesi Pengguna:**
    - **Firebase Authentication** untuk login kasir/admin.
    - **SharedPreferences** untuk menyimpan username/email kasir (dengan CheckBox "Ingat Username", jika dicentang disimpan, jika tidak dicentang dihapus).
-5. **Alur Web & QR Code (Opsi Rencana Lanjutan):**
-   - Pelanggan memesan via Web Customer Ordering (tersimpan ke Firestore).
-   - QR Code dibuat berdasarkan `orderId`. Pelanggan dapat menunjukkan QR code tersebut di outlet saat mengambil pesanan, dan kasir melakukan scan verifikasi. Aset QR code juga dapat diarsipkan ke Supabase Storage (opsi fase berikutnya).
+5. **Dashboard & Operasional Kasir:**
+   - Halaman **Dashboard** sebagai beranda sistem, memantau ringkasan pesanan masuk (Firestore PENDING), pesanan diproses (Firestore PREPARING), arsip selesai (SQLite), dan total omzet secara langsung.
+6. **Search Bar Menu (AutoCompleteTextView):**
+   - Di menu Kasir, `AutoCompleteTextView` difungsikan untuk pencarian nama menu makanan/minuman secara instan (sesuai Bab II Modul PM).
 
 ---
 
@@ -23,17 +24,31 @@
 - [x] `LoginActivity.kt` + `activity_login.xml`:
   - Firebase Authentication (`signInWithEmailAndPassword`, `createUserWithEmailAndPassword`).
   - SharedPreferences untuk opsi centang "Ingat Username".
+- [x] `DashboardFragment.kt` + `fragment_dashboard.xml`:
+  - Ringkasan realtime operasional outlet (Pesanan Masuk & Dimasak dari Firestore).
+  - Total transaksi selesai & akumulasi omzet dari SQLite lokal.
+  - Kartu profil kasir & tombol aksi cepat navigasi.
 - [x] `KasirFragment.kt` + `fragment_kasir.xml`:
-  - Data pesanan dan katalog menu langsung tersinkronisasi realtime ke **Cloud Firestore**.
-  - Form POS lengkap (RadioButton bayar, CheckBox topping, AutoComplete pelanggan, Spinner kategori).
-- [x] `DBOpenHelper.kt`:
-  - Tabel `riwayat_transaksi` untuk mengarsipkan pesanan yang sudah selesai (read-only history).
+  - Form POS Kasir terhubung realtime ke **Cloud Firestore**.
+  - **`AutoCompleteTextView` untuk Search Item Menu** (rekomendasi otomatis nama menu & auto-fill harga).
+  - `EditText` untuk data pelanggan & nomor HP.
+  - Filter kategori menu via `Spinner`.
+  - RadioButton bayar (Tunai / QRIS) & CheckBox topping/modifier.
+- [x] `AntrianFragment.kt` + `fragment_antrian.xml` + `AntrianAdapter.kt`:
+  - KDS dapur realtime: status MASUK (PENDING) ➔ DIPROSES (PREPARING) ➔ SELESAI (COMPLETED).
+  - `ContextMenu` (long press) dan `PopupMenu` (tombol titik tiga).
+  - Otomatis menyimpan arsip ke SQLite saat status pesanan diubah ke `COMPLETED`.
+- [x] `RiwayatFragment.kt` + `fragment_riwayat.xml` + `RiwayatAdapter.kt`:
+  - Menampilkan riwayat transaksi selesai dari SQLite lokal (`DBOpenHelper`).
+  - Fitur filter riwayat per tanggal menggunakan **`DatePickerDialog`** (Bab III Modul PM).
+  - Rekap total transaksi & pendapatan bersih selesai.
+- [x] `MainActivity.kt` + `bottom_nav_menu.xml`:
+  - 4 Menu Navigasi Bawah: **Dashboard**, **Kasir**, **Antrean**, **Riwayat**.
 - [x] `web/index.html` & `web/app.js`:
-  - Web Customer Ordering langsung terhubung ke Firestore.
+  - Web Customer Ordering langsung terhubung ke Firestore yang sama.
 
 ### Milik Rydo (Siap Dikerjakan dengan Panduan & Prompt AI):
-- [ ] Issue #8: KDS Antrean Pesanan Dapur (`AntrianFragment`, `ListView`, `ContextMenu`, `PopupMenu`).
-- [ ] Issue #10: Modul QR Code Generator & Scanner kamera pengambilan pesanan.
+- [ ] Issue #10: Modul QR Code Generator & Scanner kamera pengambilan pesanan (`ZXing`).
 - [ ] Issue #11: Peta Lokasi Outlet GPS & OSMdroid (`MapView`, `OverlayItem`).
 - [ ] Issue #12: Firebase Cloud Messaging (FCM), In-App Messaging & Audio Alert (`MediaPlayer`).
 - [ ] Issue #13: Dokumen teknis dan slide presentasi UTS.

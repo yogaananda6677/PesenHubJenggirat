@@ -14,13 +14,12 @@
         android:background="@color/surface"
         android:padding="8dp">
 
-        <AutoCompleteTextView
-            android:id="@+id/autoNamaPelanggan"
+        <EditText
+            android:id="@+id/edtNamaPelanggan"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:hint="Nama Pelanggan"
-            android:completionThreshold="1"
             android:inputType="textPersonName"
             android:padding="8dp" />
 
@@ -33,6 +32,44 @@
             android:hint="Nomor HP"
             android:inputType="phone"
             android:padding="8dp" />
+    </LinearLayout>
+
+    <!-- AutoCompleteTextView Pencarian Item Menu (Sesuai Bab II Modul PM Pak Benni) -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@color/surface"
+        android:padding="8dp"
+        android:layout_marginTop="4dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🔍 Cari Item Menu (AutoComplete):"
+            android:textStyle="bold"
+            android:textColor="@color/primary" />
+
+        <AutoCompleteTextView
+            android:id="@+id/autoCariMenu"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Ketik nama martabak/menu..."
+            android:completionThreshold="1"
+            android:inputType="text"
+            android:padding="8dp"
+            android:layout_marginTop="4dp" />
+
+        <!-- Info Menu Terpilih -->
+        <TextView
+            android:id="@+id/txMenuTerpilih"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Dipilih: Martabak Telur Spesial (Rp 35.000)"
+            android:textSize="13sp"
+            android:textStyle="italic"
+            android:textColor="@android:color/holo_green_dark"
+            android:layout_marginTop="4dp" />
     </LinearLayout>
 
     <!-- Filter Spinner Kategori -->
@@ -59,7 +96,7 @@
             android:padding="4dp" />
     </LinearLayout>
 
-    <!-- CheckBox Topping / Modifier -->
+    <!-- CheckBox Topping / Modifier (Bab II Modul PM) -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -93,9 +130,9 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Daftar Menu Tersedia (Pilih Item):"
+        android:text="Katalog Menu Tersedia:"
         android:textStyle="bold"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="6dp"
         android:textColor="@color/primary" />
 
     <ListView
@@ -106,7 +143,7 @@
         android:background="@color/surface"
         android:layout_marginTop="4dp" />
 
-    <!-- RadioGroup Pembayaran -->
+    <!-- RadioGroup Pembayaran (Bab II Modul PM) -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -148,7 +185,7 @@
         android:id="@+id/edtCatatan"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Catatan Pesanan"
+        android:hint="Catatan Pesanan (misal: jangan terlalu manis)"
         android:background="@color/surface"
         android:padding="8dp"
         android:layout_marginTop="4dp" />
@@ -157,8 +194,8 @@
         android:id="@+id/btnSimpanPesanan"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Simpan Pesanan Kasir (SQLite + Firestore)"
+        android:text="Simpan Pesanan ke Firestore"
         android:backgroundTint="@color/primary"
-        android:layout_marginTop="8dp" />
+        android:layout_marginTop="6dp" />
 
 </LinearLayout>

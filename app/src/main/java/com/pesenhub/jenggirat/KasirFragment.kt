@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.fragment.app.Fragment
@@ -18,9 +19,14 @@ class KasirFragment : Fragment() {
     lateinit var b: FragmentKasirBinding
     lateinit var dbFirestore: FirebaseFirestore
 
-    val listMenu = ArrayList<String>()
+    // Data Menu
+    data class MenuModel(val nama: String, val harga: Int, val kategori: String)
+
+    val listSemuaMenu = ArrayList<MenuModel>()
+    val listMenuTampil = ArrayList<String>()
+    val listNamaMenu = ArrayList<String>()
+
     val listKategori = arrayOf("Semua Kategori", "Martabak Telur", "Terang Bulan", "Minuman")
-    val listPelanggan = arrayOf("Yoga", "Rydo", "Budi", "Siti", "Andi")
 
     var menuTerpilih = "Martabak Telur Spesial"
     var hargaDasar = 35000
@@ -40,25 +46,37 @@ class KasirFragment : Fragment() {
 
         dbFirestore = FirebaseFirestore.getInstance()
 
-        // 1. AutoCompleteTextView Pelanggan (Sesuai Modul PM)
-        val adapterAuto = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, listPelanggan)
-        b.autoNamaPelanggan.setAdapter(adapterAuto)
-
-        // 2. Spinner Kategori
+        // 1. Inisialisasi Spinner Kategori (Bab II Modul PM Pak Benni)
         val adapterSpinner = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, listKategori)
         b.spKategori.adapter = adapterSpinner
 
-        // 3. Muat Data Menu Langsung Realtime dari Cloud Firestore (Penyimpanan Utama)
+        b.spKategori.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                filterMenuBerdasarkanKategori(listKategori[position])
+            }
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
+
+        // 2. Muat Data Menu dari Cloud Firestore (Penyimpanan Utama) & Fallback Default
         muatMenuDariFirestore()
 
+        // 3. AutoCompleteTextView untuk Pencarian Item Menu (Sesuai Bab II Modul PM Pak Benni)
+        b.autoCariMenu.setOnItemClickListener { parent, _, position, _ ->
+            val namaDipilih = parent.getItemAtPosition(position).toString()
+            pilihMenuBerdasarkanNama(namaDipilih)
+        }
+
+        // 4. Klik Item pada ListView Menu
         b.lsMenu.setOnItemClickListener { _, _, position, _ ->
-            if (position < listMenu.size) {
-                menuTerpilih = listMenu[position]
-                Toast.makeText(requireContext(), "Dipilih: $menuTerpilih", Toast.LENGTH_SHORT).show()
+            if (position in listMenuTampil.indices) {
+                val itemText = listMenuTampil[position]
+                val nama = itemText.substringBefore(" - Rp").trim()
+                pilihMenuBerdasarkanNama(nama)
+                b.autoCariMenu.setText(nama, false)
             }
         }
 
-        // 4. RadioButton Pembayaran (Bab 02 PM)
+        // 5. RadioButton Pembayaran (Bab II Modul PM Pak Benni)
         b.rgBayar.setOnCheckedChangeListener { _, checkedId ->
             when (checkedId) {
                 b.rbTunai.id -> metodeBayar = "Tunai"
@@ -66,14 +84,15 @@ class KasirFragment : Fragment() {
             }
         }
 
-        // 5. Simpan Pesanan ke Cloud Firestore sebagai Basis Data Utama
+        // 6. Simpan Pesanan ke Cloud Firestore sebagai Basis Data Utama
         b.btnSimpanPesanan.setOnClickListener {
-            val nama = b.autoNamaPelanggan.text.toString().trim()
+            val nama = b.edtNamaPelanggan.text.toString().trim()
             val hp = b.edtHpPelanggan.text.toString().trim()
             val catatan = b.edtCatatan.text.toString().trim()
 
             if (nama.isEmpty()) {
-                b.autoNamaPelanggan.error = "Nama pelanggan wajib diisi"
+                b.edtNamaPelanggan.error = "Nama pelanggan wajib diisi"
+                b.edtNamaPelanggan.requestFocus()
                 return@setOnClickListener
             }
 
@@ -85,7 +104,11 @@ class KasirFragment : Fragment() {
 
             val sdf = SimpleDateFormat("yyyyMMdd-HHmmss", Locale.getDefault())
             val idPesanan = "ORD-${sdf.format(Date())}"
-            val detailItem = "$menuTerpilih (${topping.joinToString(", ")})"
+            val detailItem = if (topping.isNotEmpty()) {
+                "$menuTerpilih (${topping.joinToString(", ")})"
+            } else {
+                menuTerpilih
+            }
 
             val dataFirestore = hashMapOf(
                 "orderNumber" to idPesanan,
@@ -105,9 +128,10 @@ class KasirFragment : Fragment() {
                 .set(dataFirestore)
                 .addOnSuccessListener {
                     Toast.makeText(requireContext(), "Pesanan $idPesanan berhasil tersimpan di Firestore!", Toast.LENGTH_SHORT).show()
-                    b.autoNamaPelanggan.setText("")
+                    b.edtNamaPelanggan.setText("")
                     b.edtHpPelanggan.setText("")
                     b.edtCatatan.setText("")
+                    b.autoCariMenu.setText("")
                     b.cbKeju.isChecked = false
                     b.cbCoklat.isChecked = false
                     b.cbPedas.isChecked = false
@@ -118,28 +142,77 @@ class KasirFragment : Fragment() {
         }
     }
 
+    private fun pilihMenuBerdasarkanNama(nama: String) {
+        val menu = listSemuaMenu.find { it.nama.equals(nama, ignoreCase = true) }
+        if (menu != null) {
+            menuTerpilih = menu.nama
+            hargaDasar = menu.harga
+            b.txMenuTerpilih.text = "Dipilih: ${menu.nama} (Rp ${formatRupiah(menu.harga)})"
+            Toast.makeText(requireContext(), "Menu dipilih: ${menu.nama}", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun formatRupiah(nominal: Int): String {
+        return "%,d".format(nominal).replace(',', '.')
+    }
+
     private fun muatMenuDariFirestore() {
-        // Realtime Listener koleksi menus di Firestore
         dbFirestore.collection("menus")
-            .addSnapshotListener { snapshot, e ->
-                listMenu.clear()
+            .addSnapshotListener { snapshot, _ ->
+                listSemuaMenu.clear()
+
                 if (snapshot != null && !snapshot.isEmpty) {
                     for (doc in snapshot.documents) {
                         val nama = doc.getString("name") ?: "Menu"
-                        val harga = doc.getLong("price") ?: 0L
-                        listMenu.add("$nama - Rp $harga")
+                        val harga = (doc.getLong("price") ?: 0L).toInt()
+                        val kategori = doc.getString("category") ?: "Martabak Telur"
+                        listSemuaMenu.add(MenuModel(nama, harga, kategori))
                     }
-                } else {
-                    // Fallback default bila menu Firestore belum diisi
-                    listMenu.add("Martabak Telur Spesial - Rp 35000")
-                    listMenu.add("Terang Bulan Coklat Keju - Rp 30000")
-                    listMenu.add("Es Teh Manis Jumbo - Rp 5000")
                 }
 
-                if (isAdded) {
-                    val adapterList = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, listMenu)
-                    b.lsMenu.adapter = adapterList
+                // Jika Firestore menus masih kosong, sediakan menu default
+                if (listSemuaMenu.isEmpty()) {
+                    listSemuaMenu.add(MenuModel("Martabak Telur Spesial", 35000, "Martabak Telur"))
+                    listSemuaMenu.add(MenuModel("Martabak Telur Daging Sapi", 40000, "Martabak Telur"))
+                    listSemuaMenu.add(MenuModel("Terang Bulan Coklat Keju", 30000, "Terang Bulan"))
+                    listSemuaMenu.add(MenuModel("Terang Bulan Red Velvet", 35000, "Terang Bulan"))
+                    listSemuaMenu.add(MenuModel("Terang Bulan Pandan Jagung", 28000, "Terang Bulan"))
+                    listSemuaMenu.add(MenuModel("Es Teh Manis Jumbo", 5000, "Minuman"))
+                    listSemuaMenu.add(MenuModel("Es Jeruk Peras", 7000, "Minuman"))
                 }
+
+                perbaruiDataTampilan()
             }
+    }
+
+    private fun perbaruiDataTampilan() {
+        if (!isAdded) return
+
+        // Perbarui list nama untuk AutoCompleteTextView
+        listNamaMenu.clear()
+        for (m in listSemuaMenu) {
+            listNamaMenu.add(m.nama)
+        }
+
+        val adapterAuto = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, listNamaMenu)
+        b.autoCariMenu.setAdapter(adapterAuto)
+
+        // Filter listview sesuai spinner aktif
+        val katTerpilih = b.spKategori.selectedItem?.toString() ?: "Semua Kategori"
+        filterMenuBerdasarkanKategori(katTerpilih)
+    }
+
+    private fun filterMenuBerdasarkanKategori(kategori: String) {
+        listMenuTampil.clear()
+        for (m in listSemuaMenu) {
+            if (kategori == "Semua Kategori" || m.kategori.equals(kategori, ignoreCase = true)) {
+                listMenuTampil.add("${m.nama} - Rp ${formatRupiah(m.harga)}")
+            }
+        }
+
+        if (isAdded) {
+            val adapterList = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, listMenuTampil)
+            b.lsMenu.adapter = adapterList
+        }
     }
 }

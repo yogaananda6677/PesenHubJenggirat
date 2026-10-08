@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
+        android:id="@+id/nav_dashboard"
+        android:icon="@android:drawable/ic_menu_view"
+        android:title="Dashboard" />
+    <item
         android:id="@+id/nav_kasir"
         android:icon="@android:drawable/ic_menu_edit"
         android:title="Kasir" />
@@ -9,11 +13,7 @@
         android:icon="@android:drawable/ic_menu_agenda"
         android:title="Antrean" />
     <item
-        android:id="@+id/nav_menu"
-        android:icon="@android:drawable/ic_menu_manage"
-        android:title="Menu" />
-    <item
         android:id="@+id/nav_laporan"
         android:icon="@android:drawable/ic_menu_today"
-        android:title="Laporan" />
+        android:title="Riwayat" />
 </menu>

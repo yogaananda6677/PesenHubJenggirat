@@ -1,0 +1,310 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background"
+    android:padding="12dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Header Card: Info Outlet & Kasir -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@color/primary"
+            android:padding="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="PesenHub Jenggirat"
+                android:textColor="@color/white"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Martabak &amp; Terang Bulan Khas Banyuwangi"
+                android:textColor="@color/white"
+                android:textSize="12sp"
+                android:layout_marginTop="2dp" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#80FFFFFF"
+                android:layout_marginVertical="8dp" />
+
+            <TextView
+                android:id="@+id/txKasirEmail"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Kasir: -"
+                android:textColor="@color/white"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/txTanggalHariIni"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Hari ini: -"
+                android:textColor="@color/white"
+                android:textSize="12sp"
+                android:layout_marginTop="2dp" />
+        </LinearLayout>
+
+        <!-- Judul Ringkasan Metrik -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="📊 Ringkasan Operasional Hari Ini"
+            android:textColor="@color/primary"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:layout_marginTop="16dp" />
+
+        <!-- Grid 2x2 Baris 1: PENDING & PREPARING (Realtime Firestore) -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp">
+
+            <!-- Card 1: Pesanan Masuk (PENDING) -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:background="@color/surface"
+                android:padding="12dp"
+                android:layout_marginEnd="6dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="📥 Pesanan Masuk"
+                    android:textSize="12sp"
+                    android:textColor="#D32F2F"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/txJumlahPending"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0"
+                    android:textSize="28sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/black"
+                    android:layout_marginTop="4dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Menunggu diproses"
+                    android:textSize="10sp"
+                    android:textColor="#757575" />
+            </LinearLayout>
+
+            <!-- Card 2: Sedang Dimasak (PREPARING) -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:background="@color/surface"
+                android:padding="12dp"
+                android:layout_marginStart="6dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="👨‍🍳 Sedang Dimasak"
+                    android:textSize="12sp"
+                    android:textColor="#F57C00"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/txJumlahProses"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0"
+                    android:textSize="28sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/black"
+                    android:layout_marginTop="4dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Di dapur penggorengan"
+                    android:textSize="10sp"
+                    android:textColor="#757575" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Grid 2x2 Baris 2: SELESAI & TOTAL OMZET (SQLite Lokal) -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="12dp">
+
+            <!-- Card 3: Pesanan Selesai (COMPLETED) -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:background="@color/surface"
+                android:padding="12dp"
+                android:layout_marginEnd="6dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="✅ Selesai (Arsip)"
+                    android:textSize="12sp"
+                    android:textColor="#388E3C"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/txJumlahSelesai"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0"
+                    android:textSize="28sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/black"
+                    android:layout_marginTop="4dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Tersimpan di SQLite"
+                    android:textSize="10sp"
+                    android:textColor="#757575" />
+            </LinearLayout>
+
+            <!-- Card 4: Total Omzet Selesai -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:background="@color/surface"
+                android:padding="12dp"
+                android:layout_marginStart="6dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="💰 Total Omzet"
+                    android:textSize="12sp"
+                    android:textColor="#1976D2"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/txTotalOmzet"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Rp 0"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/black"
+                    android:layout_marginTop="8dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Transaksi Selesai"
+                    android:textSize="10sp"
+                    android:textColor="#757575" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Judul Quick Actions -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="⚡ Aksi Cepat"
+            android:textColor="@color/primary"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:layout_marginTop="20dp" />
+
+        <Button
+            android:id="@+id/btnAksiKasir"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="➕ Buka Kasir / Buat Pesanan Baru"
+            android:backgroundTint="@color/primary"
+            android:layout_marginTop="8dp" />
+
+        <Button
+            android:id="@+id/btnAksiAntrian"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="👨‍🍳 Pantau Antrean Dapur (KDS)"
+            android:backgroundTint="#F57C00"
+            android:layout_marginTop="4dp" />
+
+        <Button
+            android:id="@+id/btnAksiRiwayat"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="📋 Buka Riwayat Transaksi Selesai"
+            android:backgroundTint="#1976D2"
+            android:layout_marginTop="4dp" />
+
+        <!-- Info Sinkronisasi Database -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@color/surface"
+            android:padding="12dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="24dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="ℹ️ Status Integrasi Sistem:"
+                android:textStyle="bold"
+                android:textSize="12sp"
+                android:textColor="@color/primary" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="• Cloud Firestore: Tersambung Realtime (Koleksi 'orders' &amp; 'menus')"
+                android:textSize="11sp"
+                android:textColor="#616161"
+                android:layout_marginTop="4dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="• SQLite Database: Aktif ('riwayat_transaksi' read-only)"
+                android:textSize="11sp"
+                android:textColor="#616161"
+                android:layout_marginTop="2dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="• Customer Web: Terhubung (Realtime Firestore)"
+                android:textSize="11sp"
+                android:textColor="#616161"
+                android:layout_marginTop="2dp" />
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>
