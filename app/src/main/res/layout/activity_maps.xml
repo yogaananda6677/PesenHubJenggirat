@@ -73,7 +73,7 @@
             android:id="@+id/txInfoLokasi"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Outlet: Jl. Jenggirat No. 12, Banyuwangi (-8.2192, 114.3692)"
+            android:text="Outlet: Jenggirat Kediri (-7.8166, 112.0116)"
             android:textSize="12sp"
             android:textStyle="bold"
             android:textColor="@color/black" />

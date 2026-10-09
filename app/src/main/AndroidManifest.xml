@@ -31,8 +31,8 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".LoginActivity" android:exported="false" />
-        <activity android:name=".RegisterActivity" android:exported="false" />
+        <activity android:name=".LoginActivity" android:exported="true" />
+        <activity android:name=".RegisterActivity" android:exported="true" />
         <activity android:name=".OrderDetailActivity" android:exported="false" />
         <activity android:name=".MapsActivity" android:exported="false" />
         <activity android:name=".QRScanActivity" android:exported="false" />

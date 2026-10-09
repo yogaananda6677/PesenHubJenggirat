@@ -21,8 +21,8 @@ class MapsActivity : AppCompatActivity() {
     lateinit var b: ActivityMapsBinding
     private lateinit var fusedLocationClient: FusedLocationProviderClient
 
-    // Koordinat Pusat Outlet Martabak Jenggirat (Banyuwangi)
-    private val outletPoint = GeoPoint(-8.2192, 114.3692)
+    // Koordinat Outlet Martabak Jenggirat (Kediri)
+    private val outletPoint = GeoPoint(-7.8166, 112.0116)
     private var markerUser: Marker? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -47,8 +47,8 @@ class MapsActivity : AppCompatActivity() {
         val markerOutlet = Marker(b.mapView)
         markerOutlet.position = outletPoint
         markerOutlet.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-        markerOutlet.title = "PesenHub Jenggirat"
-        markerOutlet.snippet = "Pusat Martabak & Terang Bulan Jenggirat"
+        markerOutlet.title = "Jenggirat Kediri"
+        markerOutlet.snippet = "Outlet Martabak & Terang Bulan Jenggirat Kediri"
         b.mapView.overlays.add(markerOutlet)
         b.mapView.invalidate()
 

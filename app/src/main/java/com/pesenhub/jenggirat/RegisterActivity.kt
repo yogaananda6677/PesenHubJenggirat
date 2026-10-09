@@ -29,11 +29,9 @@ class RegisterActivity : AppCompatActivity() {
         // Toggle Tipe Akun (Admin vs Kasir)
         b.rgTipeAkun.setOnCheckedChangeListener { _, checkedId ->
             if (checkedId == b.rbAdmin.id) {
-                b.layoutAdminOutlet.visibility = View.VISIBLE
                 b.layoutKasirUndangan.visibility = View.GONE
                 b.btnDaftar.text = "DAFTAR SEBAGAI ADMIN"
             } else {
-                b.layoutAdminOutlet.visibility = View.GONE
                 b.layoutKasirUndangan.visibility = View.VISIBLE
                 b.btnDaftar.text = "DAFTAR SEBAGAI KASIR"
             }
@@ -59,7 +57,7 @@ class RegisterActivity : AppCompatActivity() {
 
     private fun prosesDaftarAdmin() {
         val nama = b.edNama.text.toString().trim()
-        val namaOutlet = b.edNamaOutlet.text.toString().trim()
+        val namaOutlet = "Jenggirat Kediri"
         val email = b.edEmail.text.toString().trim()
         val password = b.edPassword.text.toString().trim()
 
@@ -67,11 +65,8 @@ class RegisterActivity : AppCompatActivity() {
             b.edNama.error = "Nama wajib diisi"
             return
         }
-        if (namaOutlet.isEmpty()) {
-            b.edNamaOutlet.error = "Nama outlet wajib diisi"
-            return
-        }
         if (email.isEmpty()) {
+            b.edNama.error = null
             b.edEmail.error = "Email wajib diisi"
             return
         }

@@ -28,7 +28,7 @@ class MainActivity : AppCompatActivity() {
     lateinit var auth: FirebaseAuth
     private var userRole: String = "kasir"
     private var userNama: String = ""
-    private var namaOutlet: String = "PesenHub Jenggirat"
+    private var namaOutlet: String = "Jenggirat Kediri"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -91,7 +91,7 @@ class MainActivity : AppCompatActivity() {
         val pref = getSharedPreferences("UserSession", Context.MODE_PRIVATE)
         userRole = pref.getString("role", "kasir") ?: "kasir"
         userNama = pref.getString("nama", "") ?: ""
-        namaOutlet = pref.getString("namaOutlet", "PesenHub Jenggirat") ?: "PesenHub Jenggirat"
+        namaOutlet = "Jenggirat Kediri"
 
         perbaruiToolbarSubtitle()
 
@@ -102,7 +102,7 @@ class MainActivity : AppCompatActivity() {
                 if (doc != null && doc.exists()) {
                     userRole = doc.getString("role") ?: userRole
                     userNama = doc.getString("nama") ?: userNama
-                    namaOutlet = doc.getString("namaOutlet") ?: namaOutlet
+                    namaOutlet = "Jenggirat Kediri"
 
                     pref.edit()
                         .putString("role", userRole)
@@ -117,12 +117,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun perbaruiToolbarSubtitle() {
-        val email = auth.currentUser?.email ?: "-"
-        if (userRole == "admin") {
-            supportActionBar?.subtitle = "Admin • $namaOutlet ($email)"
-        } else {
-            supportActionBar?.subtitle = "Kasir • $email"
-        }
+        supportActionBar?.title = "Jenggirat Kediri"
+        supportActionBar?.subtitle = if (userRole == "admin") "Admin" else "Kasir"
     }
 
     fun getUserRole(): String = userRole

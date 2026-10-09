@@ -17,10 +17,10 @@
 
         <ImageView
             android:id="@+id/imgLogoLogin"
-            android:layout_width="88dp"
-            android:layout_height="88dp"
-            android:src="@drawable/ic_logo_jenggirat"
-            android:contentDescription="Logo PesenHub Jenggirat"
+            android:layout_width="96dp"
+            android:layout_height="96dp"
+            android:src="@drawable/logo_jenggirat_transparent"
+            android:contentDescription="Logo Martabak Jenggirat"
             android:layout_marginBottom="16dp" />
 
         <TextView
@@ -36,7 +36,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Login Kasir &amp; Operator Outlet"
+            android:text="Cabang Kediri • Login Outlet"
             android:textSize="14sp"
             android:textColor="#616161"
             android:layout_marginBottom="28dp" />

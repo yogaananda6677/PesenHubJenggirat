@@ -141,6 +141,8 @@ class KasirFragment : Fragment() {
                 "notes" to "$catatan (Siap: $estimasiJamAmbil)",
                 "status" to "PENDING",
                 "source" to "CASHIER",
+                "branchName" to "Jenggirat Kediri",
+                "branchId" to "kediri",
                 "createdAt" to com.google.firebase.Timestamp.now()
             )
 
@@ -206,13 +208,22 @@ class KasirFragment : Fragment() {
                     }
                 }
 
-                // Jika Firestore menus masih kosong, sediakan menu default
+                // Jika Firestore menus masih kosong, sediakan menu default otentik Jenggirat dari PTT
                 if (listSemuaMenu.isEmpty()) {
-                    listSemuaMenu.add(MenuModel("Martabak Telur Spesial", 35000, "Martabak Telur"))
-                    listSemuaMenu.add(MenuModel("Martabak Telur Daging Sapi", 40000, "Martabak Telur"))
-                    listSemuaMenu.add(MenuModel("Terang Bulan Coklat Keju", 30000, "Terang Bulan"))
-                    listSemuaMenu.add(MenuModel("Terang Bulan Red Velvet", 35000, "Terang Bulan"))
-                    listSemuaMenu.add(MenuModel("Terang Bulan Pandan Jagung", 28000, "Terang Bulan"))
+                    listSemuaMenu.add(MenuModel("Martabak Sosis/Jamur Biasa", 20000, "Martabak Telur"))
+                    listSemuaMenu.add(MenuModel("Martabak Sosis/Jamur Spesial", 30000, "Martabak Telur"))
+                    listSemuaMenu.add(MenuModel("Martabak Daging Ayam Biasa", 25000, "Martabak Telur"))
+                    listSemuaMenu.add(MenuModel("Martabak Daging Ayam Spesial", 35000, "Martabak Telur"))
+                    listSemuaMenu.add(MenuModel("Martabak Daging Sapi Biasa", 30000, "Martabak Telur"))
+                    listSemuaMenu.add(MenuModel("Martabak Daging Sapi Spesial", 40000, "Martabak Telur"))
+                    listSemuaMenu.add(MenuModel("Martabak Daging Sapi Istimewa", 50000, "Martabak Telur"))
+                    listSemuaMenu.add(MenuModel("Martabak Mozarella 1 Isian", 50000, "Martabak Telur"))
+                    listSemuaMenu.add(MenuModel("Martabak Mozarella Mix 2", 55000, "Martabak Telur"))
+                    listSemuaMenu.add(MenuModel("Terang Bulan 1 Toping Biasa", 18000, "Terang Bulan"))
+                    listSemuaMenu.add(MenuModel("Terang Bulan 1 Toping Besar", 25000, "Terang Bulan"))
+                    listSemuaMenu.add(MenuModel("Terang Bulan 2 Toping Biasa", 23000, "Terang Bulan"))
+                    listSemuaMenu.add(MenuModel("Terang Bulan 2 Toping Besar", 30000, "Terang Bulan"))
+                    listSemuaMenu.add(MenuModel("Terang Bulan Cut Pizza All In One", 45000, "Terang Bulan"))
                     listSemuaMenu.add(MenuModel("Es Teh Manis Jumbo", 5000, "Minuman"))
                     listSemuaMenu.add(MenuModel("Es Jeruk Peras", 7000, "Minuman"))
                 }
