@@ -53,8 +53,13 @@
                      data-kategori="{{ $menu['kategori'] }}">
                     
                     <div class="flex items-center gap-3 flex-1 min-w-0">
-                        <div class="w-16 h-16 rounded-xl bg-amber-50 border border-amber-100 flex-shrink-0 flex items-center justify-center text-primary font-black text-xl">
-                            🥞
+                        <div class="w-16 h-16 rounded-xl bg-amber-50 border border-amber-100 flex-shrink-0 flex items-center justify-center text-primary font-black text-xl overflow-hidden">
+                            @if(!empty($menu['image_url']))
+                                <img src="{{ $menu['image_url'] }}" alt="{{ $menu['nama'] }}" class="w-full h-full object-cover rounded-xl" onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');">
+                                <span class="hidden">🥞</span>
+                            @else
+                                <span>🥞</span>
+                            @endif
                         </div>
                         <div class="min-w-0">
                             <span class="inline-block bg-slate-100 text-slate-600 text-[10px] font-bold px-2 py-0.5 rounded-md mb-1">

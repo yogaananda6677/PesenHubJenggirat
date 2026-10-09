@@ -183,7 +183,7 @@ class FormMenuActivity : AppCompatActivity() {
         }
 
         b.btnSimpanMenuForm.isEnabled = false
-        b.btnSimpanMenuForm.text = "Menyimpan ke Cloud Firestore..."
+        b.btnSimpanMenuForm.text = "Menyimpan..."
 
         val channelMap = hashMapOf(
             "OFFLINE" to pOffline,
@@ -193,6 +193,39 @@ class FormMenuActivity : AppCompatActivity() {
             "SHOPEEFOOD" to pShopeefood
         )
 
+        // Jika ada foto baru yang dipilih/diambil, unggah ke Supabase Storage terlebih dahulu
+        if (fotoBitmap != null) {
+            b.btnSimpanMenuForm.text = "Mengunggah foto ke Supabase..."
+            val stream = ByteArrayOutputStream()
+            fotoBitmap?.compress(Bitmap.CompressFormat.JPEG, 80, stream)
+            val imageBytes = stream.toByteArray()
+            val fileName = "$sku-${System.currentTimeMillis()}.jpg"
+
+            SupabaseStorageHelper.uploadMenuImage(fileName, imageBytes) { success, publicUrl, error ->
+                val finalImageUrl = if (success && publicUrl != null) publicUrl else existingImageUrl
+                if (!success) {
+                    Toast.makeText(this, "Supabase: $error, tetap menyimpan data menu.", Toast.LENGTH_SHORT).show()
+                }
+                simpanDataMenuKeFirestore(sku, nama, kategori, deskripsi, pOffline, hpp, isAvailable, finalImageUrl, channelMap)
+            }
+        } else {
+            simpanDataMenuKeFirestore(sku, nama, kategori, deskripsi, pOffline, hpp, isAvailable, existingImageUrl, channelMap)
+        }
+    }
+
+    private fun simpanDataMenuKeFirestore(
+        sku: String,
+        nama: String,
+        kategori: String,
+        deskripsi: String,
+        pOffline: Long,
+        hpp: Long,
+        isAvailable: Boolean,
+        imageUrl: String,
+        channelMap: HashMap<String, Long>
+    ) {
+        b.btnSimpanMenuForm.text = "Menyimpan ke Cloud Firestore..."
+
         val dataFirestore = hashMapOf(
             "sku" to sku,
             "name" to nama,
@@ -201,7 +234,8 @@ class FormMenuActivity : AppCompatActivity() {
             "price" to pOffline,
             "hppAmount" to hpp,
             "available" to isAvailable,
-            "imageUrl" to existingImageUrl,
+            "imageUrl" to imageUrl,
+            "storageProvider" to if (imageUrl.startsWith("http")) "Supabase" else "Local",
             "channelPrices" to channelMap,
             "updatedAt" to Timestamp.now()
         )

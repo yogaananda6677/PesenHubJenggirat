@@ -45,7 +45,7 @@ class CustomerOrderController extends Controller
                 'kategori'  => $cat,
                 'deskripsi' => (string) ($m['description'] ?? ''),
                 'sku'       => (string) ($m['sku'] ?? $m['id'] ?? ''),
-                'image_url' => $m['imageUrl'] ?? null,
+                'image_url' => $this->resolveImageUrl($m['imageUrl'] ?? null),
             ];
         }
 
@@ -166,5 +166,24 @@ class CustomerOrderController extends Controller
             'total_price'    => (int) ($order['total'] ?? $order['totalPrice'] ?? 0),
             'updated_at'     => $order['updatedAt'] ?? now()->toIso8601String(),
         ]);
+    }
+
+    private function resolveImageUrl(?string $rawImg): ?string
+    {
+        if (empty($rawImg) || $rawImg === 'default_food_icon') {
+            return null;
+        }
+
+        if (str_starts_with($rawImg, 'http')) {
+            return $rawImg;
+        }
+
+        if (str_starts_with($rawImg, 'supabase://')) {
+            // Contoh format: supabase://storage.pesenhub.jenggirat/menu-images/xxx.jpg
+            $path = preg_replace('#^supabase://[^/]+/#', '', $rawImg);
+            return "https://ckgymiinffzfyfbiiyob.supabase.co/storage/v1/object/public/Storage/{$path}";
+        }
+
+        return null;
     }
 }

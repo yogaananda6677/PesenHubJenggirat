@@ -39,6 +39,31 @@ class KelolaMenuAdapter(
             b.tvKelolaNama.text = item.name
             b.tvKelolaDeskripsi.text = item.description.ifEmpty { "Menu Martabak & Terang Bulan Jenggirat" }
 
+            // Tampilkan foto dari Supabase jika ada
+            if (item.imageUrl.startsWith("http")) {
+                b.imgKelolaMenu.tag = item.imageUrl
+                java.util.concurrent.Executors.newSingleThreadExecutor().execute {
+                    try {
+                        val input = java.net.URL(item.imageUrl).openStream()
+                        val bitmap = android.graphics.BitmapFactory.decodeStream(input)
+                        if (bitmap != null) {
+                            b.imgKelolaMenu.post {
+                                if (b.imgKelolaMenu.tag == item.imageUrl) {
+                                    b.imgKelolaMenu.setPadding(0, 0, 0, 0)
+                                    b.imgKelolaMenu.scaleType = android.widget.ImageView.ScaleType.CENTER_CROP
+                                    b.imgKelolaMenu.setImageBitmap(bitmap)
+                                }
+                            }
+                        }
+                    } catch (_: Exception) {
+                    }
+                }
+            } else {
+                b.imgKelolaMenu.setPadding(6, 6, 6, 6)
+                b.imgKelolaMenu.scaleType = android.widget.ImageView.ScaleType.CENTER_INSIDE
+                b.imgKelolaMenu.setImageResource(R.drawable.logo_jenggirat_transparent)
+            }
+
             // Switch Ketersediaan (avoid firing listener during bind)
             b.swKelolaKetersediaan.setOnCheckedChangeListener(null)
             b.swKelolaKetersediaan.isChecked = item.available

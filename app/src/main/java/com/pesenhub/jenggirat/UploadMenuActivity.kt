@@ -98,7 +98,8 @@ class UploadMenuActivity : AppCompatActivity() {
         val harga = hargaStr.toIntOrNull() ?: 0
         val idMenu = "MENU-${System.currentTimeMillis()}"
 
-        b.txStatusUpload.text = "Mengunggah aset foto ke Supabase Storage dan mendaftarkan ke Firestore..."
+        b.btnSimpanMenu.isEnabled = false
+        b.txStatusUpload.text = "Mengunggah aset foto ke Supabase Storage..."
 
         // Kompresi foto jika ada
         val imageBytes = if (fotoBitmap != null) {
@@ -109,23 +110,28 @@ class UploadMenuActivity : AppCompatActivity() {
             null
         }
 
-        val storagePath = if (imageBytes != null) {
-            "supabase://storage.pesenhub.jenggirat/menu-images/$idMenu.jpg"
+        if (imageBytes != null) {
+            SupabaseStorageHelper.uploadMenuImage("$idMenu.jpg", imageBytes) { success, publicUrl, error ->
+                val finalImageUrl = if (success && publicUrl != null) publicUrl else "default_food_icon"
+                b.txStatusUpload.text = if (success) "Foto terunggah ke Supabase! Menyimpan ke Firestore..." else "Supabase: $error"
+                simpanMenuKeFirestore(idMenu, nama, kategori, harga, finalImageUrl)
+            }
         } else {
-            "default_food_icon"
+            simpanMenuKeFirestore(idMenu, nama, kategori, harga, "default_food_icon")
         }
+    }
 
+    private fun simpanMenuKeFirestore(idMenu: String, nama: String, kategori: String, harga: Int, imageUrl: String) {
         val dataMenu = hashMapOf(
             "name" to nama,
             "category" to kategori,
             "price" to harga.toLong(),
             "available" to true,
-            "imageUrl" to storagePath,
-            "storageProvider" to "Supabase",
+            "imageUrl" to imageUrl,
+            "storageProvider" to if (imageUrl.startsWith("http")) "Supabase" else "Local",
             "createdAt" to com.google.firebase.Timestamp.now()
         )
 
-        // Simpan ke Firestore
         dbFirestore.collection("menus").document(idMenu)
             .set(dataMenu)
             .addOnSuccessListener {
@@ -133,6 +139,7 @@ class UploadMenuActivity : AppCompatActivity() {
                 finish()
             }
             .addOnFailureListener { e ->
+                b.btnSimpanMenu.isEnabled = true
                 Toast.makeText(this, "Gagal menyimpan menu: ${e.message}", Toast.LENGTH_SHORT).show()
                 b.txStatusUpload.text = "Gagal menyimpan: ${e.message}"
             }
