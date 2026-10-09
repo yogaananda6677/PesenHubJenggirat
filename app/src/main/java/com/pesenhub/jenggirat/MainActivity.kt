@@ -83,9 +83,11 @@ class MainActivity : AppCompatActivity() {
             .commit()
     }
 
+    // a method to create OptionsMenu (Bab V Modul PM Pak Benni)
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.main_menu, menu)
-        return true
+        val mnuInflater = menuInflater
+        mnuInflater.inflate(R.menu.main_menu, menu)
+        return super.onCreateOptionsMenu(menu)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

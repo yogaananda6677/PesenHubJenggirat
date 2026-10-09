@@ -101,25 +101,32 @@ class AntrianFragment : Fragment() {
             }
     }
 
-    // 3. PopupMenu (Checklist #12) — Klik tombol titik tiga per item
+    // 3. PopupMenu (Bab V Modul PM Pak Benni) — Klik tombol titik tiga per item
     private fun tampilkanPopupMenu(orderId: String, view: View) {
-        val popup = PopupMenu(requireContext(), view)
-        popup.menu.add(0, 1, 0, "👨‍🍳 Mulai Proses (DIPROSES)")
-        popup.menu.add(0, 2, 1, "✅ Selesai Masak (SELESAI)")
-        popup.menu.add(0, 3, 2, "❌ Batalkan Pesanan")
+        val popMenu = PopupMenu(requireContext(), view)
+        popMenu.menuInflater.inflate(R.menu.menu_popup, popMenu.menu)
 
-        popup.setOnMenuItemClickListener { item ->
+        popMenu.setOnMenuItemClickListener { item ->
             when (item.itemId) {
-                1 -> updateStatusOrder(orderId, "PREPARING")
-                2 -> updateStatusOrder(orderId, "COMPLETED")
-                3 -> updateStatusOrder(orderId, "CANCELLED")
+                R.id.menu_proses -> {
+                    updateStatusOrder(orderId, "PREPARING")
+                    true
+                }
+                R.id.menu_selesai -> {
+                    updateStatusOrder(orderId, "COMPLETED")
+                    true
+                }
+                R.id.menu_batal -> {
+                    updateStatusOrder(orderId, "CANCELLED")
+                    true
+                }
                 else -> false
             }
         }
-        popup.show()
+        popMenu.show()
     }
 
-    // 4. ContextMenu (Checklist #11) — Saat item ditekan tahan (Long Click)
+    // 4. ContextMenu (Bab V Modul PM Pak Benni) — Saat item ditekan tahan (Long Click)
     override fun onCreateContextMenu(
         menu: ContextMenu,
         v: View,
@@ -129,13 +136,13 @@ class AntrianFragment : Fragment() {
         val info = menuInfo as? AdapterView.AdapterContextMenuInfo
         selectedOrderPos = info?.position ?: -1
 
+        val mnuInflater = requireActivity().menuInflater
+        mnuInflater.inflate(R.menu.menu_context, menu)
+
         if (selectedOrderPos in listOrders.indices) {
             val order = listOrders[selectedOrderPos]
             val orderNumber = order["orderNumber"] ?: order["idDoc"]
             menu.setHeaderTitle("Pesanan #$orderNumber")
-            menu.add(0, 101, 0, "Mulai Proses (DIPROSES)")
-            menu.add(0, 102, 1, "Selesai & Arsipkan (SELESAI)")
-            menu.add(0, 103, 2, "Batalkan Pesanan")
         }
     }
 
@@ -145,9 +152,18 @@ class AntrianFragment : Fragment() {
         val orderId = (order["orderNumber"] ?: order["idDoc"]).toString()
 
         return when (item.itemId) {
-            101 -> updateStatusOrder(orderId, "PREPARING")
-            102 -> updateStatusOrder(orderId, "COMPLETED")
-            103 -> updateStatusOrder(orderId, "CANCELLED")
+            R.id.ctx_proses -> {
+                updateStatusOrder(orderId, "PREPARING")
+                true
+            }
+            R.id.ctx_selesai -> {
+                updateStatusOrder(orderId, "COMPLETED")
+                true
+            }
+            R.id.ctx_batal -> {
+                updateStatusOrder(orderId, "CANCELLED")
+                true
+            }
             else -> super.onContextItemSelected(item)
         }
     }

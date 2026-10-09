@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/ctx_proses"
+        android:title="Mulai Proses (DIPROSES)" />
+    <item
+        android:id="@+id/ctx_selesai"
+        android:title="Selesai &amp; Arsipkan (SELESAI)" />
+    <item
+        android:id="@+id/ctx_batal"
+        android:title="Batalkan Pesanan" />
+</menu>
