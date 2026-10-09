@@ -4,26 +4,26 @@
     <item
         android:id="@+id/action_refresh"
         android:icon="@android:drawable/ic_popup_sync"
-        android:title="Refresh"
+        android:title="Perbarui Data"
         app:showAsAction="ifRoom" />
     <item
         android:id="@+id/action_upload_menu"
-        android:title="📸 Foto Menu &amp; Supabase"
+        android:title="Kelola Foto Menu"
         app:showAsAction="never" />
     <item
         android:id="@+id/action_maps"
-        android:title="🗺️ Lokasi Outlet (Peta)"
+        android:title="Peta Lokasi Outlet"
         app:showAsAction="never" />
     <item
         android:id="@+id/action_qr_scan"
-        android:title="📷 Scan QR Ambil"
+        android:title="Scan QR Pengambilan"
         app:showAsAction="never" />
     <item
         android:id="@+id/action_invite_kasir"
-        android:title="✉️ Undang Kasir Baru"
+        android:title="Undang Staf Kasir"
         app:showAsAction="never" />
     <item
         android:id="@+id/action_logout"
-        android:title="🚪 Logout"
+        android:title="Keluar (Logout)"
         app:showAsAction="never" />
 </menu>

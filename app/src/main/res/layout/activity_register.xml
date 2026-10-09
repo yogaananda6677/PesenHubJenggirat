@@ -158,7 +158,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="⚠️ Kasir wajib memiliki kode undangan aktif yang digenerate oleh Admin Outlet."
+                android:text="Kasir wajib memiliki kode undangan aktif yang digenerate oleh Admin Outlet."
                 android:textSize="11sp"
                 android:textColor="#757575"
                 android:layout_marginBottom="14dp" />

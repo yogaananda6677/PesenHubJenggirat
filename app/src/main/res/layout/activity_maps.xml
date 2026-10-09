@@ -15,7 +15,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="🗺️ Peta Lokasi Outlet &amp; GPS"
+            android:text="Peta Lokasi Outlet &amp; GPS"
             android:textSize="18sp"
             android:textStyle="bold"
             android:textColor="@color/white" />
@@ -41,7 +41,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="📍 Lokasi Outlet"
+            android:text="Lokasi Outlet"
             android:backgroundTint="@color/primary" />
 
         <Button
@@ -50,7 +50,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:layout_marginStart="8dp"
-            android:text="🎯 Lokasi Saya (GPS)"
+            android:text="Lokasi Saya (GPS)"
             android:backgroundTint="#1976D2" />
     </LinearLayout>
 

@@ -5,13 +5,13 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="20dp"
-    android:background="@color/surface">
+    android:background="@drawable/bg_card_minimal">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="✉️ Undang Kasir Baru"
-        android:textSize="18sp"
+        android:text="Undang Staf Kasir"
+        android:textSize="17sp"
         android:textStyle="bold"
         android:textColor="@color/primary"
         android:layout_marginBottom="4dp" />
@@ -19,9 +19,9 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Buat kode undangan khusus agar staf kasir dapat mendaftar ke akun outlet ini."
+        android:text="Buat kode undangan resmi agar staf kasir dapat mendaftar dan terhubung ke outlet Anda."
         android:textSize="12sp"
-        android:textColor="#616161"
+        android:textColor="#6C757D"
         android:layout_marginBottom="16dp" />
 
     <TextView
@@ -30,7 +30,7 @@
         android:text="Nama Kasir"
         android:textSize="12sp"
         android:textStyle="bold"
-        android:textColor="#424242"
+        android:textColor="#212529"
         android:layout_marginBottom="4dp" />
 
     <EditText
@@ -50,7 +50,7 @@
         android:text="Email Kasir"
         android:textSize="12sp"
         android:textStyle="bold"
-        android:textColor="#424242"
+        android:textColor="#212529"
         android:layout_marginBottom="4dp" />
 
     <EditText
@@ -68,12 +68,12 @@
         android:id="@+id/btnGenerateKode"
         android:layout_width="match_parent"
         android:layout_height="48dp"
-        android:text="GENERATE KODE UNDANGAN"
+        android:text="Buat Kode Undangan"
         android:textSize="13sp"
         android:textStyle="bold"
         android:textColor="@color/white"
         app:backgroundTint="@color/primary"
-        app:cornerRadius="6dp" />
+        app:cornerRadius="8dp" />
 
     <!-- Container Hasil Generate Kode -->
     <LinearLayout
@@ -81,7 +81,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:background="#FFF3E0"
+        android:background="#FFF8E1"
         android:padding="14dp"
         android:layout_marginTop="16dp"
         android:visibility="gone">
@@ -118,24 +118,29 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal">
 
-            <Button
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnSalinKode"
                 android:layout_width="0dp"
                 android:layout_height="40dp"
                 android:layout_weight="1"
-                android:text="📋 Salin Kode"
+                android:text="Salin Kode"
                 android:textSize="11sp"
-                android:backgroundTint="#757575"
+                android:textColor="#495057"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                app:strokeColor="#CED4DA"
+                app:cornerRadius="6dp"
                 android:layout_marginEnd="4dp" />
 
-            <Button
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnBagikanKode"
                 android:layout_width="0dp"
                 android:layout_height="40dp"
                 android:layout_weight="1"
-                android:text="📲 Bagikan"
+                android:text="Bagikan Kode"
                 android:textSize="11sp"
-                android:backgroundTint="#2E7D32"
+                android:textColor="@color/white"
+                app:backgroundTint="#2E7D32"
+                app:cornerRadius="6dp"
                 android:layout_marginStart="4dp" />
         </LinearLayout>
     </LinearLayout>

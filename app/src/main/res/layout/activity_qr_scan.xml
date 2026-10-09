@@ -10,13 +10,13 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:background="@color/primary"
-        android:padding="16dp">
+        android:background="@drawable/bg_header_gradient"
+        android:padding="20dp">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="📷 Scan QR Pengambilan Pesanan"
+            android:text="Scan QR Pengambilan Pesanan"
             android:textSize="18sp"
             android:textStyle="bold"
             android:textColor="@color/white" />
@@ -26,7 +26,7 @@
             android:layout_height="wrap_content"
             android:text="Arahkan kamera ke QR Code pesanan pelanggan"
             android:textSize="12sp"
-            android:textColor="@color/white"
+            android:textColor="#FFF3E0"
             android:layout_marginTop="2dp" />
     </LinearLayout>
 
@@ -43,8 +43,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:background="@color/surface"
+        android:background="@drawable/bg_card_minimal"
         android:padding="16dp"
+        android:layout_margin="16dp"
         android:visibility="gone">
 
         <TextView
@@ -97,7 +98,7 @@
             android:id="@+id/btnVerifikasiSelesai"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="✅ Verifikasi &amp; Tandai Pesanan Selesai"
+            android:text="Verifikasi &amp; Tandai Pesanan Selesai"
             android:backgroundTint="@android:color/holo_green_dark"
             android:layout_marginTop="10dp" />
 

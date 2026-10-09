@@ -25,6 +25,7 @@ class RegisterActivity : AppCompatActivity() {
         auth = FirebaseAuth.getInstance()
         dbFirestore = FirebaseFirestore.getInstance()
 
+
         // Toggle Tipe Akun (Admin vs Kasir)
         b.rgTipeAkun.setOnCheckedChangeListener { _, checkedId ->
             if (checkedId == b.rbAdmin.id) {

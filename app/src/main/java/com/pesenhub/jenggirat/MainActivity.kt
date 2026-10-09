@@ -119,9 +119,9 @@ class MainActivity : AppCompatActivity() {
     private fun perbaruiToolbarSubtitle() {
         val email = auth.currentUser?.email ?: "-"
         if (userRole == "admin") {
-            supportActionBar?.subtitle = "👑 Admin: $namaOutlet ($email)"
+            supportActionBar?.subtitle = "Admin • $namaOutlet ($email)"
         } else {
-            supportActionBar?.subtitle = "👤 Kasir: $email"
+            supportActionBar?.subtitle = "Kasir • $email"
         }
     }
 

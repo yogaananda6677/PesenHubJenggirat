@@ -38,14 +38,16 @@ class DashboardFragment : Fragment() {
         dbFirestore = FirebaseFirestore.getInstance()
         dbHelper = DBOpenHelper(requireContext())
 
-        // 1. Tampilkan Info Kasir & Tanggal
+        // 1. Tampilkan Info Pengguna & Tanggal
         val userEmail = auth.currentUser?.email ?: "Pengguna Outlet"
         val userRole = (activity as? MainActivity)?.getUserRole() ?: "kasir"
         if (userRole == "admin") {
-            b.txKasirEmail.text = "👑 Login sebagai Admin: $userEmail"
+            b.txKasirEmail.text = userEmail
+            b.txRoleBadge.text = "ADMIN OUTLET"
             b.btnUndangKasir.visibility = View.VISIBLE
         } else {
-            b.txKasirEmail.text = "👤 Kasir Aktif: $userEmail"
+            b.txKasirEmail.text = userEmail
+            b.txRoleBadge.text = "KASIR OUTLET"
             b.btnUndangKasir.visibility = View.GONE
         }
 

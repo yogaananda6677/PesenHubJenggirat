@@ -112,7 +112,7 @@ class QRScanActivity : AppCompatActivity() {
                     val sqlInsert = "insert or replace into riwayat_transaksi(id_pesanan, nama_pelanggan, hp_pelanggan, detail_item, metode_bayar, total_bayar, status_order, waktu_selesai) " +
                             "values (?, ?, ?, ?, ?, ?, ?, ?)"
                     dbLocal.execSQL(sqlInsert, arrayOf(orderId, nama, hp, menu, metode, total, "COMPLETED", waktuSelesai))
-                    Toast.makeText(this, "✅ Pesanan #$orderId berhasil diselesaikan & diarsipkan ke SQLite!", Toast.LENGTH_LONG).show()
+                    Toast.makeText(this, "Pesanan #$orderId berhasil diselesaikan dan diarsipkan ke SQLite!", Toast.LENGTH_LONG).show()
                     finish()
                 } catch (e: Exception) {
                     e.printStackTrace()

@@ -3,34 +3,35 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/background"
-    android:padding="8dp">
+    android:background="#F8F9FA"
+    android:padding="12dp">
 
     <!-- Header Status Ringkasan Antrean -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:background="@color/surface"
-        android:padding="12dp"
-        android:elevation="2dp">
+        android:background="@drawable/bg_card_minimal"
+        android:padding="14dp"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="8dp">
 
         <TextView
             android:id="@+id/tvInfoAntrian"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Memuat antrean..."
+            android:text="Memuat antrean dapur..."
             android:textStyle="bold"
             android:textColor="@color/primary"
-            android:textSize="15sp" />
+            android:textSize="14sp" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Tahan item: Menu Aksi"
-            android:textSize="12sp"
-            android:textColor="#757575" />
+            android:text="Opsi: Tombol Titik Tiga"
+            android:textSize="11sp"
+            android:textColor="#6C757D" />
     </LinearLayout>
 
     <!-- State Kosong jika tidak ada antrean -->
@@ -41,17 +42,17 @@
         android:text="Belum ada pesanan aktif di dapur."
         android:textAlignment="center"
         android:padding="32dp"
-        android:textColor="#757575"
+        android:textColor="#6C757D"
+        android:textSize="13sp"
         android:visibility="gone" />
 
-    <!-- ListView Antrean Pesanan (Gaya Modul PM) -->
+    <!-- ListView Antrean Pesanan -->
     <ListView
         android:id="@+id/lsAntrian"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:layout_marginTop="8dp"
-        android:divider="#E0E0E0"
-        android:dividerHeight="1dp" />
+        android:divider="@android:color/transparent"
+        android:dividerHeight="8dp" />
 
 </LinearLayout>

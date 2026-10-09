@@ -1,237 +1,282 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/background"
-    android:padding="8dp">
+    android:background="#F8F9FA"
+    android:padding="12dp">
 
-    <!-- Form Input Pelanggan -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:background="@color/surface"
-        android:padding="8dp">
-
-        <EditText
-            android:id="@+id/edtNamaPelanggan"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:hint="Nama Pelanggan"
-            android:inputType="textPersonName"
-            android:padding="8dp" />
-
-        <EditText
-            android:id="@+id/edtHpPelanggan"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginStart="8dp"
-            android:hint="Nomor HP"
-            android:inputType="phone"
-            android:padding="8dp" />
-    </LinearLayout>
-
-    <!-- AutoCompleteTextView Pencarian Item Menu (Sesuai Bab II Modul PM Pak Benni) -->
+    <!-- Card 1: Informasi Pelanggan -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:background="@color/surface"
-        android:padding="8dp"
-        android:layout_marginTop="4dp">
+        android:background="@drawable/bg_card_minimal"
+        android:padding="12dp"
+        android:layout_marginBottom="8dp">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="🔍 Cari Item Menu (AutoComplete):"
+            android:text="Data Pelanggan"
             android:textStyle="bold"
-            android:textColor="@color/primary" />
+            android:textColor="#212529"
+            android:textSize="13sp"
+            android:layout_marginBottom="8dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/edtNamaPelanggan"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_weight="1"
+                android:hint="Nama Pelanggan"
+                android:inputType="textPersonName"
+                android:paddingHorizontal="12dp"
+                android:background="@drawable/bg_input_field"
+                android:textSize="13sp" />
+
+            <EditText
+                android:id="@+id/edtHpPelanggan"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp"
+                android:hint="Nomor WhatsApp"
+                android:inputType="phone"
+                android:paddingHorizontal="12dp"
+                android:background="@drawable/bg_input_field"
+                android:textSize="13sp" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Card 2: Pencarian & Pilihan Menu -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@drawable/bg_card_minimal"
+        android:padding="12dp"
+        android:layout_marginBottom="8dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Pencarian &amp; Kategori Menu"
+            android:textStyle="bold"
+            android:textColor="#212529"
+            android:textSize="13sp"
+            android:layout_marginBottom="8dp" />
 
         <AutoCompleteTextView
             android:id="@+id/autoCariMenu"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Ketik nama martabak/menu..."
+            android:layout_height="44dp"
+            android:hint="Ketik nama menu martabak..."
             android:completionThreshold="1"
             android:inputType="text"
-            android:padding="8dp"
-            android:layout_marginTop="4dp" />
+            android:paddingHorizontal="12dp"
+            android:background="@drawable/bg_input_field"
+            android:textSize="13sp" />
 
-        <!-- Info Menu Terpilih -->
         <TextView
             android:id="@+id/txMenuTerpilih"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Dipilih: Martabak Telur Spesial (Rp 35.000)"
-            android:textSize="13sp"
-            android:textStyle="italic"
-            android:textColor="@android:color/holo_green_dark"
-            android:layout_marginTop="4dp" />
+            android:text="Pilihan: Belum ada menu dipilih"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:textColor="@color/primary"
+            android:layout_marginTop="6dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginTop="8dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Kategori:"
+                android:textSize="12sp"
+                android:textColor="#495057"
+                android:layout_marginEnd="8dp" />
+
+            <Spinner
+                android:id="@+id/spKategori"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+        </LinearLayout>
+
+        <!-- Topping Tambahan -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp">
+
+            <CheckBox
+                android:id="@+id/cbKeju"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Keju (+5rb)"
+                android:textSize="12sp"
+                android:buttonTint="@color/primary" />
+
+            <CheckBox
+                android:id="@+id/cbCoklat"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="Coklat (+4rb)"
+                android:textSize="12sp"
+                android:buttonTint="@color/primary" />
+
+            <CheckBox
+                android:id="@+id/cbPedas"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="Pedas Level 2"
+                android:textSize="12sp"
+                android:buttonTint="@color/primary" />
+        </LinearLayout>
     </LinearLayout>
 
-    <!-- Filter Spinner Kategori -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:background="@color/surface"
-        android:paddingHorizontal="8dp"
-        android:paddingVertical="4dp"
-        android:layout_marginTop="4dp">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Kategori: "
-            android:textStyle="bold" />
-
-        <Spinner
-            android:id="@+id/spKategori"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:padding="4dp" />
-    </LinearLayout>
-
-    <!-- CheckBox Topping / Modifier (Bab II Modul PM) -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:background="@color/surface"
-        android:padding="8dp"
-        android:layout_marginTop="4dp">
-
-        <CheckBox
-            android:id="@+id/cbKeju"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Extra Keju (+5k)" />
-
-        <CheckBox
-            android:id="@+id/cbCoklat"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:text="Extra Coklat (+4k)" />
-
-        <CheckBox
-            android:id="@+id/cbPedas"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:text="Pedas Level 2" />
-    </LinearLayout>
-
-    <!-- Pilihan Menu & ListView -->
+    <!-- Katalog Menu (ListView yang rapi) -->
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Katalog Menu Tersedia:"
+        android:text="Daftar Menu Tersedia"
+        android:textSize="12sp"
         android:textStyle="bold"
-        android:layout_marginTop="6dp"
-        android:textColor="@color/primary" />
+        android:textColor="#495057"
+        android:layout_marginBottom="4dp" />
 
     <ListView
         android:id="@+id/lsMenu"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:background="@color/surface"
-        android:layout_marginTop="4dp" />
+        android:background="@drawable/bg_card_minimal"
+        android:divider="#EEEEEE"
+        android:dividerHeight="1dp"
+        android:padding="4dp"
+        android:layout_marginBottom="8dp" />
 
-    <!-- RadioGroup Pembayaran (Bab II Modul PM) -->
+    <!-- Card 3: Pembayaran & Eksekusi -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:background="@color/surface"
-        android:padding="8dp"
-        android:layout_marginTop="4dp">
+        android:orientation="vertical"
+        android:background="@drawable/bg_card_minimal"
+        android:padding="12dp">
 
-        <TextView
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Bayar: "
-            android:textStyle="bold" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
 
-        <RadioGroup
-            android:id="@+id/rgBayar"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="horizontal">
-
-            <RadioButton
-                android:id="@+id/rbTunai"
+            <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Tunai"
-                android:checked="true" />
+                android:text="Metode Bayar:"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:textColor="#212529"
+                android:layout_marginEnd="12dp" />
 
-            <RadioButton
-                android:id="@+id/rbQris"
+            <RadioGroup
+                android:id="@+id/rgBayar"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:text="QRIS" />
-        </RadioGroup>
-    </LinearLayout>
+                android:orientation="horizontal">
 
-    <EditText
-        android:id="@+id/edtCatatan"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Catatan Pesanan (misal: jangan terlalu manis)"
-        android:background="@color/surface"
-        android:padding="8dp"
-        android:layout_marginTop="4dp" />
+                <RadioButton
+                    android:id="@+id/rbTunai"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Tunai"
+                    android:textSize="12sp"
+                    android:checked="true"
+                    android:buttonTint="@color/primary" />
 
-    <!-- TimePickerDialog Estimasi Jam Selesai / Pengambilan (Bab III Modul PM Pak Benni) -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:background="@color/surface"
-        android:padding="8dp"
-        android:gravity="center_vertical"
-        android:layout_marginTop="4dp">
+                <RadioButton
+                    android:id="@+id/rbQris"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="14dp"
+                    android:text="QRIS"
+                    android:textSize="12sp"
+                    android:buttonTint="@color/primary" />
+            </RadioGroup>
+        </LinearLayout>
 
-        <TextView
-            android:layout_width="wrap_content"
+        <EditText
+            android:id="@+id/edtCatatan"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:hint="Catatan pesanan (misal: adonan garing)..."
+            android:paddingHorizontal="12dp"
+            android:background="@drawable/bg_input_field"
+            android:textSize="12sp"
+            android:layout_marginTop="8dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Estimasi Siap: "
-            android:textStyle="bold" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginTop="8dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Estimasi Siap:"
+                android:textSize="12sp"
+                android:textColor="#495057" />
+
+            <Button
+                android:id="@+id/btnPilihJamAmbil"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:layout_marginStart="8dp"
+                android:text="Atur Jam"
+                android:textSize="11sp"
+                android:backgroundTint="#455A64"
+                android:paddingHorizontal="12dp" />
+
+            <TextView
+                android:id="@+id/txJamAmbilInfo"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp"
+                android:text="Langsung (15-20 mnt)"
+                android:textSize="11sp"
+                android:textColor="#424242" />
+        </LinearLayout>
 
         <Button
-            android:id="@+id/btnPilihJamAmbil"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="⏰ Atur Jam"
-            android:textSize="12sp"
-            android:backgroundTint="#1976D2"
-            android:paddingHorizontal="12dp" />
+            android:id="@+id/btnSimpanPesanan"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="Proses &amp; Simpan Pesanan"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:textColor="@color/white"
+            android:backgroundTint="@color/primary"
+            android:layout_marginTop="10dp" />
 
-        <TextView
-            android:id="@+id/txJamAmbilInfo"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginStart="8dp"
-            android:text="Langsung (15-20 mnt)"
-            android:textSize="12sp"
-            android:textColor="#424242" />
     </LinearLayout>
-
-    <Button
-        android:id="@+id/btnSimpanPesanan"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Simpan Pesanan ke Firestore"
-        android:backgroundTint="@color/primary"
-        android:layout_marginTop="6dp" />
 
 </LinearLayout>

@@ -15,13 +15,13 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:background="@color/primary"
-            android:padding="16dp">
+            android:background="@drawable/bg_header_gradient"
+            android:padding="20dp">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="📸 Manajemen Menu &amp; Supabase Storage"
+                android:text="Manajemen Menu &amp; Supabase Storage"
                 android:textSize="18sp"
                 android:textStyle="bold"
                 android:textColor="@color/white" />
@@ -31,7 +31,7 @@
                 android:layout_height="wrap_content"
                 android:text="Ambil foto via Kamera/Galeri dan simpan ke cloud"
                 android:textSize="12sp"
-                android:textColor="@color/white"
+                android:textColor="#FFF3E0"
                 android:layout_marginTop="2dp" />
         </LinearLayout>
 
@@ -40,32 +40,32 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:background="@color/surface"
+            android:background="@drawable/bg_card_minimal"
             android:padding="16dp"
             android:gravity="center"
-            android:layout_marginTop="12dp">
+            android:layout_marginTop="14dp">
 
             <ImageView
                 android:id="@+id/imgPreviewFoto"
                 android:layout_width="match_parent"
                 android:layout_height="200dp"
                 android:scaleType="centerCrop"
-                android:background="#EEEEEE"
+                android:background="#F1F5F9"
                 android:contentDescription="Preview Foto Menu" />
 
-            <!-- Tombol Kamera & Galeri (Bab 12 PM / Checklist #20 & #26) -->
+            <!-- Tombol Kamera & Galeri -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:layout_marginTop="12dp">
+                android:layout_marginTop="14dp">
 
                 <Button
                     android:id="@+id/btnAmbilKamera"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="📸 Buka Kamera"
+                    android:text="Buka Kamera"
                     android:backgroundTint="@color/primary" />
 
                 <Button
@@ -74,7 +74,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:layout_marginStart="8dp"
-                    android:text="🖼️ Pilih Galeri"
+                    android:text="Pilih Galeri"
                     android:backgroundTint="#1976D2" />
             </LinearLayout>
         </LinearLayout>
@@ -84,9 +84,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:background="@color/surface"
+            android:background="@drawable/bg_card_minimal"
             android:padding="16dp"
-            android:layout_marginTop="12dp">
+            android:layout_marginTop="14dp">
 
             <TextView
                 android:layout_width="wrap_content"
@@ -102,8 +102,9 @@
                 android:layout_height="wrap_content"
                 android:hint="misal: Terang Bulan Matcha Almond"
                 android:inputType="textCapWords"
-                android:padding="8dp"
-                android:layout_marginTop="4dp" />
+                android:padding="10dp"
+                android:background="@drawable/bg_input_field"
+                android:layout_marginTop="6dp" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -112,14 +113,15 @@
                 android:textStyle="bold"
                 android:textSize="13sp"
                 android:textColor="@color/primary"
-                android:layout_marginTop="8dp" />
+                android:layout_marginTop="12dp" />
 
             <Spinner
                 android:id="@+id/spKategoriMenu"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="44dp"
                 android:padding="6dp"
-                android:layout_marginTop="4dp" />
+                android:background="@drawable/bg_input_field"
+                android:layout_marginTop="6dp" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -128,7 +130,7 @@
                 android:textStyle="bold"
                 android:textSize="13sp"
                 android:textColor="@color/primary"
-                android:layout_marginTop="8dp" />
+                android:layout_marginTop="12dp" />
 
             <EditText
                 android:id="@+id/edtHargaMenu"
@@ -136,16 +138,17 @@
                 android:layout_height="wrap_content"
                 android:hint="misal: 35000"
                 android:inputType="number"
-                android:padding="8dp"
-                android:layout_marginTop="4dp" />
+                android:padding="10dp"
+                android:background="@drawable/bg_input_field"
+                android:layout_marginTop="6dp" />
         </LinearLayout>
 
         <!-- Tombol Simpan ke Supabase Storage & Firestore -->
         <Button
             android:id="@+id/btnSimpanMenu"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="☁️ Simpan Menu &amp; Upload Supabase"
+            android:layout_height="50dp"
+            android:text="Simpan Menu &amp; Upload Supabase"
             android:backgroundTint="@android:color/holo_green_dark"
             android:layout_marginTop="16dp" />
 

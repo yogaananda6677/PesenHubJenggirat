@@ -129,7 +129,7 @@ class UploadMenuActivity : AppCompatActivity() {
         dbFirestore.collection("menus").document(idMenu)
             .set(dataMenu)
             .addOnSuccessListener {
-                Toast.makeText(this, "✅ Menu '$nama' berhasil diunggah dengan Supabase Storage!", Toast.LENGTH_LONG).show()
+                Toast.makeText(this, "Menu '$nama' berhasil diunggah dengan Supabase Storage!", Toast.LENGTH_LONG).show()
                 finish()
             }
             .addOnFailureListener { e ->
