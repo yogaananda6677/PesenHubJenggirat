@@ -16,7 +16,7 @@
         android:elevation="2dp">
 
         <TextView
-            android:id="@+id/txInfoAntrian"
+            android:id="@+id/tvInfoAntrian"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -35,7 +35,7 @@
 
     <!-- State Kosong jika tidak ada antrean -->
     <TextView
-        android:id="@+id/txKosong"
+        android:id="@+id/tvKosong"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Belum ada pesanan aktif di dapur."
