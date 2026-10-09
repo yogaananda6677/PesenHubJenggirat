@@ -1,448 +1,375 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F8F9FA"
-    android:fillViewport="true">
+    android:background="#F8FAFC">
 
+    <!-- Kontainer Konten Utama (Header, Search, Kategori, & Katalog Menu) -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="12dp">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-        <!-- Card 1: Informasi Pelanggan -->
+        <!-- 1. Header Putih Modern (Logo, Online Badge, Notif, Avatar) -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:background="@drawable/bg_card_minimal"
-            android:padding="12dp"
-            android:layout_marginBottom="8dp">
+            android:background="@color/white"
+            android:paddingHorizontal="16dp"
+            android:paddingTop="12dp"
+            android:paddingBottom="8dp"
+            android:elevation="2dp">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Data Pelanggan"
-                android:textStyle="bold"
-                android:textColor="#212529"
-                android:textSize="13sp"
-                android:layout_marginBottom="8dp" />
-
-            <LinearLayout
+            <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                android:layout_height="wrap_content">
 
-                <EditText
-                    android:id="@+id/edtNamaPelanggan"
-                    android:layout_width="0dp"
-                    android:layout_height="44dp"
-                    android:layout_weight="1"
-                    android:hint="Nama Pelanggan"
-                    android:inputType="textPersonName"
-                    android:paddingHorizontal="12dp"
-                    android:background="@drawable/bg_input_field"
-                    android:textSize="13sp" />
+                <!-- Logo & Brand Header -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:layout_centerVertical="true"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
 
-                <EditText
-                    android:id="@+id/edtHpPelanggan"
-                    android:layout_width="0dp"
-                    android:layout_height="44dp"
-                    android:layout_weight="1"
-                    android:layout_marginStart="8dp"
-                    android:hint="Nomor WhatsApp"
-                    android:inputType="phone"
-                    android:paddingHorizontal="12dp"
-                    android:background="@drawable/bg_input_field"
-                    android:textSize="13sp" />
-            </LinearLayout>
-        </LinearLayout>
+                    <androidx.cardview.widget.CardView
+                        android:layout_width="38dp"
+                        android:layout_height="38dp"
+                        app:cardCornerRadius="19dp"
+                        app:cardElevation="0dp"
+                        app:cardBackgroundColor="#FFF3E0">
 
-        <!-- Card 2: Pencarian & Pilihan Menu -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:background="@drawable/bg_card_minimal"
-            android:padding="12dp"
-            android:layout_marginBottom="8dp">
+                        <ImageView
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:padding="6dp"
+                            android:src="@drawable/logo_jenggirat_transparent"
+                            android:contentDescription="Logo Jenggirat" />
+                    </androidx.cardview.widget.CardView>
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Pencarian &amp; Kategori Menu"
-                android:textStyle="bold"
-                android:textColor="#212529"
-                android:textSize="13sp"
-                android:layout_marginBottom="8dp" />
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
+                        android:orientation="vertical">
 
-            <AutoCompleteTextView
-                android:id="@+id/autoCariMenu"
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Jenggirat"
+                                android:textColor="#1E232A"
+                                android:textSize="16sp"
+                                android:textStyle="bold" />
+
+                            <!-- Badge Online Hijau -->
+                            <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="8dp"
+                                android:background="@drawable/bg_badge_online"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal"
+                                android:paddingHorizontal="6dp"
+                                android:paddingVertical="2dp">
+
+                                <View
+                                    android:layout_width="6dp"
+                                    android:layout_height="6dp"
+                                    android:background="@drawable/bg_badge_cart"
+                                    android:backgroundTint="#4CAF50" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="4dp"
+                                    android:text="Online"
+                                    android:textColor="#2E7D32"
+                                    android:textSize="10sp"
+                                    android:textStyle="bold" />
+                            </LinearLayout>
+                        </LinearLayout>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Sistem Pemesanan POS • Jenggirat Kediri"
+                            android:textColor="#757575"
+                            android:textSize="11sp"
+                            android:layout_marginTop="1dp" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- Actions Top Right: Bell & Avatar -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <ImageView
+                        android:id="@+id/btnPosNotifikasi"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:padding="5dp"
+                        android:src="@drawable/ic_notifications"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:contentDescription="Notifikasi" />
+
+                    <ImageView
+                        android:id="@+id/btnPosProfile"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:layout_marginStart="6dp"
+                        android:padding="4dp"
+                        android:src="@drawable/ic_account_circle"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:contentDescription="Profil Akun" />
+                </LinearLayout>
+            </RelativeLayout>
+
+            <!-- 2. Search Bar Rounded Modern -->
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="44dp"
-                android:hint="Ketik nama menu martabak..."
-                android:completionThreshold="1"
-                android:inputType="text"
-                android:paddingHorizontal="12dp"
-                android:background="@drawable/bg_input_field"
-                android:textSize="13sp" />
-
-            <TextView
-                android:id="@+id/txMenuTerpilih"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Pilihan: Belum ada menu dipilih"
-                android:textSize="12sp"
-                android:textStyle="bold"
-                android:textColor="@color/primary"
-                android:layout_marginTop="6dp" />
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="6dp"
+                android:background="@drawable/bg_search_bar"
                 android:gravity="center_vertical"
-                android:layout_marginTop="8dp">
+                android:orientation="horizontal"
+                android:paddingHorizontal="12dp">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Kategori:"
-                    android:textSize="12sp"
-                    android:textColor="#495057"
-                    android:layout_marginEnd="8dp" />
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/ic_search"
+                    android:contentDescription="Cari" />
 
-                <Spinner
-                    android:id="@+id/spKategori"
+                <EditText
+                    android:id="@+id/edtCariMenuPos"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1" />
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="8dp"
+                    android:layout_weight="1"
+                    android:background="@null"
+                    android:hint="Cari menu (Martabak, Terang Bulan, ...)"
+                    android:imeOptions="actionSearch"
+                    android:inputType="text"
+                    android:textColor="#1E232A"
+                    android:textColorHint="#94A3B8"
+                    android:textSize="13sp" />
+
+                <ImageView
+                    android:id="@+id/btnClearSearch"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/ic_close"
+                    android:visibility="gone"
+                    android:contentDescription="Hapus Cari" />
             </LinearLayout>
 
-            <!-- Topping Tambahan -->
-            <LinearLayout
+            <!-- 3. Horizontal Filter Chips Kategori -->
+            <HorizontalScrollView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginTop="8dp">
-
-                <CheckBox
-                    android:id="@+id/cbKeju"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Keju (+5rb)"
-                    android:textSize="12sp"
-                    android:buttonTint="@color/primary" />
-
-                <CheckBox
-                    android:id="@+id/cbCoklat"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:text="Coklat (+4rb)"
-                    android:textSize="12sp"
-                    android:buttonTint="@color/primary" />
-
-                <CheckBox
-                    android:id="@+id/cbPedas"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:text="Pedas Level 2"
-                    android:textSize="12sp"
-                    android:buttonTint="@color/primary" />
-            </LinearLayout>
-
-            <!-- Kontrol Kuantitas & Tombol Tambah ke Keranjang -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginTop="10dp">
+                android:scrollbars="none"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="6dp">
 
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical">
-
-                    <Button
-                        android:id="@+id/btnKurangQtyPilih"
-                        android:layout_width="36dp"
-                        android:layout_height="36dp"
-                        android:text="-"
-                        android:textSize="16sp"
-                        android:textStyle="bold"
-                        android:textColor="#212529"
-                        android:backgroundTint="#ECEFF1"
-                        android:insetTop="0dp"
-                        android:insetBottom="0dp"
-                        android:padding="0dp" />
-
-                    <TextView
-                        android:id="@+id/txQtyPilih"
-                        android:layout_width="36dp"
-                        android:layout_height="wrap_content"
-                        android:gravity="center"
-                        android:text="1"
-                        android:textStyle="bold"
-                        android:textColor="#212529"
-                        android:textSize="14sp" />
-
-                    <Button
-                        android:id="@+id/btnTambahQtyPilih"
-                        android:layout_width="36dp"
-                        android:layout_height="36dp"
-                        android:text="+"
-                        android:textSize="16sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/white"
-                        android:backgroundTint="@color/primary"
-                        android:insetTop="0dp"
-                        android:insetBottom="0dp"
-                        android:padding="0dp" />
-                </LinearLayout>
-
-                <Button
-                    android:id="@+id/btnTambahKeKeranjang"
-                    android:layout_width="0dp"
-                    android:layout_height="44dp"
-                    android:layout_weight="1"
-                    android:layout_marginStart="12dp"
-                    android:text="+ Tambah ke Keranjang"
-                    android:textSize="12sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/primary"
-                    android:backgroundTint="#FFF3E0"
-                    android:insetTop="0dp"
-                    android:insetBottom="0dp"
-                    android:paddingHorizontal="8dp" />
-            </LinearLayout>
-
-        </LinearLayout>
-
-        <!-- Card 3: Katalog Menu (ListView yang rapi) -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Daftar Menu Tersedia (Klik untuk memilih)"
-            android:textSize="12sp"
-            android:textStyle="bold"
-            android:textColor="#495057"
-            android:layout_marginBottom="4dp" />
-
-        <ListView
-            android:id="@+id/lsMenu"
-            android:layout_width="match_parent"
-            android:layout_height="140dp"
-            android:nestedScrollingEnabled="true"
-            android:background="@drawable/bg_card_minimal"
-            android:divider="#EEEEEE"
-            android:dividerHeight="1dp"
-            android:padding="4dp"
-            android:layout_marginBottom="8dp" />
-
-        <!-- Card 4: Keranjang Pesanan -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:background="@drawable/bg_card_minimal"
-            android:padding="12dp"
-            android:layout_marginBottom="8dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginBottom="8dp">
-
-                <TextView
-                    android:id="@+id/txJudulKeranjang"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="Keranjang Pesanan (0 item)"
-                    android:textStyle="bold"
-                    android:textColor="#212529"
-                    android:textSize="13sp" />
-
-                <Button
-                    android:id="@+id/btnKosongkanKeranjang"
-                    android:layout_width="wrap_content"
-                    android:layout_height="30dp"
-                    android:text="Kosongkan"
-                    android:textSize="10sp"
-                    android:textColor="#D32F2F"
-                    android:backgroundTint="#FFEBEE"
-                    android:insetTop="0dp"
-                    android:insetBottom="0dp"
-                    android:paddingHorizontal="8dp"
-                    android:visibility="gone" />
-            </LinearLayout>
-
-            <!-- Pesan Keranjang Kosong -->
-            <TextView
-                android:id="@+id/txKeranjangKosong"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Keranjang masih kosong. Pilih menu di atas lalu klik Tambah ke Keranjang."
-                android:textSize="12sp"
-                android:textColor="#757575"
-                android:paddingVertical="12dp"
-                android:gravity="center" />
-
-            <!-- Container Item Keranjang Dinamis -->
-            <LinearLayout
-                android:id="@+id/containerKeranjang"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:visibility="gone" />
-
-            <!-- Ringkasan Total Belanja -->
-            <LinearLayout
-                android:id="@+id/layoutTotalKeranjang"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginTop="6dp"
-                android:paddingTop="6dp"
-                android:visibility="gone">
-
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="Total Belanja:"
-                    android:textSize="13sp"
-                    android:textStyle="bold"
-                    android:textColor="#212529" />
-
-                <TextView
-                    android:id="@+id/txTotalBelanja"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Rp 0"
-                    android:textSize="14sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/primary" />
-            </LinearLayout>
-
-        </LinearLayout>
-
-        <!-- Card 5: Pembayaran & Eksekusi -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:background="@drawable/bg_card_minimal"
-            android:padding="12dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Metode Bayar:"
-                    android:textSize="12sp"
-                    android:textStyle="bold"
-                    android:textColor="#212529"
-                    android:layout_marginEnd="12dp" />
-
-                <RadioGroup
-                    android:id="@+id/rgBayar"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
                     android:orientation="horizontal">
 
-                    <RadioButton
-                        android:id="@+id/rbTunai"
+                    <!-- Chip: Semua -->
+                    <TextView
+                        android:id="@+id/chipKategoriSemua"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Tunai"
+                        android:layout_height="32dp"
+                        android:background="@drawable/bg_chip_category_active"
+                        android:gravity="center"
+                        android:paddingHorizontal="14dp"
+                        android:text="Semua"
+                        android:textColor="@color/white"
                         android:textSize="12sp"
-                        android:checked="true"
-                        android:buttonTint="@color/primary" />
+                        android:textStyle="bold" />
 
-                    <RadioButton
-                        android:id="@+id/rbQris"
+                    <!-- Chip: Martabak Telur -->
+                    <TextView
+                        android:id="@+id/chipKategoriMartabak"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="14dp"
-                        android:text="QRIS"
-                        android:textSize="12sp"
-                        android:buttonTint="@color/primary" />
-                </RadioGroup>
-            </LinearLayout>
+                        android:layout_height="32dp"
+                        android:layout_marginStart="8dp"
+                        android:background="@drawable/bg_chip_category_inactive"
+                        android:gravity="center"
+                        android:paddingHorizontal="14dp"
+                        android:text="Martabak Telur"
+                        android:textColor="#495057"
+                        android:textSize="12sp" />
 
-            <EditText
-                android:id="@+id/edtCatatan"
-                android:layout_width="match_parent"
-                android:layout_height="40dp"
-                android:hint="Catatan pesanan (misal: adonan garing)..."
-                android:paddingHorizontal="12dp"
-                android:background="@drawable/bg_input_field"
-                android:textSize="12sp"
-                android:layout_marginTop="8dp" />
+                    <!-- Chip: Terang Bulan -->
+                    <TextView
+                        android:id="@+id/chipKategoriTerangBulan"
+                        android:layout_width="wrap_content"
+                        android:layout_height="32dp"
+                        android:layout_marginStart="8dp"
+                        android:background="@drawable/bg_chip_category_inactive"
+                        android:gravity="center"
+                        android:paddingHorizontal="14dp"
+                        android:text="Terang Bulan"
+                        android:textColor="#495057"
+                        android:textSize="12sp" />
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginTop="8dp">
+                    <!-- Chip: Minuman -->
+                    <TextView
+                        android:id="@+id/chipKategoriMinuman"
+                        android:layout_width="wrap_content"
+                        android:layout_height="32dp"
+                        android:layout_marginStart="8dp"
+                        android:background="@drawable/bg_chip_category_inactive"
+                        android:gravity="center"
+                        android:paddingHorizontal="14dp"
+                        android:text="Minuman"
+                        android:textColor="#495057"
+                        android:textSize="12sp" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Estimasi Siap:"
-                    android:textSize="12sp"
-                    android:textColor="#495057" />
-
-                <Button
-                    android:id="@+id/btnPilihJamAmbil"
-                    android:layout_width="wrap_content"
-                    android:layout_height="36dp"
-                    android:layout_marginStart="8dp"
-                    android:text="Atur Jam"
-                    android:textSize="11sp"
-                    android:backgroundTint="#455A64"
-                    android:paddingHorizontal="12dp" />
-
-                <TextView
-                    android:id="@+id/txJamAmbilInfo"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginStart="8dp"
-                    android:text="Langsung (15-20 mnt)"
-                    android:textSize="11sp"
-                    android:textColor="#424242" />
-            </LinearLayout>
-
-            <Button
-                android:id="@+id/btnSimpanPesanan"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:text="Proses &amp; Simpan Pesanan"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                android:textColor="@color/white"
-                android:backgroundTint="@color/primary"
-                android:layout_marginTop="10dp" />
+                </LinearLayout>
+            </HorizontalScrollView>
 
         </LinearLayout>
+
+        <!-- 4. Daftar Katalog Menu POS (RecyclerView) -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvKatalogMenuPos"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipToPadding="false"
+                android:paddingTop="6dp"
+                android:paddingBottom="100dp" />
+
+            <!-- Empty State jika pencarian tidak ditemukan -->
+            <LinearLayout
+                android:id="@+id/layoutEmptyMenuPos"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:padding="24dp"
+                android:visibility="gone">
+
+                <ImageView
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
+                    android:src="@drawable/ic_search"
+                    android:alpha="0.4"
+                    android:contentDescription="Tidak Ditemukan" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="Menu tidak ditemukan"
+                    android:textColor="#495057"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Coba gunakan kata kunci pencarian lain"
+                    android:textColor="#9E9E9E"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+        </FrameLayout>
 
     </LinearLayout>
 
-</ScrollView>
+    <!-- 5. Sticky Floating Cart Bar (Kapsul Gelap Modern di Bawah) -->
+    <LinearLayout
+        android:id="@+id/layoutFloatingCartBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/bg_floating_cart"
+        android:elevation="8dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="14dp"
+        android:paddingVertical="10dp"
+        android:visibility="gone">
+
+        <!-- Badge Merah Jumlah Item -->
+        <TextView
+            android:id="@+id/tvBadgeJumlahCart"
+            android:layout_width="26dp"
+            android:layout_height="26dp"
+            android:background="@drawable/bg_badge_cart"
+            android:gravity="center"
+            android:text="1"
+            android:textColor="@color/white"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <!-- Info Item Terpilih & Total Harga -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvLabelItemTerpilih"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="1 item terpilih"
+                android:textColor="#94A3B8"
+                android:textSize="11sp" />
+
+            <TextView
+                android:id="@+id/tvTotalHargaFloating"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Rp 20.000"
+                android:textColor="@color/white"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- Tombol Lanjut Bayar Oranye / Kuning -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnFloatingLanjutBayar"
+            android:layout_width="wrap_content"
+            android:layout_height="38dp"
+            android:backgroundTint="#FFB300"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:paddingHorizontal="16dp"
+            android:text="Lanjut Bayar"
+            android:textColor="#1E232A"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            app:cornerRadius="19dp" />
+
+    </LinearLayout>
+
+</RelativeLayout>

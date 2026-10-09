@@ -1,18 +1,29 @@
 package com.pesenhub.jenggirat
 
+import android.app.TimePickerDialog
+import android.content.Intent
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
-import android.widget.Button
+import android.widget.EditText
+import android.widget.ImageButton
+import android.widget.ImageView
+import android.widget.RadioGroup
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.button.MaterialButton
+import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore
 import com.pesenhub.jenggirat.databinding.FragmentKasirBinding
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
@@ -21,22 +32,24 @@ class KasirFragment : Fragment() {
     lateinit var b: FragmentKasirBinding
     lateinit var dbFirestore: FirebaseFirestore
 
-    // Data Menu
-    data class MenuModel(val nama: String, val harga: Int, val kategori: String)
+    // Data Menu Model
+    data class MenuModel(
+        val nama: String,
+        val harga: Int,
+        val kategori: String
+    )
 
-    val listSemuaMenu = ArrayList<MenuModel>()
-    val listMenuTampil = ArrayList<String>()
-    val listNamaMenu = ArrayList<String>()
+    private val listSemuaMenu = ArrayList<MenuModel>()
+    private val listMenuTampil = ArrayList<MenuModel>()
+    private lateinit var menuAdapter: MenuPosAdapter
 
-    val listKategori = arrayOf("Semua Kategori", "Martabak Telur", "Terang Bulan", "Minuman")
+    private var kategoriDipilih = "Semua"
+    private var kataKunciPencarian = ""
 
-    var menuTerpilih = "Martabak Sosis/Jamur Biasa"
-    var hargaDasar = 20000
-    var qtyPilih = 1
-    var metodeBayar = "Tunai"
-
-    // Keranjang Belanja (Order Cart)
-    val listKeranjang = ArrayList<KeranjangItem>()
+    // Keranjang Pesanan Kasir
+    private val listKeranjang = ArrayList<KeranjangItem>()
+    private var estimasiJamAmbil = "Langsung (15-20 mnt)"
+    private var metodeBayarTerpilih = "Tunai"
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -47,303 +60,141 @@ class KasirFragment : Fragment() {
         return b.root
     }
 
+    override fun onResume() {
+        super.onResume()
+        // Sembunyikan ActionBar default agar header POS modern tampil maksimal
+        (activity as? AppCompatActivity)?.supportActionBar?.hide()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        (activity as? AppCompatActivity)?.supportActionBar?.show()
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         dbFirestore = FirebaseFirestore.getInstance()
 
-        // 1. Inisialisasi Spinner Kategori (Bab II Modul PM Pak Benni)
-        val adapterSpinner = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, listKategori)
-        b.spKategori.adapter = adapterSpinner
+        // 1. Inisialisasi RecyclerView Katalog Menu POS
+        menuAdapter = MenuPosAdapter(listMenuTampil) { menu ->
+            tampilkanBottomSheetPilihMenu(menu)
+        }
+        b.rvKatalogMenuPos.layoutManager = LinearLayoutManager(requireContext())
+        b.rvKatalogMenuPos.adapter = menuAdapter
 
-        b.spKategori.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                filterMenuBerdasarkanKategori(listKategori[position])
+        // 2. Setup Pencarian Menu Real-time
+        b.edtCariMenuPos.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                kataKunciPencarian = s?.toString()?.trim() ?: ""
+                b.btnClearSearch.visibility = if (kataKunciPencarian.isNotEmpty()) View.VISIBLE else View.GONE
+                filterDanTampilkanMenu()
             }
-            override fun onNothingSelected(parent: AdapterView<*>?) {}
+            override fun afterTextChanged(s: Editable?) {}
+        })
+
+        b.btnClearSearch.setOnClickListener {
+            b.edtCariMenuPos.setText("")
         }
 
-        // 2. Muat Data Menu dari Cloud Firestore (Penyimpanan Utama) & Fallback Default
+        // 3. Setup Filter Kategori Horizontal Chips
+        setupCategoryChips()
+
+        // 4. Setup Floating Bottom Cart Bar Click
+        b.btnFloatingLanjutBayar.setOnClickListener {
+            if (listKeranjang.isNotEmpty()) {
+                tampilkanBottomSheetKeranjang()
+            } else {
+                Toast.makeText(requireContext(), "Keranjang masih kosong!", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        b.layoutFloatingCartBar.setOnClickListener {
+            if (listKeranjang.isNotEmpty()) {
+                tampilkanBottomSheetKeranjang()
+            }
+        }
+
+        // Top Bar actions
+        b.btnPosNotifikasi.setOnClickListener {
+            Toast.makeText(requireContext(), "Tidak ada notifikasi baru.", Toast.LENGTH_SHORT).show()
+        }
+
+        b.btnPosProfile.setOnClickListener {
+            Toast.makeText(requireContext(), "Kasir Aktif: Jenggirat Kediri", Toast.LENGTH_SHORT).show()
+        }
+
+        // 5. Muat Data Menu dari Cloud Firestore
         muatMenuDariFirestore()
 
-        // 3. AutoCompleteTextView untuk Pencarian Item Menu (Sesuai Bab II Modul PM Pak Benni)
-        b.autoCariMenu.setOnItemClickListener { parent, _, position, _ ->
-            val namaDipilih = parent.getItemAtPosition(position).toString()
-            pilihMenuBerdasarkanNama(namaDipilih)
-        }
-
-        // 4. Klik Item pada ListView Menu
-        b.lsMenu.setOnItemClickListener { _, _, position, _ ->
-            if (position in listMenuTampil.indices) {
-                val itemText = listMenuTampil[position]
-                val nama = itemText.substringBefore(" - Rp").trim()
-                pilihMenuBerdasarkanNama(nama)
-                b.autoCariMenu.setText(nama, false)
-            }
-        }
-
-        // 5. Kontrol Kuantitas Pemilihan Menu
-        b.btnKurangQtyPilih.setOnClickListener {
-            if (qtyPilih > 1) {
-                qtyPilih--
-                b.txQtyPilih.text = "$qtyPilih"
-            }
-        }
-
-        b.btnTambahQtyPilih.setOnClickListener {
-            qtyPilih++
-            b.txQtyPilih.text = "$qtyPilih"
-        }
-
-        // 6. Tombol Tambah ke Keranjang
-        b.btnTambahKeKeranjang.setOnClickListener {
-            tambahMenuKeKeranjang()
-        }
-
-        // 7. Tombol Kosongkan Keranjang
-        b.btnKosongkanKeranjang.setOnClickListener {
-            listKeranjang.clear()
-            perbaruiTampilanKeranjang()
-            Toast.makeText(requireContext(), "Keranjang berhasil dikosongkan", Toast.LENGTH_SHORT).show()
-        }
-
-        // 8. RadioButton Pembayaran (Bab II Modul PM Pak Benni)
-        b.rgBayar.setOnCheckedChangeListener { _, checkedId ->
-            when (checkedId) {
-                b.rbTunai.id -> metodeBayar = "Tunai"
-                b.rbQris.id -> metodeBayar = "QRIS"
-            }
-        }
-
-        // 9. TimePickerDialog Estimasi Jam Ambil (Bab III Modul PM Pak Benni)
-        var estimasiJamAmbil = "Langsung (15-20 mnt)"
-        b.btnPilihJamAmbil.setOnClickListener {
-            val cal = java.util.Calendar.getInstance()
-            val jamSekarang = cal.get(java.util.Calendar.HOUR_OF_DAY)
-            val menitSekarang = cal.get(java.util.Calendar.MINUTE)
-
-            android.app.TimePickerDialog(
-                requireContext(),
-                { _, hourOfDay, minute ->
-                    val strH = if (hourOfDay < 10) "0$hourOfDay" else "$hourOfDay"
-                    val strM = if (minute < 10) "0$minute" else "$minute"
-                    estimasiJamAmbil = "$strH:$strM"
-                    b.txJamAmbilInfo.text = "Jam: $estimasiJamAmbil"
-                },
-                jamSekarang,
-                menitSekarang,
-                true
-            ).show()
-        }
-
-        // 10. Simpan Pesanan ke Cloud Firestore sebagai Basis Data Utama
-        b.btnSimpanPesanan.setOnClickListener {
-            val nama = b.edtNamaPelanggan.text.toString().trim()
-            val hp = b.edtHpPelanggan.text.toString().trim()
-            val catatan = b.edtCatatan.text.toString().trim()
-
-            if (nama.isEmpty()) {
-                b.edtNamaPelanggan.error = "Nama pelanggan wajib diisi"
-                b.edtNamaPelanggan.requestFocus()
-                return@setOnClickListener
-            }
-
-            if (listKeranjang.isEmpty()) {
-                Toast.makeText(requireContext(), "Keranjang masih kosong! Silakan tambah menu ke keranjang terlebih dahulu.", Toast.LENGTH_LONG).show()
-                return@setOnClickListener
-            }
-
-            val total = listKeranjang.sumOf { it.subtotal }
-            val sdf = SimpleDateFormat("yyyyMMdd-HHmmss", Locale.getDefault())
-            val idPesanan = "ORD-${sdf.format(Date())}"
-
-            // Ringkasan multi-item untuk tampilan struk QR dan antrean
-            val detailItem = listKeranjang.joinToString("\n") {
-                "${it.qty}x ${it.getDeskripsiLengkap()} - Rp ${formatRupiah(it.subtotal)}"
-            }
-
-            // Data item terstruktur untuk Firestore
-            val itemsFirestore = listKeranjang.map {
-                hashMapOf(
-                    "name" to it.namaMenu,
-                    "unitPrice" to it.hargaSatuan,
-                    "quantity" to it.qty,
-                    "subtotal" to it.subtotal,
-                    "toppings" to it.topping
-                )
-            }
-
-            val dataFirestore = hashMapOf(
-                "orderNumber" to idPesanan,
-                "customerName" to nama,
-                "customerPhone" to hp,
-                "menuItem" to detailItem,
-                "detailItem" to detailItem,
-                "items" to itemsFirestore,
-                "totalItems" to listKeranjang.sumOf { it.qty },
-                "paymentMethod" to metodeBayar,
-                "total" to total,
-                "notes" to "$catatan (Siap: $estimasiJamAmbil)",
-                "status" to "PENDING",
-                "source" to "CASHIER",
-                "branchName" to "Jenggirat Kediri",
-                "branchId" to "kediri",
-                "createdAt" to com.google.firebase.Timestamp.now()
-            )
-
-            // Simpan langsung ke Firestore sebagai primary database
-            dbFirestore.collection("orders").document(idPesanan)
-                .set(dataFirestore)
-                .addOnSuccessListener {
-                    SoundHelper.playBell()
-                    Toast.makeText(requireContext(), "Pesanan $idPesanan berhasil tersimpan di Firestore!", Toast.LENGTH_SHORT).show()
-
-                    // Buka OrderDetailActivity untuk menampilkan QR Code struk pesanan (Bab 10 PM)
-                    val intentDetail = android.content.Intent(requireContext(), OrderDetailActivity::class.java).apply {
-                        putExtra("EXTRA_ORDER_NUMBER", idPesanan)
-                        putExtra("EXTRA_CUSTOMER_NAME", nama)
-                        putExtra("EXTRA_CUSTOMER_PHONE", hp)
-                        putExtra("EXTRA_MENU_ITEM", detailItem)
-                        putExtra("EXTRA_PAYMENT_METHOD", metodeBayar)
-                        putExtra("EXTRA_TOTAL", total)
-                        putExtra("EXTRA_STATUS", "PENDING")
-                        putExtra("EXTRA_NOTES", "$catatan (Siap: $estimasiJamAmbil)")
-                    }
-                    startActivity(intentDetail)
-
-                    // Reset form dan kosongkan keranjang
-                    b.edtNamaPelanggan.setText("")
-                    b.edtHpPelanggan.setText("")
-                    b.edtCatatan.setText("")
-                    b.autoCariMenu.setText("")
-                    b.cbKeju.isChecked = false
-                    b.cbCoklat.isChecked = false
-                    b.cbPedas.isChecked = false
-                    qtyPilih = 1
-                    b.txQtyPilih.text = "1"
-                    listKeranjang.clear()
-                    perbaruiTampilanKeranjang()
-                }
-                .addOnFailureListener { e ->
-                    Toast.makeText(requireContext(), "Gagal simpan ke Firestore: ${e.message}", Toast.LENGTH_LONG).show()
-                }
-        }
-
-        // Tampilan keranjang awal
-        perbaruiTampilanKeranjang()
+        // Perbarui Floating Bar awal
+        perbaruiFloatingCartBar()
     }
 
-    private fun tambahMenuKeKeranjang() {
-        val topping = ArrayList<String>()
-        var hargaTopping = 0
-        if (b.cbKeju.isChecked) { hargaTopping += 5000; topping.add("Keju") }
-        if (b.cbCoklat.isChecked) { hargaTopping += 4000; topping.add("Coklat") }
-        if (b.cbPedas.isChecked) { topping.add("Pedas Lvl 2") }
+    private fun setupCategoryChips() {
+        b.chipKategoriSemua.setOnClickListener {
+            pilihKategori("Semua")
+        }
+        b.chipKategoriMartabak.setOnClickListener {
+            pilihKategori("Martabak Telur")
+        }
+        b.chipKategoriTerangBulan.setOnClickListener {
+            pilihKategori("Terang Bulan")
+        }
+        b.chipKategoriMinuman.setOnClickListener {
+            pilihKategori("Minuman")
+        }
+    }
 
-        // Cek apakah item dengan nama dan kombinasi topping yang sama sudah ada di keranjang
-        val itemSama = listKeranjang.find {
-            it.namaMenu == menuTerpilih && it.topping == topping
+    private fun pilihKategori(kategori: String) {
+        kategoriDipilih = kategori
+
+        val chips = listOf(
+            b.chipKategoriSemua to "Semua",
+            b.chipKategoriMartabak to "Martabak Telur",
+            b.chipKategoriTerangBulan to "Terang Bulan",
+            b.chipKategoriMinuman to "Minuman"
+        )
+
+        for ((chipView, namaKat) in chips) {
+            if (namaKat == kategori) {
+                chipView.setBackgroundResource(R.drawable.bg_chip_category_active)
+                chipView.setTextColor(resources.getColor(R.color.white, null))
+                chipView.paint.isFakeBoldText = true
+            } else {
+                chipView.setBackgroundResource(R.drawable.bg_chip_category_inactive)
+                chipView.setTextColor(0xFF495057.toInt())
+                chipView.paint.isFakeBoldText = false
+            }
         }
 
-        if (itemSama != null) {
-            itemSama.qty += qtyPilih
+        filterDanTampilkanMenu()
+    }
+
+    private fun filterDanTampilkanMenu() {
+        listMenuTampil.clear()
+
+        val keyword = kataKunciPencarian.lowercase(Locale.getDefault())
+
+        for (menu in listSemuaMenu) {
+            val lolosKategori = (kategoriDipilih == "Semua" || menu.kategori.equals(kategoriDipilih, ignoreCase = true))
+            val lolosPencarian = keyword.isEmpty() || menu.nama.lowercase(Locale.getDefault()).contains(keyword)
+
+            if (lolosKategori && lolosPencarian) {
+                listMenuTampil.add(menu)
+            }
+        }
+
+        menuAdapter.perbaruiData(listMenuTampil)
+
+        if (listMenuTampil.isEmpty()) {
+            b.layoutEmptyMenuPos.visibility = View.VISIBLE
+            b.rvKatalogMenuPos.visibility = View.GONE
         } else {
-            listKeranjang.add(KeranjangItem(menuTerpilih, hargaDasar, topping, hargaTopping, qtyPilih))
+            b.layoutEmptyMenuPos.visibility = View.GONE
+            b.rvKatalogMenuPos.visibility = View.VISIBLE
         }
-
-        Toast.makeText(
-            requireContext(),
-            "$qtyPilih x $menuTerpilih ditambahkan ke keranjang",
-            Toast.LENGTH_SHORT
-        ).show()
-
-        // Reset kontrol topping dan qty
-        qtyPilih = 1
-        b.txQtyPilih.text = "1"
-        b.cbKeju.isChecked = false
-        b.cbCoklat.isChecked = false
-        b.cbPedas.isChecked = false
-
-        perbaruiTampilanKeranjang()
-    }
-
-    private fun perbaruiTampilanKeranjang() {
-        if (!isAdded) return
-
-        b.containerKeranjang.removeAllViews()
-
-        if (listKeranjang.isEmpty()) {
-            b.txKeranjangKosong.visibility = View.VISIBLE
-            b.containerKeranjang.visibility = View.GONE
-            b.layoutTotalKeranjang.visibility = View.GONE
-            b.btnKosongkanKeranjang.visibility = View.GONE
-            b.txJudulKeranjang.text = "Keranjang Pesanan (0 item)"
-        } else {
-            b.txKeranjangKosong.visibility = View.GONE
-            b.containerKeranjang.visibility = View.VISIBLE
-            b.layoutTotalKeranjang.visibility = View.VISIBLE
-            b.btnKosongkanKeranjang.visibility = View.VISIBLE
-
-            val totalItem = listKeranjang.sumOf { it.qty }
-            val totalBelanja = listKeranjang.sumOf { it.subtotal }
-
-            b.txJudulKeranjang.text = "Keranjang Pesanan ($totalItem item)"
-            b.txTotalBelanja.text = "Rp " + formatRupiah(totalBelanja)
-
-            val inflater = LayoutInflater.from(requireContext())
-
-            for ((index, item) in listKeranjang.withIndex()) {
-                val itemView = inflater.inflate(R.layout.item_keranjang, b.containerKeranjang, false)
-
-                val tvNama = itemView.findViewById<TextView>(R.id.tvNamaItemKeranjang)
-                val tvHargaSatuan = itemView.findViewById<TextView>(R.id.tvHargaSatuanKeranjang)
-                val tvSubtotal = itemView.findViewById<TextView>(R.id.tvSubtotalKeranjang)
-                val tvQty = itemView.findViewById<TextView>(R.id.tvQtyItemKeranjang)
-                val btnMinus = itemView.findViewById<Button>(R.id.btnMinusQty)
-                val btnPlus = itemView.findViewById<Button>(R.id.btnPlusQty)
-                val btnHapus = itemView.findViewById<Button>(R.id.btnHapusItemKeranjang)
-
-                tvNama.text = item.getDeskripsiLengkap()
-                tvHargaSatuan.text = "@ Rp ${formatRupiah(item.hargaSatuan)}"
-                tvSubtotal.text = "Subtotal: Rp ${formatRupiah(item.subtotal)}"
-                tvQty.text = "${item.qty}"
-
-                btnMinus.setOnClickListener {
-                    if (item.qty > 1) {
-                        item.qty--
-                    } else {
-                        listKeranjang.removeAt(index)
-                    }
-                    perbaruiTampilanKeranjang()
-                }
-
-                btnPlus.setOnClickListener {
-                    item.qty++
-                    perbaruiTampilanKeranjang()
-                }
-
-                btnHapus.setOnClickListener {
-                    listKeranjang.removeAt(index)
-                    perbaruiTampilanKeranjang()
-                }
-
-                b.containerKeranjang.addView(itemView)
-            }
-        }
-    }
-
-    private fun pilihMenuBerdasarkanNama(nama: String) {
-        val menu = listSemuaMenu.find { it.nama.equals(nama, ignoreCase = true) }
-        if (menu != null) {
-            menuTerpilih = menu.nama
-            hargaDasar = menu.harga
-            b.txMenuTerpilih.text = "Dipilih: ${menu.nama} (Rp ${formatRupiah(menu.harga)})"
-            Toast.makeText(requireContext(), "Menu dipilih: ${menu.nama}", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    private fun formatRupiah(nominal: Int): String {
-        return "%,d".format(nominal).replace(',', '.')
     }
 
     private fun muatMenuDariFirestore() {
@@ -360,7 +211,7 @@ class KasirFragment : Fragment() {
                     }
                 }
 
-                // Jika Firestore menus masih kosong, sediakan menu default otentik Jenggirat dari PTT
+                // Jika Firestore menus belum diisi, sediakan katalog otentik Jenggirat Kediri
                 if (listSemuaMenu.isEmpty()) {
                     listSemuaMenu.add(MenuModel("Martabak Sosis/Jamur Biasa", 20000, "Martabak Telur"))
                     listSemuaMenu.add(MenuModel("Martabak Sosis/Jamur Spesial", 30000, "Martabak Telur"))
@@ -380,38 +231,443 @@ class KasirFragment : Fragment() {
                     listSemuaMenu.add(MenuModel("Es Jeruk Peras", 7000, "Minuman"))
                 }
 
-                perbaruiDataTampilan()
+                filterDanTampilkanMenu()
             }
     }
 
-    private fun perbaruiDataTampilan() {
+    private fun perbaruiFloatingCartBar() {
         if (!isAdded) return
 
-        // Perbarui list nama untuk AutoCompleteTextView
-        listNamaMenu.clear()
-        for (m in listSemuaMenu) {
-            listNamaMenu.add(m.nama)
+        if (listKeranjang.isEmpty()) {
+            b.layoutFloatingCartBar.visibility = View.GONE
+        } else {
+            b.layoutFloatingCartBar.visibility = View.VISIBLE
+            val totalItem = listKeranjang.sumOf { it.qty }
+            val totalHarga = listKeranjang.sumOf { it.subtotal }
+
+            b.tvBadgeJumlahCart.text = "$totalItem"
+            b.tvLabelItemTerpilih.text = "$totalItem item terpilih"
+            b.tvTotalHargaFloating.text = "Rp " + formatRupiah(totalHarga)
         }
-
-        val adapterAuto = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, listNamaMenu)
-        b.autoCariMenu.setAdapter(adapterAuto)
-
-        // Filter listview sesuai spinner aktif
-        val katTerpilih = b.spKategori.selectedItem?.toString() ?: "Semua Kategori"
-        filterMenuBerdasarkanKategori(katTerpilih)
     }
 
-    private fun filterMenuBerdasarkanKategori(kategori: String) {
-        listMenuTampil.clear()
-        for (m in listSemuaMenu) {
-            if (kategori == "Semua Kategori" || m.kategori.equals(kategori, ignoreCase = true)) {
-                listMenuTampil.add("${m.nama} - Rp ${formatRupiah(m.harga)}")
+    // =========================================================================
+    // MODAL BOTTOMSHEET 1: KUSTOMISASI MENU & EXTRA ISIAN / TOPPING
+    // =========================================================================
+    private fun tampilkanBottomSheetPilihMenu(menu: MenuModel) {
+        val dialog = BottomSheetDialog(requireContext())
+        val sheetView = layoutInflater.inflate(R.layout.bottom_sheet_pilih_menu, null)
+        dialog.setContentView(sheetView)
+
+        val tvNama = sheetView.findViewById<TextView>(R.id.tvSheetNamaMenu)
+        val tvHargaDasar = sheetView.findViewById<TextView>(R.id.tvSheetHargaDasar)
+        val btnTutup = sheetView.findViewById<ImageView>(R.id.btnSheetTutup)
+
+        val tvQtyMozzarella = sheetView.findViewById<TextView>(R.id.tvQtyMozzarella)
+        val btnMinusMozzarella = sheetView.findViewById<ImageButton>(R.id.btnMinusMozzarella)
+        val btnPlusMozzarella = sheetView.findViewById<ImageButton>(R.id.btnPlusMozzarella)
+
+        val tvQtySapi = sheetView.findViewById<TextView>(R.id.tvQtySapi)
+        val btnMinusSapi = sheetView.findViewById<ImageButton>(R.id.btnMinusSapi)
+        val btnPlusSapi = sheetView.findViewById<ImageButton>(R.id.btnPlusSapi)
+
+        val tvQtyAyam = sheetView.findViewById<TextView>(R.id.tvQtyAyam)
+        val btnMinusAyam = sheetView.findViewById<ImageButton>(R.id.btnMinusAyam)
+        val btnPlusAyam = sheetView.findViewById<ImageButton>(R.id.btnPlusAyam)
+
+        val tvQtyJamur = sheetView.findViewById<TextView>(R.id.tvQtyJamur)
+        val btnMinusJamur = sheetView.findViewById<ImageButton>(R.id.btnMinusJamur)
+        val btnPlusJamur = sheetView.findViewById<ImageButton>(R.id.btnPlusJamur)
+
+        val tvQtySosis = sheetView.findViewById<TextView>(R.id.tvQtySosis)
+        val btnMinusSosis = sheetView.findViewById<ImageButton>(R.id.btnMinusSosis)
+        val btnPlusSosis = sheetView.findViewById<ImageButton>(R.id.btnPlusSosis)
+
+        val tvQtyCoklat = sheetView.findViewById<TextView>(R.id.tvQtyCoklat)
+        val btnMinusCoklat = sheetView.findViewById<ImageButton>(R.id.btnMinusCoklat)
+        val btnPlusCoklat = sheetView.findViewById<ImageButton>(R.id.btnPlusCoklat)
+
+        val tvQtySambal = sheetView.findViewById<TextView>(R.id.tvQtySambal)
+        val btnMinusSambal = sheetView.findViewById<ImageButton>(R.id.btnMinusSambal)
+        val btnPlusSambal = sheetView.findViewById<ImageButton>(R.id.btnPlusSambal)
+
+        val tvQtyPorsi = sheetView.findViewById<TextView>(R.id.tvQtyPorsi)
+        val btnMinusPorsi = sheetView.findViewById<ImageButton>(R.id.btnMinusPorsi)
+        val btnPlusPorsi = sheetView.findViewById<ImageButton>(R.id.btnPlusPorsi)
+
+        val tvTotalDinamis = sheetView.findViewById<TextView>(R.id.tvSheetTotalDinamis)
+        val btnTambahPesanan = sheetView.findViewById<MaterialButton>(R.id.btnSheetTambahPesanan)
+
+        tvNama.text = menu.nama
+        tvHargaDasar.text = "Harga Dasar: Rp " + formatRupiah(menu.harga)
+
+        var qMozzarella = 0
+        var qSapi = 0
+        var qAyam = 0
+        var qJamur = 0
+        var qSosis = 0
+        var qCoklat = 0
+        var qSambal = 0
+        var porsiUtama = 1
+
+        fun kalkulasiDanTampilkanTotal() {
+            val totalExtraSatuan = (qMozzarella * 15000) +
+                    (qSapi * 7000) +
+                    (qAyam * 5000) +
+                    (qJamur * 5000) +
+                    (qSosis * 5000) +
+                    (qCoklat * 4000) +
+                    (qSambal * 4000)
+
+            val totalPerPorsi = menu.harga + totalExtraSatuan
+            val grandTotalItem = totalPerPorsi * porsiUtama
+            tvTotalDinamis.text = "Rp " + formatRupiah(grandTotalItem)
+        }
+
+        kalkulasiDanTampilkanTotal()
+
+        btnTutup.setOnClickListener { dialog.dismiss() }
+
+        // Setup Stepper Toppings
+        btnMinusMozzarella.setOnClickListener {
+            if (qMozzarella > 0) { qMozzarella--; tvQtyMozzarella.text = "$qMozzarella"; kalkulasiDanTampilkanTotal() }
+        }
+        btnPlusMozzarella.setOnClickListener {
+            qMozzarella++; tvQtyMozzarella.text = "$qMozzarella"; kalkulasiDanTampilkanTotal()
+        }
+
+        btnMinusSapi.setOnClickListener {
+            if (qSapi > 0) { qSapi--; tvQtySapi.text = "$qSapi"; kalkulasiDanTampilkanTotal() }
+        }
+        btnPlusSapi.setOnClickListener {
+            qSapi++; tvQtySapi.text = "$qSapi"; kalkulasiDanTampilkanTotal()
+        }
+
+        btnMinusAyam.setOnClickListener {
+            if (qAyam > 0) { qAyam--; tvQtyAyam.text = "$qAyam"; kalkulasiDanTampilkanTotal() }
+        }
+        btnPlusAyam.setOnClickListener {
+            qAyam++; tvQtyAyam.text = "$qAyam"; kalkulasiDanTampilkanTotal()
+        }
+
+        btnMinusJamur.setOnClickListener {
+            if (qJamur > 0) { qJamur--; tvQtyJamur.text = "$qJamur"; kalkulasiDanTampilkanTotal() }
+        }
+        btnPlusJamur.setOnClickListener {
+            qJamur++; tvQtyJamur.text = "$qJamur"; kalkulasiDanTampilkanTotal()
+        }
+
+        btnMinusSosis.setOnClickListener {
+            if (qSosis > 0) { qSosis--; tvQtySosis.text = "$qSosis"; kalkulasiDanTampilkanTotal() }
+        }
+        btnPlusSosis.setOnClickListener {
+            qSosis++; tvQtySosis.text = "$qSosis"; kalkulasiDanTampilkanTotal()
+        }
+
+        btnMinusCoklat.setOnClickListener {
+            if (qCoklat > 0) { qCoklat--; tvQtyCoklat.text = "$qCoklat"; kalkulasiDanTampilkanTotal() }
+        }
+        btnPlusCoklat.setOnClickListener {
+            qCoklat++; tvQtyCoklat.text = "$qCoklat"; kalkulasiDanTampilkanTotal()
+        }
+
+        btnMinusSambal.setOnClickListener {
+            if (qSambal > 0) { qSambal--; tvQtySambal.text = "$qSambal"; kalkulasiDanTampilkanTotal() }
+        }
+        btnPlusSambal.setOnClickListener {
+            qSambal++; tvQtySambal.text = "$qSambal"; kalkulasiDanTampilkanTotal()
+        }
+
+        // Stepper Porsi Menu Utama
+        btnMinusPorsi.setOnClickListener {
+            if (porsiUtama > 1) {
+                porsiUtama--
+                tvQtyPorsi.text = "$porsiUtama"
+                kalkulasiDanTampilkanTotal()
+            }
+        }
+        btnPlusPorsi.setOnClickListener {
+            porsiUtama++
+            tvQtyPorsi.text = "$porsiUtama"
+            kalkulasiDanTampilkanTotal()
+        }
+
+        // Tombol Tambah ke Pesanan
+        btnTambahPesanan.setOnClickListener {
+            val listToppingItem = ArrayList<String>()
+            var extraHargaSatuan = 0
+
+            if (qMozzarella > 0) {
+                listToppingItem.add(if (qMozzarella == 1) "Keju Mozzarella" else "Keju Mozzarella ($qMozzarella)")
+                extraHargaSatuan += (qMozzarella * 15000)
+            }
+            if (qSapi > 0) {
+                listToppingItem.add(if (qSapi == 1) "Daging Sapi" else "Daging Sapi ($qSapi)")
+                extraHargaSatuan += (qSapi * 7000)
+            }
+            if (qAyam > 0) {
+                listToppingItem.add(if (qAyam == 1) "Daging Ayam" else "Daging Ayam ($qAyam)")
+                extraHargaSatuan += (qAyam * 5000)
+            }
+            if (qJamur > 0) {
+                listToppingItem.add(if (qJamur == 1) "Jamur Tiram" else "Jamur Tiram ($qJamur)")
+                extraHargaSatuan += (qJamur * 5000)
+            }
+            if (qSosis > 0) {
+                listToppingItem.add(if (qSosis == 1) "Sosis Sapi" else "Sosis Sapi ($qSosis)")
+                extraHargaSatuan += (qSosis * 5000)
+            }
+            if (qCoklat > 0) {
+                listToppingItem.add(if (qCoklat == 1) "Coklat Meses" else "Coklat Meses ($qCoklat)")
+                extraHargaSatuan += (qCoklat * 4000)
+            }
+            if (qSambal > 0) {
+                listToppingItem.add(if (qSambal == 1) "Sambal Uleg" else "Sambal Uleg ($qSambal)")
+                extraHargaSatuan += (qSambal * 4000)
+            }
+
+            // Cek apakah item dengan komposisi persis sama sudah ada di keranjang
+            val itemEksis = listKeranjang.find {
+                it.namaMenu == menu.nama && it.topping == listToppingItem
+            }
+
+            if (itemEksis != null) {
+                itemEksis.qty += porsiUtama
+            } else {
+                listKeranjang.add(
+                    KeranjangItem(
+                        namaMenu = menu.nama,
+                        hargaDasar = menu.harga,
+                        topping = listToppingItem,
+                        hargaTopping = extraHargaSatuan,
+                        qty = porsiUtama
+                    )
+                )
+            }
+
+            perbaruiFloatingCartBar()
+            Toast.makeText(
+                requireContext(),
+                "$porsiUtama x ${menu.nama} ditambahkan ke keranjang",
+                Toast.LENGTH_SHORT
+            ).show()
+            dialog.dismiss()
+        }
+
+        dialog.show()
+    }
+
+    // =========================================================================
+    // MODAL BOTTOMSHEET 2: CHECKOUT & PROSES PEMBAYARAN PESANAN
+    // =========================================================================
+    private fun tampilkanBottomSheetKeranjang() {
+        val dialog = BottomSheetDialog(requireContext())
+        val sheetView = layoutInflater.inflate(R.layout.bottom_sheet_keranjang, null)
+        dialog.setContentView(sheetView)
+
+        val tvJudul = sheetView.findViewById<TextView>(R.id.tvCheckoutJudulKeranjang)
+        val btnTutup = sheetView.findViewById<ImageView>(R.id.btnCheckoutTutup)
+        val btnKosongkan = sheetView.findViewById<ImageButton>(R.id.btnCheckoutKosongkan)
+
+        val edtNama = sheetView.findViewById<EditText>(R.id.edtCheckoutNama)
+        val edtHp = sheetView.findViewById<EditText>(R.id.edtCheckoutHp)
+
+        val containerItems = sheetView.findViewById<ViewGroup>(R.id.containerCheckoutItems)
+        val tvKosongInfo = sheetView.findViewById<TextView>(R.id.tvCheckoutKosongInfo)
+
+        val rgBayar = sheetView.findViewById<RadioGroup>(R.id.rgCheckoutBayar)
+        val btnAturJam = sheetView.findViewById<android.widget.Button>(R.id.btnCheckoutJam)
+        val tvJamInfo = sheetView.findViewById<TextView>(R.id.tvCheckoutJamInfo)
+        val edtCatatan = sheetView.findViewById<EditText>(R.id.edtCheckoutCatatan)
+
+        val tvTotalNominal = sheetView.findViewById<TextView>(R.id.tvCheckoutTotalNominal)
+        val btnProses = sheetView.findViewById<MaterialButton>(R.id.btnCheckoutProses)
+
+        tvJamInfo.text = estimasiJamAmbil
+
+        fun muatDaftarItemKeranjangModal() {
+            containerItems.removeAllViews()
+
+            if (listKeranjang.isEmpty()) {
+                tvKosongInfo.visibility = View.VISIBLE
+                tvJudul.text = "Keranjang Pesanan (0)"
+                tvTotalNominal.text = "Rp 0"
+                perbaruiFloatingCartBar()
+                return
+            }
+
+            tvKosongInfo.visibility = View.GONE
+            val totalItem = listKeranjang.sumOf { it.qty }
+            val grandTotal = listKeranjang.sumOf { it.subtotal }
+
+            tvJudul.text = "Keranjang Pesanan ($totalItem)"
+            tvTotalNominal.text = "Rp " + formatRupiah(grandTotal)
+            perbaruiFloatingCartBar()
+
+            val inflater = LayoutInflater.from(requireContext())
+
+            for ((index, item) in listKeranjang.withIndex()) {
+                val itemView = inflater.inflate(R.layout.item_keranjang, containerItems, false)
+
+                val tvNamaItem = itemView.findViewById<TextView>(R.id.tvNamaItemKeranjang)
+                val tvHargaSatuan = itemView.findViewById<TextView>(R.id.tvHargaSatuanKeranjang)
+                val tvSubtotal = itemView.findViewById<TextView>(R.id.tvSubtotalKeranjang)
+                val tvQty = itemView.findViewById<TextView>(R.id.tvQtyItemKeranjang)
+                val btnMinus = itemView.findViewById<ImageButton>(R.id.btnMinusQty)
+                val btnPlus = itemView.findViewById<ImageButton>(R.id.btnPlusQty)
+                val btnHapus = itemView.findViewById<ImageButton>(R.id.btnHapusItemKeranjang)
+
+                tvNamaItem.text = item.getDeskripsiLengkap()
+                tvHargaSatuan.text = "@ Rp ${formatRupiah(item.hargaSatuan)}"
+                tvSubtotal.text = "Rp ${formatRupiah(item.subtotal)}"
+                tvQty.text = "${item.qty}"
+
+                btnMinus.setOnClickListener {
+                    if (item.qty > 1) {
+                        item.qty--
+                    } else {
+                        listKeranjang.removeAt(index)
+                    }
+                    muatDaftarItemKeranjangModal()
+                }
+
+                btnPlus.setOnClickListener {
+                    item.qty++
+                    muatDaftarItemKeranjangModal()
+                }
+
+                btnHapus.setOnClickListener {
+                    listKeranjang.removeAt(index)
+                    muatDaftarItemKeranjangModal()
+                }
+
+                containerItems.addView(itemView)
             }
         }
 
-        if (isAdded) {
-            val adapterList = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, listMenuTampil)
-            b.lsMenu.adapter = adapterList
+        muatDaftarItemKeranjangModal()
+
+        btnTutup.setOnClickListener { dialog.dismiss() }
+
+        btnKosongkan.setOnClickListener {
+            listKeranjang.clear()
+            muatDaftarItemKeranjangModal()
+            perbaruiFloatingCartBar()
+            Toast.makeText(requireContext(), "Keranjang berhasil dikosongkan", Toast.LENGTH_SHORT).show()
+            dialog.dismiss()
         }
+
+        // Metode Pembayaran
+        rgBayar.setOnCheckedChangeListener { _, checkedId ->
+            metodeBayarTerpilih = if (checkedId == R.id.rbCheckoutQris) "QRIS" else "Tunai"
+        }
+
+        // TimePickerDialog Jam Ambil
+        btnAturJam.setOnClickListener {
+            val cal = Calendar.getInstance()
+            TimePickerDialog(
+                requireContext(),
+                { _, hourOfDay, minute ->
+                    val strH = if (hourOfDay < 10) "0$hourOfDay" else "$hourOfDay"
+                    val strM = if (minute < 10) "0$minute" else "$minute"
+                    estimasiJamAmbil = "Jam $strH:$strM"
+                    tvJamInfo.text = estimasiJamAmbil
+                },
+                cal.get(Calendar.HOUR_OF_DAY),
+                cal.get(Calendar.MINUTE),
+                true
+            ).show()
+        }
+
+        // Tombol Review & Proses Pesanan
+        btnProses.setOnClickListener {
+            val nama = edtNama.text.toString().trim()
+            val hp = edtHp.text.toString().trim()
+            val catatan = edtCatatan.text.toString().trim()
+
+            if (nama.isEmpty()) {
+                edtNama.error = "Nama pelanggan wajib diisi"
+                edtNama.requestFocus()
+                return@setOnClickListener
+            }
+
+            if (listKeranjang.isEmpty()) {
+                Toast.makeText(requireContext(), "Keranjang masih kosong!", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            val total = listKeranjang.sumOf { it.subtotal }
+            val sdf = SimpleDateFormat("yyyyMMdd-HHmmss", Locale.getDefault())
+            val idPesanan = "ORD-${sdf.format(Date())}"
+
+            // Ringkasan detail teks
+            val detailItem = listKeranjang.joinToString("\n") {
+                "${it.qty}x ${it.getDeskripsiLengkap()} - Rp ${formatRupiah(it.subtotal)}"
+            }
+
+            // Struktur items JSON untuk Firestore
+            val itemsFirestore = listKeranjang.map {
+                hashMapOf(
+                    "name" to it.namaMenu,
+                    "unitPrice" to it.hargaSatuan,
+                    "quantity" to it.qty,
+                    "subtotal" to it.subtotal,
+                    "toppings" to it.topping
+                )
+            }
+
+            val dataFirestore = hashMapOf(
+                "orderNumber" to idPesanan,
+                "customerName" to nama,
+                "customerPhone" to hp,
+                "menuItem" to detailItem,
+                "detailItem" to detailItem,
+                "items" to itemsFirestore,
+                "totalItems" to listKeranjang.sumOf { it.qty },
+                "paymentMethod" to metodeBayarTerpilih,
+                "total" to total,
+                "notes" to if (catatan.isNotEmpty()) "$catatan (Siap: $estimasiJamAmbil)" else "(Siap: $estimasiJamAmbil)",
+                "status" to "PENDING",
+                "source" to "CASHIER",
+                "branchName" to "Jenggirat Kediri",
+                "branchId" to "kediri",
+                "createdAt" to Timestamp.now()
+            )
+
+            // Simpan langsung ke Firestore
+            dbFirestore.collection("orders").document(idPesanan)
+                .set(dataFirestore)
+                .addOnSuccessListener {
+                    SoundHelper.playBell()
+                    Toast.makeText(requireContext(), "Pesanan $idPesanan berhasil diproses!", Toast.LENGTH_SHORT).show()
+
+                    // Buka OrderDetailActivity untuk menampilkan QR Code struk pesanan
+                    val intentDetail = Intent(requireContext(), OrderDetailActivity::class.java).apply {
+                        putExtra("EXTRA_ORDER_NUMBER", idPesanan)
+                        putExtra("EXTRA_CUSTOMER_NAME", nama)
+                        putExtra("EXTRA_CUSTOMER_PHONE", hp)
+                        putExtra("EXTRA_MENU_ITEM", detailItem)
+                        putExtra("EXTRA_PAYMENT_METHOD", metodeBayarTerpilih)
+                        putExtra("EXTRA_TOTAL", total)
+                        putExtra("EXTRA_STATUS", "PENDING")
+                        putExtra("EXTRA_NOTES", if (catatan.isNotEmpty()) "$catatan (Siap: $estimasiJamAmbil)" else "(Siap: $estimasiJamAmbil)")
+                    }
+                    startActivity(intentDetail)
+
+                    // Reset keranjang
+                    listKeranjang.clear()
+                    perbaruiFloatingCartBar()
+                    dialog.dismiss()
+                }
+                .addOnFailureListener { e ->
+                    Toast.makeText(requireContext(), "Gagal simpan pesanan: ${e.message}", Toast.LENGTH_LONG).show()
+                }
+        }
+
+        dialog.show()
+    }
+
+    private fun formatRupiah(nominal: Int): String {
+        return "%,d".format(nominal).replace(',', '.')
     }
 }
