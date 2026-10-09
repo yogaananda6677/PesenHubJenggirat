@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <!-- Header Toolbar -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@color/primary"
+        android:padding="12dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🗺️ Peta Lokasi Outlet &amp; GPS"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="@color/white" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="PesenHub Jenggirat (OSMdroid &amp; GPS)"
+            android:textSize="12sp"
+            android:textColor="@color/white" />
+    </LinearLayout>
+
+    <!-- Tombol Kontrol GPS & Outlet -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="@color/surface"
+        android:padding="8dp">
+
+        <Button
+            android:id="@+id/btnPusatOutlet"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="📍 Lokasi Outlet"
+            android:backgroundTint="@color/primary" />
+
+        <Button
+            android:id="@+id/btnLokasiSaya"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:text="🎯 Lokasi Saya (GPS)"
+            android:backgroundTint="#1976D2" />
+    </LinearLayout>
+
+    <!-- MapView OSMdroid (Bab 13 Modul PM Pak Benni) -->
+    <org.osmdroid.views.MapView
+        android:id="@+id/mapView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <!-- Info Box Koordinat -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@color/surface"
+        android:padding="12dp">
+
+        <TextView
+            android:id="@+id/txInfoLokasi"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Outlet: Jl. Jenggirat No. 12, Banyuwangi (-8.2192, 114.3692)"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:textColor="@color/black" />
+
+        <TextView
+            android:id="@+id/txJarakInfo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="GPS status: Siap mendeteksi koordinat perangkat"
+            android:textSize="11sp"
+            android:textColor="#757575"
+            android:layout_marginTop="2dp" />
+    </LinearLayout>
+
+</LinearLayout>

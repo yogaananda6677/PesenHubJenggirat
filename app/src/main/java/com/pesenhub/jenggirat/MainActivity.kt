@@ -43,14 +43,19 @@ class MainActivity : AppCompatActivity() {
         setSupportActionBar(b.toolbar)
         supportActionBar?.subtitle = "Kasir: ${auth.currentUser?.email}"
 
-        // Default tampilkan KasirFragment
+        // Default tampilkan DashboardFragment saat pertama kali dibuka
         if (savedInstanceState == null) {
-            gantiFragment(KasirFragment())
+            b.bottomNav.selectedItemId = R.id.nav_dashboard
+            gantiFragment(DashboardFragment())
         }
 
-        // Listener BottomNavigationView
+        // Listener BottomNavigationView (Bab VI Modul PM Pak Benni)
         b.bottomNav.setOnItemSelectedListener { item ->
             when (item.itemId) {
+                R.id.nav_dashboard -> {
+                    gantiFragment(DashboardFragment())
+                    true
+                }
                 R.id.nav_kasir -> {
                     gantiFragment(KasirFragment())
                     true
@@ -59,17 +64,17 @@ class MainActivity : AppCompatActivity() {
                     gantiFragment(AntrianFragment())
                     true
                 }
-                R.id.nav_menu -> {
-                    Toast.makeText(this, "Modul Menu Manajemen & Supabase Storage", Toast.LENGTH_SHORT).show()
-                    true
-                }
                 R.id.nav_laporan -> {
-                    Toast.makeText(this, "Modul Riwayat Transaksi (SQLite Arsip)", Toast.LENGTH_SHORT).show()
+                    gantiFragment(RiwayatFragment())
                     true
                 }
                 else -> false
             }
         }
+    }
+
+    fun navigasiKeTab(menuId: Int) {
+        b.bottomNav.selectedItemId = menuId
     }
 
     private fun gantiFragment(fragment: Fragment) {
@@ -78,9 +83,11 @@ class MainActivity : AppCompatActivity() {
             .commit()
     }
 
+    // a method to create OptionsMenu (Bab V Modul PM Pak Benni)
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.main_menu, menu)
-        return true
+        val mnuInflater = menuInflater
+        mnuInflater.inflate(R.menu.main_menu, menu)
+        return super.onCreateOptionsMenu(menu)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -89,12 +96,19 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(this, "Data Firestore tersinkron otomatis secara realtime", Toast.LENGTH_SHORT).show()
                 true
             }
+            R.id.action_upload_menu -> {
+                val intent = Intent(this, UploadMenuActivity::class.java)
+                startActivity(intent)
+                true
+            }
             R.id.action_maps -> {
-                Toast.makeText(this, "Membuka Lokasi Outlet OSMdroid (Task Rydo)", Toast.LENGTH_SHORT).show()
+                val intent = Intent(this, MapsActivity::class.java)
+                startActivity(intent)
                 true
             }
             R.id.action_qr_scan -> {
-                Toast.makeText(this, "Membuka Scan QR Ambil (Task Rydo)", Toast.LENGTH_SHORT).show()
+                val intent = Intent(this, QRScanActivity::class.java)
+                startActivity(intent)
                 true
             }
             R.id.action_logout -> {

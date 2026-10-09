@@ -1,9 +1,9 @@
 package com.pesenhub.jenggirat
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.ContextMenu
 import android.view.LayoutInflater
-import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
@@ -49,6 +49,24 @@ class AntrianFragment : Fragment() {
 
         // 1. Daftarkan ContextMenu pada ListView (Bab 05 & Bab 08 PM)
         registerForContextMenu(b.lsAntrian)
+
+        // Klik Item membuka Detail Pesanan & QR Code (Bab 10 PM)
+        b.lsAntrian.setOnItemClickListener { _, _, position, _ ->
+            if (position in listOrders.indices) {
+                val order = listOrders[position]
+                val intent = Intent(requireContext(), OrderDetailActivity::class.java).apply {
+                    putExtra("EXTRA_ORDER_NUMBER", (order["orderNumber"] ?: order["idDoc"]).toString())
+                    putExtra("EXTRA_CUSTOMER_NAME", (order["customerName"] ?: "-").toString())
+                    putExtra("EXTRA_CUSTOMER_PHONE", (order["customerPhone"] ?: "-").toString())
+                    putExtra("EXTRA_MENU_ITEM", (order["menuItem"] ?: order["detailItem"] ?: "-").toString())
+                    putExtra("EXTRA_PAYMENT_METHOD", (order["paymentMethod"] ?: "Tunai").toString())
+                    putExtra("EXTRA_TOTAL", (order["total"] as? Number)?.toInt() ?: 0)
+                    putExtra("EXTRA_STATUS", (order["status"] ?: "PENDING").toString())
+                    putExtra("EXTRA_NOTES", (order["notes"] ?: "-").toString())
+                }
+                startActivity(intent)
+            }
+        }
     }
 
     override fun onStart() {
@@ -125,28 +143,33 @@ class AntrianFragment : Fragment() {
             }
     }
 
-    // 3. PopupMenu (Checklist #12) — Klik tombol opsi (titik tiga) per pesanan
+    // 3. PopupMenu (Bab V Modul PM Pak Benni & Checklist #12) — Klik tombol titik tiga per item
     private fun tampilkanPopupMenu(order: Map<String, Any?>, view: View) {
         val docId = order["idDoc"]?.toString() ?: return
-        val orderNumber = order["orderNumber"]?.toString() ?: docId
+        val popMenu = PopupMenu(requireContext(), view)
+        popMenu.menuInflater.inflate(R.menu.menu_popup, popMenu.menu)
 
-        val popup = PopupMenu(requireContext(), view)
-        popup.menu.add(0, 1, 0, "👨‍🍳 Mulai Proses (PREPARING)")
-        popup.menu.add(0, 2, 1, "✅ Selesai (COMPLETED)")
-        popup.menu.add(0, 3, 2, "❌ Batalkan Pesanan (CANCELLED)")
-
-        popup.setOnMenuItemClickListener { item ->
+        popMenu.setOnMenuItemClickListener { item ->
             when (item.itemId) {
-                1 -> updateStatusOrder(docId, order, "PREPARING")
-                2 -> updateStatusOrder(docId, order, "COMPLETED")
-                3 -> updateStatusOrder(docId, order, "CANCELLED")
+                R.id.menu_proses -> {
+                    updateStatusOrder(docId, order, "PREPARING")
+                    true
+                }
+                R.id.menu_selesai -> {
+                    updateStatusOrder(docId, order, "COMPLETED")
+                    true
+                }
+                R.id.menu_batal -> {
+                    updateStatusOrder(docId, order, "CANCELLED")
+                    true
+                }
                 else -> false
             }
         }
-        popup.show()
+        popMenu.show()
     }
 
-    // 2. ContextMenu (Checklist #11) — Saat item ditekan lama (Long Click)
+    // 4. ContextMenu (Bab V Modul PM Pak Benni & Checklist #11) — Saat item ditekan tahan (Long Click)
     override fun onCreateContextMenu(
         menu: ContextMenu,
         v: View,
@@ -156,15 +179,15 @@ class AntrianFragment : Fragment() {
         val info = menuInfo as? AdapterView.AdapterContextMenuInfo
         val position = info?.position ?: -1
 
+        val mnuInflater = requireActivity().menuInflater
+        mnuInflater.inflate(R.menu.menu_context, menu)
+
         // 5. Kunci data pesanan yang dipilih agar tidak berubah saat realtime update
         if (position in listOrders.indices) {
             selectedOrderData = listOrders[position]
             val order = selectedOrderData ?: return
             val orderNumber = order["orderNumber"]?.toString() ?: order["idDoc"]?.toString() ?: "-"
             menu.setHeaderTitle("Pesanan #$orderNumber")
-            menu.add(0, 101, 0, "👨‍🍳 Mulai Proses (PREPARING)")
-            menu.add(0, 102, 1, "✅ Selesai (COMPLETED)")
-            menu.add(0, 103, 2, "❌ Batalkan Pesanan (CANCELLED)")
         }
     }
 
@@ -174,15 +197,23 @@ class AntrianFragment : Fragment() {
         val docId = order["idDoc"]?.toString() ?: return super.onContextItemSelected(item)
 
         val res = when (item.itemId) {
-            101 -> updateStatusOrder(docId, order, "PREPARING")
-            102 -> updateStatusOrder(docId, order, "COMPLETED")
-            103 -> updateStatusOrder(docId, order, "CANCELLED")
+            R.id.ctx_proses -> {
+                updateStatusOrder(docId, order, "PREPARING")
+                true
+            }
+            R.id.ctx_selesai -> {
+                updateStatusOrder(docId, order, "COMPLETED")
+                true
+            }
+            R.id.ctx_batal -> {
+                updateStatusOrder(docId, order, "CANCELLED")
+                true
+            }
             else -> super.onContextItemSelected(item)
         }
         selectedOrderData = null
         return res
     }
-
 
     // 4. Update Status Firestore + 7. Arsipkan ke SQLite jika COMPLETED
     private fun updateStatusOrder(docId: String, order: Map<String, Any?>, statusBaru: String): Boolean {
@@ -202,6 +233,7 @@ class AntrianFragment : Fragment() {
 
                 // 7. Jika status pesanan SELESAI (COMPLETED), simpan ke arsip riwayat SQLite (Checklist #17)
                 if (statusBaru == "COMPLETED") {
+                    SoundHelper.playSuccess()
                     arsipKeSQLite(order, docId)
                 }
             }
@@ -247,4 +279,3 @@ class AntrianFragment : Fragment() {
         }
     }
 }
-

@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Header -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@color/primary"
+            android:padding="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="📸 Manajemen Menu &amp; Supabase Storage"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@color/white" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Ambil foto via Kamera/Galeri dan simpan ke cloud"
+                android:textSize="12sp"
+                android:textColor="@color/white"
+                android:layout_marginTop="2dp" />
+        </LinearLayout>
+
+        <!-- Preview Image Box -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@color/surface"
+            android:padding="16dp"
+            android:gravity="center"
+            android:layout_marginTop="12dp">
+
+            <ImageView
+                android:id="@+id/imgPreviewFoto"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:scaleType="centerCrop"
+                android:background="#EEEEEE"
+                android:contentDescription="Preview Foto Menu" />
+
+            <!-- Tombol Kamera & Galeri (Bab 12 PM / Checklist #20 & #26) -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="12dp">
+
+                <Button
+                    android:id="@+id/btnAmbilKamera"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="📸 Buka Kamera"
+                    android:backgroundTint="@color/primary" />
+
+                <Button
+                    android:id="@+id/btnPilihGaleri"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    android:text="🖼️ Pilih Galeri"
+                    android:backgroundTint="#1976D2" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Form Detail Menu Baru -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@color/surface"
+            android:padding="16dp"
+            android:layout_marginTop="12dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Nama Menu Baru:"
+                android:textStyle="bold"
+                android:textSize="13sp"
+                android:textColor="@color/primary" />
+
+            <EditText
+                android:id="@+id/edtNamaMenu"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="misal: Terang Bulan Matcha Almond"
+                android:inputType="textCapWords"
+                android:padding="8dp"
+                android:layout_marginTop="4dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Kategori:"
+                android:textStyle="bold"
+                android:textSize="13sp"
+                android:textColor="@color/primary"
+                android:layout_marginTop="8dp" />
+
+            <Spinner
+                android:id="@+id/spKategoriMenu"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="6dp"
+                android:layout_marginTop="4dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Harga Dasar (Rp):"
+                android:textStyle="bold"
+                android:textSize="13sp"
+                android:textColor="@color/primary"
+                android:layout_marginTop="8dp" />
+
+            <EditText
+                android:id="@+id/edtHargaMenu"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="misal: 35000"
+                android:inputType="number"
+                android:padding="8dp"
+                android:layout_marginTop="4dp" />
+        </LinearLayout>
+
+        <!-- Tombol Simpan ke Supabase Storage & Firestore -->
+        <Button
+            android:id="@+id/btnSimpanMenu"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="☁️ Simpan Menu &amp; Upload Supabase"
+            android:backgroundTint="@android:color/holo_green_dark"
+            android:layout_marginTop="16dp" />
+
+        <TextView
+            android:id="@+id/txStatusUpload"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Foto akan diunggah ke Supabase Storage 'menu-images' dan data katalog tersinkron ke Cloud Firestore."
+            android:textSize="11sp"
+            android:textColor="#757575"
+            android:textAlignment="center"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="24dp" />
+
+    </LinearLayout>
+</ScrollView>

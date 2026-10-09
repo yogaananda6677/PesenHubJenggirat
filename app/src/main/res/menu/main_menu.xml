@@ -7,15 +7,19 @@
         android:title="Refresh"
         app:showAsAction="ifRoom" />
     <item
+        android:id="@+id/action_upload_menu"
+        android:title="📸 Foto Menu &amp; Supabase"
+        app:showAsAction="never" />
+    <item
         android:id="@+id/action_maps"
-        android:title="Lokasi Outlet (Peta)"
+        android:title="🗺️ Lokasi Outlet (Peta)"
         app:showAsAction="never" />
     <item
         android:id="@+id/action_qr_scan"
-        android:title="Scan QR Ambil"
+        android:title="📷 Scan QR Ambil"
         app:showAsAction="never" />
     <item
         android:id="@+id/action_logout"
-        android:title="Logout"
+        android:title="🚪 Logout"
         app:showAsAction="never" />
 </menu>
