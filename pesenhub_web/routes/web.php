@@ -21,6 +21,7 @@ Route::post('/pesan', [CustomerOrderController::class, 'store'])->name('order.st
 Route::get('/pesanan/{orderNumber}', [CustomerOrderController::class, 'track'])->name('order.track');
 Route::get('/cek-pesanan', [CustomerOrderController::class, 'checkOrdersRedirect'])->name('order.check.redirect');
 Route::post('/cek-pesanan', [CustomerOrderController::class, 'findOrder'])->name('order.find');
+Route::get('/lokasi', [CustomerOrderController::class, 'location'])->name('outlet.location');
 
 // API Polling Realtime Status Pesanan Pelanggan
 Route::get('/api/pesanan/{orderNumber}/status', [CustomerOrderController::class, 'checkStatus'])->name('order.status.check');

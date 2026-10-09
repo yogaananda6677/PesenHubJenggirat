@@ -206,4 +206,17 @@ class CustomerOrderFlowTest extends TestCase
             'status'       => 'CONFIRMED',
         ]);
     }
+
+    /**
+     * Test customer can view outlet location page with OpenStreetMap coordinates.
+     */
+    public function test_customer_can_view_outlet_location_page(): void
+    {
+        $response = $this->get(route('outlet.location'));
+        $response->assertStatus(200);
+        $response->assertSee('Peta Lokasi Outlet Jenggirat');
+        $response->assertSee('112.0116');
+        $response->assertSee('-7.8166');
+    }
 }
+

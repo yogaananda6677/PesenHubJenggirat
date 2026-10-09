@@ -34,9 +34,17 @@
 
     <!-- Search & Filter Banner -->
     <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
-        <div>
-            <h1 class="text-lg font-extrabold text-slate-900 tracking-tight">Pesan Martabak &amp; Terang Bulan</h1>
-            <p class="text-xs text-slate-500">Pesan mandiri pick-up, ambil langsung di outlet Jenggirat Kediri</p>
+        <div class="flex items-start justify-between gap-2">
+            <div>
+                <h1 class="text-lg font-extrabold text-slate-900 tracking-tight">Pesan Martabak &amp; Terang Bulan</h1>
+                <p class="text-xs text-slate-500">Pesan mandiri pick-up, ambil langsung di outlet Jenggirat Kediri</p>
+            </div>
+            <a href="{{ route('outlet.location') }}" 
+               class="text-[11px] bg-amber-50 hover:bg-amber-100 text-primary border border-amber-200 px-2.5 py-1.5 rounded-xl font-bold transition flex items-center gap-1 flex-shrink-0"
+               title="Lihat Peta Lokasi Outlet (OpenStreetMap)">
+                <span>📍</span>
+                <span>Peta Outlet</span>
+            </a>
         </div>
 
         <!-- Search Bar -->

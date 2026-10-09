@@ -190,6 +190,24 @@ class CustomerOrderController extends Controller
     }
 
     /**
+     * Halaman Peta Lokasi Outlet Jenggirat (OpenStreetMap / Leaflet).
+     */
+    public function location()
+    {
+        $outlet = [
+            'name'      => 'Jenggirat Kediri',
+            'fullName'  => 'Martabak & Terang Bulan Jenggirat Kediri',
+            'latitude'  => -7.8166,
+            'longitude' => 112.0116,
+            'address'   => 'Kediri, Jawa Timur',
+            'hours'     => '16.00 - 23.00 WIB',
+            'phone'     => '0812-3456-7890',
+        ];
+
+        return view('customer.location', compact('outlet'));
+    }
+
+    /**
      * API Status Polling untuk Realtime Update di Browser Pelanggan.
      */
     public function checkStatus(string $orderNumber)

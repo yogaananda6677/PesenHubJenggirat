@@ -107,7 +107,10 @@
                     </div>
                     <div class="flex items-center justify-between text-xs">
                         <span class="text-slate-400">Lokasi Ambil:</span>
-                        <span class="font-bold text-white">Outlet Jenggirat Kediri</span>
+                        <a href="{{ route('outlet.location') }}" class="font-bold text-amber-300 hover:text-amber-200 underline flex items-center gap-1" title="Lihat Peta Lokasi di OpenStreetMap">
+                            <span>Outlet Jenggirat Kediri</span>
+                            <span>📍</span>
+                        </a>
                     </div>
                 </div>
             </div>

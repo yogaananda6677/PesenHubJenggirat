@@ -65,6 +65,14 @@
                     $activeOrderNumber = session('last_order_number') ?? (is_array(session('customer_orders')) && count(session('customer_orders')) > 0 ? end(session('customer_orders')) : null);
                 @endphp
 
+                <!-- Tombol Peta Lokasi Outlet -->
+                <a href="{{ route('outlet.location') }}" 
+                   class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1.5 rounded-xl font-bold transition flex items-center gap-1"
+                   title="Lihat Peta Lokasi Outlet (OpenStreetMap)">
+                    <span>📍</span>
+                    <span class="hidden sm:inline">Lokasi</span>
+                </a>
+
                 <!-- Tombol Cek Pesanan Pelanggan -->
                 @if($hasActiveOrder && $activeOrderNumber)
                     <a href="{{ route('order.track', $activeOrderNumber) }}" 

@@ -163,11 +163,6 @@ class MainActivity : AppCompatActivity() {
                 tampilkanDialogUndangKasir()
                 true
             }
-            R.id.action_upload_menu -> {
-                val intent = Intent(this, UploadMenuActivity::class.java)
-                startActivity(intent)
-                true
-            }
             R.id.action_maps -> {
                 val intent = Intent(this, MapsActivity::class.java)
                 startActivity(intent)

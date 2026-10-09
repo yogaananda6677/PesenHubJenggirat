@@ -11,10 +11,6 @@
         android:title="Kelola Menu &amp; Harga"
         app:showAsAction="never" />
     <item
-        android:id="@+id/action_upload_menu"
-        android:title="Kelola Foto Menu"
-        app:showAsAction="never" />
-    <item
         android:id="@+id/action_maps"
         android:title="Peta Lokasi Outlet"
         app:showAsAction="never" />
