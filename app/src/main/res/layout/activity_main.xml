@@ -12,7 +12,9 @@
         android:layout_height="?attr/actionBarSize"
         android:background="@color/primary"
         app:titleTextColor="@color/on_primary"
-        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar" />
+        app:subtitleTextColor="@color/on_primary"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
 
     <FrameLayout
         android:id="@+id/flContainer"

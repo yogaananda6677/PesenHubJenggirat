@@ -110,8 +110,43 @@ class RegisterActivity : AppCompatActivity() {
                     }
             }
             .addOnFailureListener { e ->
-                setSedangMemuat(false)
-                Toast.makeText(this, "Gagal membuat akun admin: ${e.message}", Toast.LENGTH_LONG).show()
+                if (e is com.google.firebase.auth.FirebaseAuthUserCollisionException) {
+                    // Akun sudah dibuat di Auth (misal saat percobaan sebelum rules di-update)
+                    // Coba sign in untuk menyimpan data profil Firestore
+                    auth.signInWithEmailAndPassword(email, password)
+                        .addOnSuccessListener { result ->
+                            val uid = result.user?.uid ?: ""
+                            val adminData = hashMapOf(
+                                "uid" to uid,
+                                "nama" to nama,
+                                "email" to email,
+                                "role" to "admin",
+                                "namaOutlet" to namaOutlet,
+                                "createdAt" to Timestamp.now()
+                            )
+                            dbFirestore.collection("users").document(uid).set(adminData)
+                                .addOnSuccessListener {
+                                    simpanSessionLocal(uid, nama, email, "admin", namaOutlet)
+                                    setSedangMemuat(false)
+                                    Toast.makeText(this, "Profil Admin berhasil diperbarui!", Toast.LENGTH_SHORT).show()
+                                    val intent = Intent(this, MainActivity::class.java)
+                                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                                    startActivity(intent)
+                                    finish()
+                                }
+                                .addOnFailureListener { err ->
+                                    setSedangMemuat(false)
+                                    Toast.makeText(this, "Gagal melengkapi data admin: ${err.message}", Toast.LENGTH_SHORT).show()
+                                }
+                        }
+                        .addOnFailureListener {
+                            setSedangMemuat(false)
+                            Toast.makeText(this, "Email sudah terdaftar. Masukkan password yang sesuai atau lakukan login.", Toast.LENGTH_LONG).show()
+                        }
+                } else {
+                    setSedangMemuat(false)
+                    Toast.makeText(this, "Gagal membuat akun admin: ${e.message}", Toast.LENGTH_LONG).show()
+                }
             }
     }
 
