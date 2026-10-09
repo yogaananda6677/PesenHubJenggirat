@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\DTO\MenuDto;
 use App\Models\Menu;
-use App\Models\MenuChannelPrice;
-use App\Services\FirestoreSyncService;
+use App\Services\FirestoreService;
 use App\Services\SupabaseStorageService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -12,39 +12,26 @@ use Illuminate\Support\Str;
 class MenuManagementController extends Controller
 {
     protected SupabaseStorageService $supabaseService;
-    protected FirestoreSyncService $firestoreSync;
+    protected FirestoreService $firestore;
 
     public function __construct(
         SupabaseStorageService $supabaseService,
-        FirestoreSyncService $firestoreSync
+        FirestoreService $firestore
     ) {
         $this->supabaseService = $supabaseService;
-        $this->firestoreSync   = $firestoreSync;
+        $this->firestore       = $firestore;
     }
 
     /**
-     * Tampilkan daftar kelola menu dengan multi-channel pricing.
+     * Tampilkan daftar kelola menu dari Cloud Firestore.
      */
     public function index(Request $request)
     {
         $kategoriAktif = $request->query('kategori', 'Semua');
         $keyword = $request->query('q', '');
 
-        $query = Menu::with('channelPrices')->orderBy('category')->orderBy('name');
-
-        if ($kategoriAktif !== 'Semua') {
-            $query->where('category', $kategoriAktif);
-        }
-
-        if (!empty($keyword)) {
-            $query->where(function ($q) use ($keyword) {
-                $q->where('name', 'like', "%{$keyword}%")
-                  ->orWhere('sku', 'like', "%{$keyword}%")
-                  ->orWhere('description', 'like', "%{$keyword}%");
-            });
-        }
-
-        $menus = $query->get();
+        $rawMenus = $this->firestore->getMenus($kategoriAktif, $keyword);
+        $menus = collect($rawMenus)->map(fn($m) => new MenuDto($m));
         $channels = Menu::CHANNELS;
 
         return view('kasir.menu.index', compact('menus', 'kategoriAktif', 'keyword', 'channels'));
@@ -55,7 +42,7 @@ class MenuManagementController extends Controller
      */
     public function create()
     {
-        $menu = new Menu([
+        $menu = new MenuDto([
             'category'     => 'Martabak Telur',
             'is_available' => true,
             'base_price'   => 0,
@@ -68,13 +55,13 @@ class MenuManagementController extends Controller
     }
 
     /**
-     * Simpan menu baru beserta harga multi-channel.
+     * Simpan menu baru langsung ke Cloud Firestore.
      */
     public function store(Request $request)
     {
         $validated = $request->validate([
             'name'        => 'required|string|max:150',
-            'sku'         => 'required|string|max:50|unique:menus,sku',
+            'sku'         => 'required|string|max:50',
             'category'    => 'required|string',
             'description' => 'nullable|string',
             'base_price'  => 'required|numeric|min:0',
@@ -83,38 +70,41 @@ class MenuManagementController extends Controller
             'prices'      => 'nullable|array',
         ]);
 
-        $imageUrl = null;
+        $sku = strtoupper(trim($validated['sku']));
+
+        $imageUrl = 'default_food_icon';
         if ($request->hasFile('image')) {
             $file = $request->file('image');
-            $filename = 'menu_' . Str::slug($validated['sku']) . '_' . time() . '.' . $file->getClientOriginalExtension();
+            $filename = 'menu_' . Str::slug($sku) . '_' . time() . '.' . $file->getClientOriginalExtension();
             $uploadResult = $this->supabaseService->uploadBarcode($filename, file_get_contents($file->path()), $file->getMimeType());
             $imageUrl = $uploadResult['public_url'];
         }
 
-        $menu = Menu::create([
-            'sku'          => strtoupper(trim($validated['sku'])),
+        $channelPrices = $request->input('prices', []);
+        if (empty($channelPrices['OFFLINE'])) {
+            $channelPrices['OFFLINE'] = (int) $validated['base_price'];
+        }
+
+        $menuData = [
+            'sku'          => $sku,
             'name'         => trim($validated['name']),
             'category'     => $validated['category'],
             'description'  => $validated['description'] ?? '',
             'base_price'   => (int) $validated['base_price'],
+            'price'        => (int) $validated['base_price'],
             'hpp_amount'   => (int) ($validated['hpp_amount'] ?? 0),
             'image_url'    => $imageUrl,
+            'imageUrl'     => $imageUrl,
             'is_available' => $request->has('is_available'),
-        ]);
+            'available'    => $request->has('is_available'),
+            'prices'       => $channelPrices,
+            'channelPrices'=> $channelPrices,
+        ];
 
-        // Simpan harga multi-channel
-        $channelPrices = $request->input('prices', []);
-        if (empty($channelPrices['OFFLINE'])) {
-            $channelPrices['OFFLINE'] = $menu->base_price;
-        }
-        $menu->syncChannelPrices($channelPrices);
-
-        // Sinkronisasi ke Cloud Firestore
-        $menu->load('channelPrices');
-        $this->firestoreSync->syncMenu($menu);
+        $this->firestore->saveMenu($menuData);
 
         return redirect()->route('kasir.menu.index')
-            ->with('success', "Menu '{$menu->name}' ({$menu->sku}) berhasil ditambahkan dengan harga multi-channel!");
+            ->with('success', "Menu '{$validated['name']}' ({$sku}) berhasil disimpan di Cloud Firestore!");
     }
 
     /**
@@ -122,7 +112,12 @@ class MenuManagementController extends Controller
      */
     public function edit($id)
     {
-        $menu = Menu::with('channelPrices')->findOrFail($id);
+        $rawMenu = $this->firestore->getMenu($id);
+        if (!$rawMenu) {
+            return redirect()->route('kasir.menu.index')->with('error', "Menu '{$id}' tidak ditemukan di Cloud Firestore.");
+        }
+
+        $menu = new MenuDto($rawMenu);
         $channels = Menu::CHANNELS;
         $isEdit = true;
 
@@ -130,15 +125,18 @@ class MenuManagementController extends Controller
     }
 
     /**
-     * Perbarui data menu dan harga multi-channel.
+     * Perbarui data menu di Cloud Firestore.
      */
     public function update(Request $request, $id)
     {
-        $menu = Menu::with('channelPrices')->findOrFail($id);
+        $rawMenu = $this->firestore->getMenu($id);
+        if (!$rawMenu) {
+            return redirect()->route('kasir.menu.index')->with('error', "Menu '{$id}' tidak ditemukan di Cloud Firestore.");
+        }
 
         $validated = $request->validate([
             'name'        => 'required|string|max:150',
-            'sku'         => 'required|string|max:50|unique:menus,sku,' . $menu->id,
+            'sku'         => 'required|string|max:50',
             'category'    => 'required|string',
             'description' => 'nullable|string',
             'base_price'  => 'required|numeric|min:0',
@@ -147,7 +145,7 @@ class MenuManagementController extends Controller
             'prices'      => 'nullable|array',
         ]);
 
-        $imageUrl = $menu->image_url;
+        $imageUrl = $rawMenu['imageUrl'] ?? $rawMenu['image_url'] ?? 'default_food_icon';
         if ($request->hasFile('image')) {
             $file = $request->file('image');
             $filename = 'menu_' . Str::slug($validated['sku']) . '_' . time() . '.' . $file->getClientOriginalExtension();
@@ -155,59 +153,54 @@ class MenuManagementController extends Controller
             $imageUrl = $uploadResult['public_url'];
         }
 
-        $menu->update([
+        $channelPrices = $request->input('prices', []);
+        if (empty($channelPrices['OFFLINE'])) {
+            $channelPrices['OFFLINE'] = (int) $validated['base_price'];
+        }
+
+        $menuData = [
             'sku'          => strtoupper(trim($validated['sku'])),
             'name'         => trim($validated['name']),
             'category'     => $validated['category'],
             'description'  => $validated['description'] ?? '',
             'base_price'   => (int) $validated['base_price'],
+            'price'        => (int) $validated['base_price'],
             'hpp_amount'   => (int) ($validated['hpp_amount'] ?? 0),
             'image_url'    => $imageUrl,
+            'imageUrl'     => $imageUrl,
             'is_available' => $request->has('is_available'),
-        ]);
+            'available'    => $request->has('is_available'),
+            'prices'       => $channelPrices,
+            'channelPrices'=> $channelPrices,
+        ];
 
-        // Simpan harga multi-channel
-        $channelPrices = $request->input('prices', []);
-        if (empty($channelPrices['OFFLINE'])) {
-            $channelPrices['OFFLINE'] = $menu->base_price;
-        }
-        $menu->syncChannelPrices($channelPrices);
-
-        // Sinkronisasi ke Cloud Firestore
-        $menu->load('channelPrices');
-        $this->firestoreSync->syncMenu($menu);
+        $this->firestore->saveMenu($menuData);
 
         return redirect()->route('kasir.menu.index')
-            ->with('success', "Menu '{$menu->name}' berhasil diperbarui!");
+            ->with('success', "Menu '{$validated['name']}' berhasil diperbarui di Cloud Firestore!");
     }
 
     /**
-     * Toggle ketersediaan menu (Tersedia / Habis).
+     * Toggle ketersediaan menu (Tersedia / Habis) di Cloud Firestore.
      */
     public function toggleAvailability($id)
     {
-        $menu = Menu::with('channelPrices')->findOrFail($id);
-        $menu->is_available = !$menu->is_available;
-        $menu->save();
+        $success = $this->firestore->toggleMenuAvailability($id);
+        if ($success) {
+            return back()->with('success', "Status ketersediaan menu '{$id}' berhasil diubah di Cloud Firestore!");
+        }
 
-        // Sinkronisasi status ke Firestore
-        $this->firestoreSync->syncMenu($menu);
-
-        $statusText = $menu->is_available ? 'Tersedia' : 'Habis / Non-Aktif';
-
-        return back()->with('success', "Status menu '{$menu->name}' diubah menjadi: {$statusText}");
+        return back()->with('error', "Gagal mengubah status menu '{$id}' di Cloud Firestore.");
     }
 
     /**
-     * Hapus menu.
+     * Hapus menu dari Cloud Firestore.
      */
     public function destroy($id)
     {
-        $menu = Menu::findOrFail($id);
-        $nama = $menu->name;
-        $menu->delete();
+        $this->firestore->deleteMenu($id);
 
         return redirect()->route('kasir.menu.index')
-            ->with('success', "Menu '{$nama}' berhasil dihapus dari katalog!");
+            ->with('success', "Menu '{$id}' berhasil dihapus dari Cloud Firestore!");
     }
 }

@@ -2,152 +2,50 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Menu;
-use App\Models\Order;
-use App\Models\OrderItem;
-use App\Services\FirestoreSyncService;
+use App\DTO\OrderDto;
+use App\Services\FirestoreService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class CustomerOrderController extends Controller
 {
-    protected FirestoreSyncService $firestoreSync;
+    protected FirestoreService $firestore;
 
-    public function __construct(FirestoreSyncService $firestoreSync)
+    public function __construct(FirestoreService $firestore)
     {
-        $this->firestoreSync = $firestoreSync;
+        $this->firestore = $firestore;
     }
 
     /**
      * Tampilan Menu Pelanggan (Guest Self-Order ala Gacoan).
+     * Mengambil langsung dari Cloud Firestore collection 'menus'.
      */
     public function index()
     {
-        $dbMenus = Menu::with('channelPrices')
-            ->where('is_available', true)
-            ->orderBy('sort_order')
-            ->orderBy('id')
-            ->get();
-
+        $rawMenus = $this->firestore->getMenus();
         $katalogMenu = [];
 
-        if ($dbMenus->isNotEmpty()) {
-            foreach ($dbMenus as $m) {
-                $category = $m->category ?: 'Martabak Telur';
-                if (!isset($katalogMenu[$category])) {
-                    $katalogMenu[$category] = [];
-                }
-
-                $katalogMenu[$category][] = [
-                    'id'        => (string) $m->id,
-                    'nama'      => $m->name,
-                    'harga'     => $m->priceForChannel('CUSTOMER_WEB'),
-                    'kategori'  => $m->category,
-                    'deskripsi' => $m->description ?? '',
-                    'sku'       => $m->sku,
-                    'image_url' => $m->image_url,
-                ];
+        foreach ($rawMenus as $m) {
+            // Saring menu yang tidak tersedia (available == false)
+            if (isset($m['available']) && $m['available'] === false) {
+                continue;
             }
-        } else {
-            // Fallback default catalog jika database belum di-seed
-            $katalogMenu = [
-                'Martabak Telur' => [
-                    [
-                        'id'        => 'm1',
-                        'nama'      => 'Martabak Sosis/Jamur Biasa',
-                        'harga'     => 20000,
-                        'kategori'  => 'Martabak Telur',
-                        'deskripsi' => 'Kulit renyah gurih dengan isian telur & sosis/jamur pilihan',
-                    ],
-                    [
-                        'id'        => 'm2',
-                        'nama'      => 'Martabak Sosis/Jamur Spesial',
-                        'harga'     => 30000,
-                        'kategori'  => 'Martabak Telur',
-                        'deskripsi' => 'Porsi spesial telur lebih tebal dengan isian sosis/jamur melimpah',
-                    ],
-                    [
-                        'id'        => 'm3',
-                        'nama'      => 'Martabak Daging Ayam Biasa',
-                        'harga'     => 25000,
-                        'kategori'  => 'Martabak Telur',
-                        'deskripsi' => 'Daging ayam cincang gurih dipadu telur bebek berkualitas',
-                    ],
-                    [
-                        'id'        => 'm4',
-                        'nama'      => 'Martabak Daging Ayam Spesial',
-                        'harga'     => 35000,
-                        'kategori'  => 'Martabak Telur',
-                        'deskripsi' => 'Daging ayam spesial porsi besar dengan aroma rempah harum',
-                    ],
-                    [
-                        'id'        => 'm5',
-                        'nama'      => 'Martabak Daging Sapi Biasa',
-                        'harga'     => 30000,
-                        'kategori'  => 'Martabak Telur',
-                        'deskripsi' => 'Daging sapi cincang lezat pilihan favorit pelanggan setia',
-                    ],
-                    [
-                        'id'        => 'm6',
-                        'nama'      => 'Martabak Daging Sapi Spesial',
-                        'harga'     => 40000,
-                        'kategori'  => 'Martabak Telur',
-                        'deskripsi' => 'Daging sapi spesial berlimpah dengan bumbu racikan khas Jenggirat',
-                    ],
-                    [
-                        'id'        => 'm7',
-                        'nama'      => 'Martabak Mozarella 1 Isian',
-                        'harga'     => 50000,
-                        'kategori'  => 'Martabak Telur',
-                        'deskripsi' => 'Martabak telur gurih dibalut lelehan keju mozzarella molor nikmat',
-                    ],
-                ],
-                'Terang Bulan' => [
-                    [
-                        'id'        => 'tb1',
-                        'nama'      => 'Terang Bulan 1 Toping Biasa',
-                        'harga'     => 18000,
-                        'kategori'  => 'Terang Bulan',
-                        'deskripsi' => 'Adonan lembut bersarang mentega manis wangi dengan 1 pilihan topping',
-                    ],
-                    [
-                        'id'        => 'tb2',
-                        'nama'      => 'Terang Bulan 1 Toping Besar',
-                        'harga'     => 25000,
-                        'kategori'  => 'Terang Bulan',
-                        'deskripsi' => 'Porsi besar tebal pas dinikmati bersama keluarga tercinta',
-                    ],
-                    [
-                        'id'        => 'tb3',
-                        'nama'      => 'Terang Bulan 2 Toping Biasa',
-                        'harga'     => 23000,
-                        'kategori'  => 'Terang Bulan',
-                        'deskripsi' => 'Kombinasi 2 topping lezat (Keju + Meses Coklat / Kacang)',
-                    ],
-                    [
-                        'id'        => 'tb4',
-                        'nama'      => 'Terang Bulan Cut Pizza All In One',
-                        'harga'     => 45000,
-                        'kategori'  => 'Terang Bulan',
-                        'deskripsi' => 'Potongan pizza aneka topping warna-warni premium lezat melimpah',
-                    ],
-                ],
-                'Minuman' => [
-                    [
-                        'id'        => 'dr1',
-                        'nama'      => 'Es Teh Manis Jumbo',
-                        'harga'     => 5000,
-                        'kategori'  => 'Minuman',
-                        'deskripsi' => 'Teh melati wangi segar dingin ukuran jumbo penyejuk dahaga',
-                    ],
-                    [
-                        'id'        => 'dr2',
-                        'nama'      => 'Es Jeruk Peras',
-                        'harga'     => 7000,
-                        'kategori'  => 'Minuman',
-                        'deskripsi' => 'Jeruk peras murni kaya vitamin C nikmat menyegarkan',
-                    ],
-                ],
+
+            $cat = $m['category'] ?? 'Martabak Telur';
+            if (!isset($katalogMenu[$cat])) {
+                $katalogMenu[$cat] = [];
+            }
+
+            // Ambil harga channel CUSTOMER_WEB
+            $webPrice = (int) ($m['channelPrices']['CUSTOMER_WEB'] ?? $m['price'] ?? 0);
+
+            $katalogMenu[$cat][] = [
+                'id'        => (string) ($m['id'] ?? $m['sku'] ?? ''),
+                'nama'      => (string) ($m['name'] ?? ''),
+                'harga'     => $webPrice,
+                'kategori'  => $cat,
+                'deskripsi' => (string) ($m['description'] ?? ''),
+                'sku'       => (string) ($m['sku'] ?? $m['id'] ?? ''),
+                'image_url' => $m['imageUrl'] ?? null,
             ];
         }
 
@@ -166,6 +64,7 @@ class CustomerOrderController extends Controller
 
     /**
      * Submit Pesanan Pelanggan (Guest).
+     * Disimpan langsung ke Cloud Firestore collection 'orders'.
      */
     public function store(Request $request)
     {
@@ -184,54 +83,46 @@ class CustomerOrderController extends Controller
         }
 
         $orderNumber = 'ORD-WEB-' . date('Ymd-His') . '-' . rand(100, 999);
+        $totalPrice = 0;
+        $totalItems = 0;
+        $detailList = [];
 
-        $order = DB::transaction(function () use ($validated, $items, $orderNumber) {
-            $totalPrice = 0;
-            $totalItems = 0;
+        foreach ($items as $item) {
+            $qty = max(1, (int) ($item['qty'] ?? 1));
+            $subtotal = (int) ($item['subtotal'] ?? 0);
+            $totalPrice += $subtotal;
+            $totalItems += $qty;
 
-            foreach ($items as $item) {
-                $qty = max(1, (int) ($item['qty'] ?? 1));
-                $subtotal = (int) ($item['subtotal'] ?? 0);
-                $totalPrice += $subtotal;
-                $totalItems += $qty;
-            }
+            $toppings = !empty($item['toppings']) ? ' (' . implode(', ', $item['toppings']) . ')' : '';
+            $detailList[] = "{$qty}x {$item['nama']}{$toppings} - Rp " . number_format($subtotal, 0, ',', '.');
+        }
 
-            $order = Order::create([
-                'order_number'   => $orderNumber,
-                'customer_name'  => $validated['customer_name'],
-                'customer_phone' => $validated['customer_phone'],
-                'payment_method' => $validated['payment_method'],
-                'payment_status' => ($validated['payment_method'] === 'QRIS Langsung') ? 'PAID' : 'UNPAID',
-                'pickup_time'    => $validated['pickup_time'] ?: 'Langsung (15-20 mnt)',
-                'notes'          => $validated['notes'] ?? '',
-                'total_price'    => $totalPrice,
-                'total_items'    => $totalItems,
-                'status'         => 'PENDING',
-                'branch_name'    => 'Jenggirat Kediri',
-            ]);
+        $detailText = implode("\n", $detailList);
 
-            foreach ($items as $item) {
-                OrderItem::create([
-                    'order_id'      => $order->id,
-                    'menu_name'     => $item['nama'],
-                    'category'      => $item['kategori'] ?? 'Martabak Telur',
-                    'base_price'    => (int) ($item['hargaDasar'] ?? 0),
-                    'extra_price'   => (int) ($item['extraHarga'] ?? 0),
-                    'unit_price'    => (int) ($item['hargaSatuan'] ?? 0),
-                    'quantity'      => (int) ($item['qty'] ?? 1),
-                    'subtotal'      => (int) ($item['subtotal'] ?? 0),
-                    'toppings_json' => $item['toppings'] ?? [],
-                    'notes'         => $item['catatan'] ?? null,
-                ]);
-            }
+        $orderData = [
+            'orderNumber'   => $orderNumber,
+            'customerName'  => $validated['customer_name'],
+            'customerPhone' => $validated['customer_phone'],
+            'paymentMethod' => $validated['payment_method'],
+            'paymentStatus' => ($validated['payment_method'] === 'QRIS Langsung') ? 'PAID' : 'UNPAID',
+            'pickupTime'    => $validated['pickup_time'] ?: 'Langsung (15-20 mnt)',
+            'notes'         => $validated['notes'] ?? '',
+            'total'         => $totalPrice,
+            'totalPrice'    => $totalPrice,
+            'totalItems'    => $totalItems,
+            'status'        => 'PENDING',
+            'source'        => 'CUSTOMER_WEB',
+            'branchName'    => 'Jenggirat Kediri',
+            'branchId'      => 'kediri',
+            'menuItem'      => $detailText,
+            'detailItem'    => $detailText,
+            'items'         => $items,
+        ];
 
-            return $order;
-        });
+        // Simpan langsung ke Cloud Firestore
+        $this->firestore->createOrder($orderData);
 
-        // Sync dengan Firestore
-        $this->firestoreSync->syncOrder($order);
-
-        return redirect()->route('order.track', $order->order_number)
+        return redirect()->route('order.track', $orderNumber)
             ->with('success', 'Pesanan Anda berhasil dikirim! Menunggu konfirmasi dari kasir.');
     }
 
@@ -240,7 +131,12 @@ class CustomerOrderController extends Controller
      */
     public function track(string $orderNumber)
     {
-        $order = Order::with('items')->where('order_number', $orderNumber)->firstOrFail();
+        $rawOrder = $this->firestore->getOrder($orderNumber);
+        if (!$rawOrder) {
+            abort(404, 'Pesanan tidak ditemukan di sistem.');
+        }
+
+        $order = new OrderDto($rawOrder);
         return view('customer.status', compact('order'));
     }
 
@@ -249,19 +145,19 @@ class CustomerOrderController extends Controller
      */
     public function checkStatus(string $orderNumber)
     {
-        $order = Order::where('order_number', $orderNumber)->first();
+        $order = $this->firestore->getOrder($orderNumber);
 
         if (!$order) {
             return response()->json(['error' => 'Pesanan tidak ditemukan'], 404);
         }
 
         return response()->json([
-            'order_number'   => $order->order_number,
-            'status'         => $order->status,
-            'payment_status' => $order->payment_status,
-            'barcode_url'    => $order->barcode_url,
-            'total_price'    => $order->total_price,
-            'updated_at'     => $order->updated_at->toIso8601String(),
+            'order_number'   => $order['orderNumber'] ?? $order['id'],
+            'status'         => $order['status'] ?? 'PENDING',
+            'payment_status' => $order['paymentStatus'] ?? 'UNPAID',
+            'barcode_url'    => $order['barcodeUrl'] ?? null,
+            'total_price'    => (int) ($order['total'] ?? $order['totalPrice'] ?? 0),
+            'updated_at'     => $order['updatedAt'] ?? now()->toIso8601String(),
         ]);
     }
 }

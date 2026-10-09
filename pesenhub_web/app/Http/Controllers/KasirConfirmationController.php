@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Order;
+use App\DTO\OrderDto;
 use App\Services\BarcodeGeneratorService;
-use App\Services\FirestoreSyncService;
+use App\Services\FirestoreService;
 use App\Services\SupabaseStorageService;
 use Illuminate\Http\Request;
 
@@ -12,38 +12,31 @@ class KasirConfirmationController extends Controller
 {
     protected BarcodeGeneratorService $barcodeService;
     protected SupabaseStorageService $supabaseService;
-    protected FirestoreSyncService $firestoreSync;
+    protected FirestoreService $firestore;
 
     public function __construct(
         BarcodeGeneratorService $barcodeService,
         SupabaseStorageService $supabaseService,
-        FirestoreSyncService $firestoreSync
+        FirestoreService $firestore
     ) {
         $this->barcodeService  = $barcodeService;
         $this->supabaseService = $supabaseService;
-        $this->firestoreSync   = $firestoreSync;
+        $this->firestore       = $firestore;
     }
 
     /**
      * Dashboard Antrean Web untuk Kasir / Admin Konfirmasi.
+     * Mengambil seluruh data pesanan langsung dari Cloud Firestore.
      */
     public function index()
     {
-        $ordersPending = Order::with('items')
-            ->where('status', 'PENDING')
-            ->orderBy('created_at', 'asc')
-            ->get();
+        $rawOrders = $this->firestore->getOrders();
 
-        $ordersActive = Order::with('items')
-            ->whereIn('status', ['CONFIRMED', 'PREPARING', 'READY'])
-            ->orderBy('updated_at', 'desc')
-            ->get();
+        $allOrders = collect($rawOrders)->map(fn($o) => new OrderDto($o));
 
-        $ordersCompleted = Order::with('items')
-            ->where('status', 'COMPLETED')
-            ->orderBy('updated_at', 'desc')
-            ->limit(10)
-            ->get();
+        $ordersPending = $allOrders->filter(fn($o) => $o->status === 'PENDING')->values();
+        $ordersActive = $allOrders->filter(fn($o) => in_array($o->status, ['CONFIRMED', 'PREPARING', 'READY']))->values();
+        $ordersCompleted = $allOrders->filter(fn($o) => $o->status === 'COMPLETED')->take(10)->values();
 
         return view('kasir.antrian', compact('ordersPending', 'ordersActive', 'ordersCompleted'));
     }
@@ -52,15 +45,17 @@ class KasirConfirmationController extends Controller
      * Konfirmasi Pesanan oleh Kasir:
      * 1. Generate Barcode unik.
      * 2. Upload Barcode ke Supabase Storage.
-     * 3. Update status pesanan -> CONFIRMED & simpan barcode_url.
-     * 4. Sinkronisasi ke Cloud Firestore.
+     * 3. Update status pesanan di Cloud Firestore -> CONFIRMED & simpan barcode_url.
      */
     public function confirm(string $orderNumber)
     {
-        $order = Order::with('items')->where('order_number', $orderNumber)->firstOrFail();
+        $rawOrder = $this->firestore->getOrder($orderNumber);
+        if (!$rawOrder) {
+            return back()->with('error', "Pesanan #{$orderNumber} tidak ditemukan di Cloud Firestore.");
+        }
 
         // 1. Simpan barcode lokal
-        $localResult = $this->barcodeService->saveLocally($order->order_number);
+        $localResult = $this->barcodeService->saveLocally($orderNumber);
 
         // 2. Upload ke Supabase Storage
         $uploadResult = $this->supabaseService->uploadBarcode(
@@ -71,36 +66,33 @@ class KasirConfirmationController extends Controller
 
         $barcodeUrl = $uploadResult['public_url'];
 
-        // 3. Update Order di Database
-        $order->update([
+        // 3. Update Dokumen Pesanan di Cloud Firestore
+        $this->firestore->updateOrder($orderNumber, [
             'status'       => 'CONFIRMED',
-            'barcode_code' => $order->order_number,
-            'barcode_url'  => $barcodeUrl,
+            'barcodeCode'  => $orderNumber,
+            'barcodeUrl'   => $barcodeUrl,
         ]);
 
-        // 4. Sinkronisasi ke Cloud Firestore
-        $this->firestoreSync->syncOrder($order);
-
-        $pesan = "Pesanan #{$order->order_number} berhasil dikonfirmasi! Barcode berhasil diunggah ke {$uploadResult['provider']} dan dikirim ke pelanggan.";
+        $pesan = "Pesanan #{$orderNumber} berhasil dikonfirmasi di Cloud Firestore! Barcode tersimpan di {$uploadResult['provider']} dan otomatis tampil di layar pelanggan.";
 
         return back()->with('success', $pesan);
     }
 
     /**
-     * Tandai Pesanan Selesai / Lunas (saat diambil & discan).
+     * Tandai Pesanan Selesai / Lunas di Cloud Firestore (saat diambil & discan).
      */
     public function complete(string $orderNumber)
     {
-        $order = Order::with('items')->where('order_number', $orderNumber)->firstOrFail();
+        $rawOrder = $this->firestore->getOrder($orderNumber);
+        if (!$rawOrder) {
+            return back()->with('error', "Pesanan #{$orderNumber} tidak ditemukan di Cloud Firestore.");
+        }
 
-        $order->update([
+        $this->firestore->updateOrder($orderNumber, [
             'status'         => 'COMPLETED',
-            'payment_status' => 'PAID',
+            'paymentStatus'  => 'PAID',
         ]);
 
-        // Sinkronisasi ke Cloud Firestore
-        $this->firestoreSync->syncOrder($order);
-
-        return back()->with('success', "Pesanan #{$order->order_number} telah diselesaikan dan ditandai Lunas!");
+        return back()->with('success', "Pesanan #{$orderNumber} telah ditandai Selesai & Lunas di Cloud Firestore!");
     }
 }

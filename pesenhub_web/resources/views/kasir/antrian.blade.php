@@ -152,5 +152,39 @@
         @endif
     </div>
 
+    <!-- Section 3: Riwayat Pesanan Selesai (COMPLETED) -->
+    <div class="space-y-3 pt-3 border-t border-slate-200">
+        <h2 class="text-xs font-extrabold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+            <span>Riwayat Selesai &amp; Lunas</span>
+            <span class="bg-blue-100 text-blue-800 text-[11px] font-extrabold px-2 py-0.5 rounded-full border border-blue-200">
+                {{ $ordersCompleted->count() }}
+            </span>
+        </h2>
+
+        @if($ordersCompleted->isEmpty())
+            <div class="bg-white p-4 rounded-2xl border border-slate-200 text-center text-slate-400 text-xs">
+                Belum ada pesanan yang selesai.
+            </div>
+        @else
+            <div class="space-y-2">
+                @foreach($ordersCompleted as $order)
+                    <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between text-xs">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="font-mono font-bold text-slate-800">{{ $order->order_number }}</span>
+                                <span class="bg-blue-50 text-blue-700 text-[10px] font-bold px-2 py-0.5 rounded">Selesai &amp; Lunas</span>
+                            </div>
+                            <p class="text-slate-600 mt-0.5">{{ $order->customer_name }} • {{ $order->total_items }} item</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-extrabold text-slate-900">Rp {{ number_format($order->total_price, 0, ',', '.') }}</p>
+                            <p class="text-[10px] text-slate-400">{{ $order->updated_at->diffForHumans() }}</p>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        @endif
+    </div>
+
 </div>
 @endsection
