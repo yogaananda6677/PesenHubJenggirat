@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Header Struk -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@color/surface"
+            android:padding="16dp"
+            android:gravity="center">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="PesenHub Jenggirat"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:textColor="@color/primary" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Martabak &amp; Terang Bulan Khas Banyuwangi"
+                android:textSize="12sp"
+                android:textColor="#757575" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#E0E0E0"
+                android:layout_marginVertical="12dp" />
+
+            <!-- QR Code ImageView (Bab 10 PM) -->
+            <ImageView
+                android:id="@+id/imgQrCode"
+                android:layout_width="220dp"
+                android:layout_height="220dp"
+                android:contentDescription="QR Code Pesanan"
+                android:background="#FAFAFA"
+                android:padding="8dp" />
+
+            <TextView
+                android:id="@+id/txQrHint"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Tunjukkan QR Code ini ke kasir saat pengambilan pesanan"
+                android:textSize="11sp"
+                android:textColor="#616161"
+                android:layout_marginTop="8dp"
+                android:textAlignment="center" />
+        </LinearLayout>
+
+        <!-- Detail Pesanan -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@color/surface"
+            android:padding="16dp"
+            android:layout_marginTop="12dp">
+
+            <TextView
+                android:id="@+id/txOrderNumber"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="No. Pesanan: #ORD-000"
+                android:textStyle="bold"
+                android:textSize="16sp"
+                android:textColor="@color/black" />
+
+            <TextView
+                android:id="@+id/txCustomerName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Pelanggan: -"
+                android:textSize="14sp"
+                android:textColor="#424242"
+                android:layout_marginTop="4dp" />
+
+            <TextView
+                android:id="@+id/txCustomerPhone"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="No. HP: -"
+                android:textSize="13sp"
+                android:textColor="#757575"
+                android:layout_marginTop="2dp" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#EEEEEE"
+                android:layout_marginVertical="8dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Item Menu:"
+                android:textStyle="bold"
+                android:textSize="13sp"
+                android:textColor="@color/primary" />
+
+            <TextView
+                android:id="@+id/txMenuItem"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="-"
+                android:textSize="14sp"
+                android:textColor="@color/black"
+                android:layout_marginTop="2dp" />
+
+            <TextView
+                android:id="@+id/txNotes"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Catatan: -"
+                android:textSize="12sp"
+                android:textColor="#757575"
+                android:layout_marginTop="2dp" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#EEEEEE"
+                android:layout_marginVertical="8dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/txPaymentMethod"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Bayar: Tunai"
+                    android:textSize="13sp"
+                    android:textColor="#616161" />
+
+                <TextView
+                    android:id="@+id/txOrderStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="STATUS: PENDING"
+                    android:textStyle="bold"
+                    android:textSize="12sp"
+                    android:textColor="#D32F2F" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/txTotalPayment"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Total: Rp 0"
+                android:textStyle="bold"
+                android:textSize="18sp"
+                android:textColor="@android:color/holo_green_dark"
+                android:layout_marginTop="8dp" />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/btnKembali"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Tutup / Kembali"
+            android:backgroundTint="@color/primary"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="24dp" />
+
+    </LinearLayout>
+</ScrollView>

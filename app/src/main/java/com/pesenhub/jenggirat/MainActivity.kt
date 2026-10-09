@@ -94,12 +94,19 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(this, "Data Firestore tersinkron otomatis secara realtime", Toast.LENGTH_SHORT).show()
                 true
             }
+            R.id.action_upload_menu -> {
+                val intent = Intent(this, UploadMenuActivity::class.java)
+                startActivity(intent)
+                true
+            }
             R.id.action_maps -> {
-                Toast.makeText(this, "Membuka Lokasi Outlet OSMdroid (Task Rydo)", Toast.LENGTH_SHORT).show()
+                val intent = Intent(this, MapsActivity::class.java)
+                startActivity(intent)
                 true
             }
             R.id.action_qr_scan -> {
-                Toast.makeText(this, "Membuka Scan QR Ambil (Task Rydo)", Toast.LENGTH_SHORT).show()
+                val intent = Intent(this, QRScanActivity::class.java)
+                startActivity(intent)
                 true
             }
             R.id.action_logout -> {

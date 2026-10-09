@@ -43,6 +43,24 @@ class AntrianFragment : Fragment() {
         // 1. Daftarkan ContextMenu pada ListView (Bab 05 & Bab 08 PM)
         registerForContextMenu(b.lsAntrian)
 
+        // Klik Item membuka Detail Pesanan & QR Code (Bab 10 PM)
+        b.lsAntrian.setOnItemClickListener { _, _, position, _ ->
+            if (position in listOrders.indices) {
+                val order = listOrders[position]
+                val intent = android.content.Intent(requireContext(), OrderDetailActivity::class.java).apply {
+                    putExtra("EXTRA_ORDER_NUMBER", (order["orderNumber"] ?: order["idDoc"]).toString())
+                    putExtra("EXTRA_CUSTOMER_NAME", (order["customerName"] ?: "-").toString())
+                    putExtra("EXTRA_CUSTOMER_PHONE", (order["customerPhone"] ?: "-").toString())
+                    putExtra("EXTRA_MENU_ITEM", (order["menuItem"] ?: "-").toString())
+                    putExtra("EXTRA_PAYMENT_METHOD", (order["paymentMethod"] ?: "Tunai").toString())
+                    putExtra("EXTRA_TOTAL", (order["total"] as? Number)?.toInt() ?: 0)
+                    putExtra("EXTRA_STATUS", (order["status"] ?: "PENDING").toString())
+                    putExtra("EXTRA_NOTES", (order["notes"] ?: "-").toString())
+                }
+                startActivity(intent)
+            }
+        }
+
         // 2. Pantau Antrean Realtime dari Cloud Firestore (PML Pertemuan 03)
         pantauAntrianRealtime()
     }
@@ -144,6 +162,7 @@ class AntrianFragment : Fragment() {
 
                 // Jika status pesanan SELESAI (COMPLETED), simpan ke arsip riwayat SQLite (Checklist #17)
                 if (statusBaru == "COMPLETED") {
+                    SoundHelper.playSuccess()
                     arsipKeSQLite(orderId)
                 }
             }

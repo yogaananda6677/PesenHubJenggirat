@@ -263,6 +263,34 @@
             android:backgroundTint="#1976D2"
             android:layout_marginTop="4dp" />
 
+        <!-- Card Volley HTTP Request (Checklist #19) -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@color/surface"
+            android:padding="12dp"
+            android:layout_marginTop="12dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🌐 Kata Motivasi Outlet (Volley HTTP):"
+                android:textStyle="bold"
+                android:textSize="12sp"
+                android:textColor="@color/primary" />
+
+            <TextView
+                android:id="@+id/txKutipanVolley"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Memuat motivasi via library Volley HTTP..."
+                android:textSize="12sp"
+                android:textStyle="italic"
+                android:textColor="#424242"
+                android:layout_marginTop="4dp" />
+        </LinearLayout>
+
         <!-- Info Sinkronisasi Database -->
         <LinearLayout
             android:layout_width="match_parent"

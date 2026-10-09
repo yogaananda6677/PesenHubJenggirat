@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/background">
+
+    <!-- Header Toolbar -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@color/primary"
+        android:padding="16dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="📷 Scan QR Pengambilan Pesanan"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="@color/white" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Arahkan kamera ke QR Code pesanan pelanggan"
+            android:textSize="12sp"
+            android:textColor="@color/white"
+            android:layout_marginTop="2dp" />
+    </LinearLayout>
+
+    <!-- Barcode Scanner View (ZXing Embedded Bab 10 Modul PM) -->
+    <com.journeyapps.barcodescanner.CompoundBarcodeView
+        android:id="@+id/barcodeScannerView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <!-- Card Hasil Pindai -->
+    <LinearLayout
+        android:id="@+id/layoutHasilScan"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@color/surface"
+        android:padding="16dp"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Pesanan Ditemukan:"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:textColor="@color/primary" />
+
+        <TextView
+            android:id="@+id/txHasilOrderNumber"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="#ORD-0000"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="@color/black"
+            android:layout_marginTop="2dp" />
+
+        <TextView
+            android:id="@+id/txHasilCustomer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Pelanggan: -"
+            android:textSize="13sp"
+            android:textColor="#424242"
+            android:layout_marginTop="2dp" />
+
+        <TextView
+            android:id="@+id/txHasilItem"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Item: -"
+            android:textSize="13sp"
+            android:textColor="#616161"
+            android:layout_marginTop="2dp" />
+
+        <TextView
+            android:id="@+id/txHasilStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Status: -"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:textColor="#D32F2F"
+            android:layout_marginTop="2dp" />
+
+        <Button
+            android:id="@+id/btnVerifikasiSelesai"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="✅ Verifikasi &amp; Tandai Pesanan Selesai"
+            android:backgroundTint="@android:color/holo_green_dark"
+            android:layout_marginTop="10dp" />
+
+        <Button
+            android:id="@+id/btnScanUlang"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Scan Ulang"
+            android:backgroundTint="#757575"
+            android:layout_marginTop="4dp" />
+    </LinearLayout>
+
+</LinearLayout>

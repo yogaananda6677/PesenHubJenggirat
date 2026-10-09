@@ -84,7 +84,28 @@ class KasirFragment : Fragment() {
             }
         }
 
-        // 6. Simpan Pesanan ke Cloud Firestore sebagai Basis Data Utama
+        // 6. TimePickerDialog Estimasi Jam Ambil (Bab III Modul PM Pak Benni)
+        var estimasiJamAmbil = "Langsung (15-20 mnt)"
+        b.btnPilihJamAmbil.setOnClickListener {
+            val cal = java.util.Calendar.getInstance()
+            val jamSekarang = cal.get(java.util.Calendar.HOUR_OF_DAY)
+            val menitSekarang = cal.get(java.util.Calendar.MINUTE)
+
+            android.app.TimePickerDialog(
+                requireContext(),
+                { _, hourOfDay, minute ->
+                    val strH = if (hourOfDay < 10) "0$hourOfDay" else "$hourOfDay"
+                    val strM = if (minute < 10) "0$minute" else "$minute"
+                    estimasiJamAmbil = "$strH:$strM"
+                    b.txJamAmbilInfo.text = "Jam: $estimasiJamAmbil"
+                },
+                jamSekarang,
+                menitSekarang,
+                true
+            ).show()
+        }
+
+        // 7. Simpan Pesanan ke Cloud Firestore sebagai Basis Data Utama
         b.btnSimpanPesanan.setOnClickListener {
             val nama = b.edtNamaPelanggan.text.toString().trim()
             val hp = b.edtHpPelanggan.text.toString().trim()
@@ -117,7 +138,7 @@ class KasirFragment : Fragment() {
                 "menuItem" to detailItem,
                 "paymentMethod" to metodeBayar,
                 "total" to total,
-                "notes" to catatan,
+                "notes" to "$catatan (Siap: $estimasiJamAmbil)",
                 "status" to "PENDING",
                 "source" to "CASHIER",
                 "createdAt" to com.google.firebase.Timestamp.now()
@@ -127,7 +148,22 @@ class KasirFragment : Fragment() {
             dbFirestore.collection("orders").document(idPesanan)
                 .set(dataFirestore)
                 .addOnSuccessListener {
+                    SoundHelper.playBell()
                     Toast.makeText(requireContext(), "Pesanan $idPesanan berhasil tersimpan di Firestore!", Toast.LENGTH_SHORT).show()
+
+                    // Buka OrderDetailActivity untuk menampilkan QR Code struk pesanan (Bab 10 PM)
+                    val intentDetail = android.content.Intent(requireContext(), OrderDetailActivity::class.java).apply {
+                        putExtra("EXTRA_ORDER_NUMBER", idPesanan)
+                        putExtra("EXTRA_CUSTOMER_NAME", nama)
+                        putExtra("EXTRA_CUSTOMER_PHONE", hp)
+                        putExtra("EXTRA_MENU_ITEM", detailItem)
+                        putExtra("EXTRA_PAYMENT_METHOD", metodeBayar)
+                        putExtra("EXTRA_TOTAL", total)
+                        putExtra("EXTRA_STATUS", "PENDING")
+                        putExtra("EXTRA_NOTES", "$catatan (Siap: $estimasiJamAmbil)")
+                    }
+                    startActivity(intentDetail)
+
                     b.edtNamaPelanggan.setText("")
                     b.edtHpPelanggan.setText("")
                     b.edtCatatan.setText("")

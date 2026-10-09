@@ -190,6 +190,42 @@
         android:padding="8dp"
         android:layout_marginTop="4dp" />
 
+    <!-- TimePickerDialog Estimasi Jam Selesai / Pengambilan (Bab III Modul PM Pak Benni) -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="@color/surface"
+        android:padding="8dp"
+        android:gravity="center_vertical"
+        android:layout_marginTop="4dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Estimasi Siap: "
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/btnPilihJamAmbil"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="⏰ Atur Jam"
+            android:textSize="12sp"
+            android:backgroundTint="#1976D2"
+            android:paddingHorizontal="12dp" />
+
+        <TextView
+            android:id="@+id/txJamAmbilInfo"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:text="Langsung (15-20 mnt)"
+            android:textSize="12sp"
+            android:textColor="#424242" />
+    </LinearLayout>
+
     <Button
         android:id="@+id/btnSimpanPesanan"
         android:layout_width="match_parent"

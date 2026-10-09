@@ -51,7 +51,10 @@ class DashboardFragment : Fragment() {
         // 3. Muat Metrik dari Arsip SQLite (Pesanan Selesai & Total Omzet)
         muatMetrikDariSQLite()
 
-        // 4. Navigasi Aksi Cepat
+        // 4. Muat Kata Motivasi Outlet via Pustaka Volley (Checklist #19)
+        muatKutipanViaVolley()
+
+        // 5. Navigasi Aksi Cepat
         b.btnAksiKasir.setOnClickListener {
             (activity as? MainActivity)?.navigasiKeTab(R.id.nav_kasir)
         }
@@ -62,6 +65,32 @@ class DashboardFragment : Fragment() {
 
         b.btnAksiRiwayat.setOnClickListener {
             (activity as? MainActivity)?.navigasiKeTab(R.id.nav_laporan)
+        }
+    }
+
+    private fun muatKutipanViaVolley() {
+        try {
+            val queue = com.android.volley.toolbox.Volley.newRequestQueue(requireContext())
+            val url = "https://dummyjson.com/quotes/random"
+
+            val jsonObjectRequest = com.android.volley.toolbox.JsonObjectRequest(
+                com.android.volley.Request.Method.GET, url, null,
+                { response ->
+                    if (isAdded) {
+                        val quote = response.optString("quote", "Pelayanan ramah dan rasa otentik adalah kunci sukses outlet.")
+                        val author = response.optString("author", "PesenHub Jenggirat")
+                        b.txKutipanVolley.text = "\"$quote\" — $author"
+                    }
+                },
+                { _ ->
+                    if (isAdded) {
+                        b.txKutipanVolley.text = "\"Kelezatan martabak terbaik berawal dari adonan berkualitas dan ketelitian api.\" — Dapur Jenggirat"
+                    }
+                }
+            )
+            queue.add(jsonObjectRequest)
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 
