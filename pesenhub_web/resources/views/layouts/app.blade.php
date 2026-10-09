@@ -61,7 +61,27 @@
                 @php
                     $isCustomerActive = session('customer_name') && (session('customer_session_expires_at') > time());
                     $remainingHours = $isCustomerActive ? max(1, ceil((session('customer_session_expires_at') - time()) / 3600)) : 0;
+                    $hasActiveOrder = session('last_order_number') || !empty(session('customer_orders'));
+                    $activeOrderNumber = session('last_order_number') ?? (is_array(session('customer_orders')) && count(session('customer_orders')) > 0 ? end(session('customer_orders')) : null);
                 @endphp
+
+                <!-- Tombol Cek Pesanan Pelanggan -->
+                @if($hasActiveOrder && $activeOrderNumber)
+                    <a href="{{ route('order.track', $activeOrderNumber) }}" 
+                       class="text-xs bg-amber-500 hover:bg-amber-600 text-white px-3 py-1.5 rounded-xl font-bold transition shadow-sm flex items-center gap-1.5"
+                       title="Cek Status & Barcode Pesanan Anda">
+                        <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span>
+                        <span>Cek Pesanan</span>
+                    </a>
+                @else
+                    <a href="{{ route('order.check.redirect') }}" 
+                       class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-xl font-semibold transition flex items-center gap-1"
+                       title="Cek Status Pesanan">
+                        <span>📋</span>
+                        <span class="hidden sm:inline">Cek Pesanan</span>
+                    </a>
+                @endif
+
                 @if($isCustomerActive)
                     <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5">
                         <div class="text-left">

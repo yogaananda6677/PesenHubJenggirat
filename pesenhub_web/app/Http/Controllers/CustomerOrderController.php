@@ -59,7 +59,10 @@ class CustomerOrderController extends Controller
             ['nama' => 'Sambal Uleg Super Pedas', 'harga' => 4000],
         ];
 
-        return view('customer.menu', compact('katalogMenu', 'daftarTopping'));
+        $lastOrderNumber = session('last_order_number');
+        $customerOrders = session('customer_orders', []);
+
+        return view('customer.menu', compact('katalogMenu', 'daftarTopping', 'lastOrderNumber', 'customerOrders'));
     }
 
     /**
@@ -119,18 +122,57 @@ class CustomerOrderController extends Controller
             'items'         => $items,
         ];
 
-        // Otomatis set/refresh sesi pelanggan 5 jam saat membuat pesanan
+        // Simpan riwayat pesanan dalam sesi pelanggan aktif 5 jam
+        $customerOrders = session('customer_orders', []);
+        if (!in_array($orderNumber, $customerOrders)) {
+            $customerOrders[] = $orderNumber;
+        }
+
         session([
             'customer_name'               => $validated['customer_name'],
             'customer_phone'              => $validated['customer_phone'],
             'customer_session_expires_at' => now()->addHours(5)->timestamp,
+            'last_order_number'           => $orderNumber,
+            'customer_orders'             => $customerOrders,
         ]);
 
         // Simpan langsung ke Cloud Firestore
         $this->firestore->createOrder($orderData);
 
         return redirect()->route('order.track', $orderNumber)
-            ->with('success', 'Pesanan Anda berhasil dikirim! Menunggu konfirmasi dari kasir.');
+            ->with('success', 'Pesanan Anda berhasil dikirim! Menunggu konfirmasi dari outlet Jenggirat.');
+    }
+
+    /**
+     * Tombol "Cek Pesanan" pintar: redirect ke pesanan terakhir atau pesanan terbaru di sesi.
+     */
+    public function checkOrdersRedirect()
+    {
+        $lastOrder = session('last_order_number');
+        if ($lastOrder) {
+            return redirect()->route('order.track', $lastOrder);
+        }
+
+        $customerOrders = session('customer_orders', []);
+        if (!empty($customerOrders)) {
+            return redirect()->route('order.track', end($customerOrders));
+        }
+
+        return redirect()->route('order.menu')
+            ->with('error', 'Belum ada pesanan yang tercatat dalam sesi ini. Silakan pesan menu terlebih dahulu.');
+    }
+
+    /**
+     * Cari pesanan manual berdasarkan nomor pesanan.
+     */
+    public function findOrder(Request $request)
+    {
+        $validated = $request->validate([
+            'order_number' => 'required|string|max:50',
+        ]);
+
+        $orderNumber = trim($validated['order_number']);
+        return redirect()->route('order.track', $orderNumber);
     }
 
     /**

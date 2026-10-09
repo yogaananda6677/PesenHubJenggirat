@@ -5,11 +5,38 @@
 @section('content')
 <div class="px-4 py-4 space-y-4">
 
+    @php
+        $activeOrderNumber = $lastOrderNumber ?? (is_array($customerOrders) && count($customerOrders) > 0 ? end($customerOrders) : null);
+    @endphp
+
+    @if(!empty($activeOrderNumber))
+        <!-- Banner Pesanan Aktif Pelanggan -->
+        <div class="bg-gradient-to-r from-amber-500 via-orange-500 to-primary text-white p-4 rounded-2xl shadow-md flex items-center justify-between gap-3">
+            <div class="flex items-center gap-3 min-w-0">
+                <div class="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-xl flex-shrink-0">
+                    📋
+                </div>
+                <div class="min-w-0">
+                    <div class="flex items-center gap-2">
+                        <span class="text-[11px] text-amber-100 font-bold uppercase tracking-wider">Pesanan Aktif Anda</span>
+                        <span class="w-2 h-2 rounded-full bg-white animate-ping"></span>
+                    </div>
+                    <p class="text-sm font-extrabold text-white truncate">#{{ $activeOrderNumber }}</p>
+                </div>
+            </div>
+            <a href="{{ route('order.track', $activeOrderNumber) }}" 
+               class="bg-white hover:bg-amber-50 text-primary text-xs font-black px-4 py-2.5 rounded-xl shadow transition whitespace-nowrap flex items-center gap-1.5 flex-shrink-0">
+                <span>Cek Pesanan</span>
+                <span>→</span>
+            </a>
+        </div>
+    @endif
+
     <!-- Search & Filter Banner -->
     <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
         <div>
             <h1 class="text-lg font-extrabold text-slate-900 tracking-tight">Pesan Martabak &amp; Terang Bulan</h1>
-            <p class="text-xs text-slate-500">Pesan mandiri ala self-order, ambil langsung di kasir Jenggirat Kediri</p>
+            <p class="text-xs text-slate-500">Pesan mandiri pick-up, ambil langsung di outlet Jenggirat Kediri</p>
         </div>
 
         <!-- Search Bar -->
@@ -245,9 +272,9 @@
                     <h4 class="text-xs font-bold text-slate-900 uppercase tracking-wider">Metode Pembayaran</h4>
                     <div class="grid grid-cols-2 gap-2">
                         <label class="border border-slate-200 p-3 rounded-xl flex items-center gap-2 cursor-pointer hover:bg-slate-50 transition has-[:checked]:border-primary has-[:checked]:bg-amber-50/50">
-                            <input type="radio" name="payment_method" value="Bayar di Kasir (Saat Ambil)" checked class="text-primary focus:ring-primary">
+                            <input type="radio" name="payment_method" value="Bayar di Tempat (Saat Ambil)" checked class="text-primary focus:ring-primary">
                             <div>
-                                <p class="text-xs font-bold text-slate-800">Bayar di Kasir</p>
+                                <p class="text-xs font-bold text-slate-800">Bayar di Tempat</p>
                                 <p class="text-[10px] text-slate-500">Bayar saat ambil pesanan</p>
                             </div>
                         </label>

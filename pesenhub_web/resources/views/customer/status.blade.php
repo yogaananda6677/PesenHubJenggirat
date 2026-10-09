@@ -20,7 +20,7 @@
                     </span>
                 @elseif($order->status === 'CONFIRMED' || $order->status === 'PREPARING')
                     <span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded-full border border-emerald-200 flex items-center gap-1.5">
-                        <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Dikonfirmasi Kasir
+                        <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Pesanan Dikonfirmasi
                     </span>
                 @elseif($order->status === 'COMPLETED')
                     <span class="bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1 rounded-full border border-blue-200 flex items-center gap-1.5">
@@ -41,9 +41,9 @@
                     <div class="inline-flex w-10 h-10 rounded-full bg-amber-100 text-amber-600 items-center justify-center text-lg animate-bounce">
                         ⏳
                     </div>
-                    <h3 class="text-sm font-bold text-amber-900">Pesanan Sedang Menunggu Konfirmasi Kasir</h3>
+                    <h3 class="text-sm font-bold text-amber-900">Pesanan Sedang Menunggu Konfirmasi</h3>
                     <p class="text-xs text-amber-700 leading-relaxed max-w-sm mx-auto">
-                        Kasir di outlet Jenggirat Kediri sedang memeriksa pesanan Anda. 
+                        Outlet Jenggirat Kediri sedang memeriksa dan menyiapkan pesanan Anda. 
                         <strong>Barcode pengambilan akan otomatis muncul di layar ini begitu pesanan dikonfirmasi.</strong>
                     </p>
                     <p class="text-[11px] text-amber-600/80 pt-1">
@@ -53,7 +53,7 @@
             @else
                 <div class="bg-emerald-50/80 border border-emerald-200 rounded-xl p-3.5 text-center">
                     <p class="text-xs font-bold text-emerald-800">Pesanan Anda telah dikonfirmasi dan siap diambil!</p>
-                    <p class="text-[11px] text-emerald-600 mt-0.5">Tunjukkan Barcode di bawah ini kepada kasir saat pengambilan.</p>
+                    <p class="text-[11px] text-emerald-600 mt-0.5">Tunjukkan Barcode di bawah ini saat pengambilan pesanan di outlet.</p>
                 </div>
             @endif
         </div>
@@ -65,8 +65,8 @@
                     <span class="inline-block bg-primary text-white text-[10px] font-extrabold uppercase px-3 py-0.5 rounded-full mb-1">
                         Tiket Barcode Pengambilan
                     </span>
-                    <h2 class="text-base font-extrabold text-white">Scan Barcode di Kasir</h2>
-                    <p class="text-xs text-slate-400">Tunjukkan barcode ini ke kasir Martabak Jenggirat</p>
+                    <h2 class="text-base font-extrabold text-white">Barcode Pengambilan Pesanan</h2>
+                    <p class="text-xs text-slate-400">Tunjukkan barcode ini saat mengambil pesanan di outlet Martabak Jenggirat</p>
                 </div>
 
                 <!-- Gambar Barcode / QR Code -->
@@ -98,7 +98,7 @@
                         @if($order->payment_status === 'PAID')
                             <span class="font-bold text-emerald-400">LUNAS (QRIS)</span>
                         @else
-                            <span class="font-bold text-amber-400">Bayar di Kasir (Saat Ambil)</span>
+                            <span class="font-bold text-amber-400">Bayar di Tempat (Saat Ambil)</span>
                         @endif
                     </div>
                     <div class="flex items-center justify-between text-xs">

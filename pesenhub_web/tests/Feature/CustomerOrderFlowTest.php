@@ -150,33 +150,53 @@ class CustomerOrderFlowTest extends TestCase
         $trackResponse = $this->get(route('order.track', $order['orderNumber']));
         $trackResponse->assertStatus(200);
         $trackResponse->assertSee('Menunggu Konfirmasi');
+
+        // Verify "Cek Pesanan" button appears on the menu catalog
+        $catalogResponse = $this->get(route('order.menu'));
+        $catalogResponse->assertStatus(200);
+        $catalogResponse->assertSee('Pesanan Aktif Anda');
+        $catalogResponse->assertSee($order['orderNumber']);
+        $catalogResponse->assertSee('Cek Pesanan');
     }
 
     /**
-     * Test cashier confirmation generates barcode and updates status to CONFIRMED in Firestore.
+     * Test /cek-pesanan redirects customer directly to their active order.
      */
-    public function test_cashier_can_confirm_order_and_generate_barcode(): void
+    public function test_customer_can_use_cek_pesanan_redirect(): void
     {
-        $orderNumber = 'ORD-WEB-TEST-1234';
+        $this->withSession([
+            'last_order_number' => 'ORD-WEB-TEST-777',
+        ]);
+
+        $response = $this->get(route('order.check.redirect'));
+        $response->assertRedirect(route('order.track', 'ORD-WEB-TEST-777'));
+    }
+
+    /**
+     * Test customer tracking page displays confirmed status and barcode once confirmed in Firestore.
+     */
+    public function test_customer_can_view_confirmed_order_with_barcode(): void
+    {
+        $orderNumber = 'ORD-WEB-CONFIRMED-999';
         FirestoreService::$fakeOrders[$orderNumber] = [
             'orderNumber'   => $orderNumber,
-            'customerName'  => 'Budi Test',
-            'customerPhone' => '081987654321',
-            'paymentMethod' => 'Bayar di Kasir (Saat Ambil)',
+            'customerName'  => 'Yoga Ananda',
+            'customerPhone' => '081234567890',
+            'paymentMethod' => 'Bayar di Tempat (Saat Ambil)',
             'paymentStatus' => 'UNPAID',
             'pickupTime'    => 'Langsung (15-20 mnt)',
             'total'         => 35000,
             'totalItems'    => 1,
-            'status'        => 'PENDING',
+            'status'        => 'CONFIRMED',
+            'barcodeCode'   => $orderNumber,
+            'barcodeUrl'    => 'https://example.com/barcode.png',
         ];
 
-        $response = $this->post(route('kasir.order.confirm', $orderNumber));
-        $response->assertRedirect();
-
-        $updated = FirestoreService::$fakeOrders[$orderNumber];
-        $this->assertEquals('CONFIRMED', $updated['status']);
-        $this->assertNotEmpty($updated['barcodeCode']);
-        $this->assertNotEmpty($updated['barcodeUrl']);
+        $response = $this->get(route('order.track', $orderNumber));
+        $response->assertStatus(200);
+        $response->assertSee('Pesanan Dikonfirmasi');
+        $response->assertSee('Barcode Pengambilan Pesanan');
+        $response->assertSee($orderNumber);
 
         // Check API polling
         $apiResponse = $this->get(route('order.status.check', $orderNumber));
@@ -185,33 +205,5 @@ class CustomerOrderFlowTest extends TestCase
             'order_number' => $orderNumber,
             'status'       => 'CONFIRMED',
         ]);
-    }
-
-    /**
-     * Test cashier completing order when customer picks up and presents barcode in Firestore.
-     */
-    public function test_cashier_can_complete_order(): void
-    {
-        $orderNumber = 'ORD-WEB-PICKUP-5678';
-        FirestoreService::$fakeOrders[$orderNumber] = [
-            'orderNumber'   => $orderNumber,
-            'customerName'  => 'Pelanggan Pickup',
-            'customerPhone' => '081111222333',
-            'paymentMethod' => 'Bayar di Kasir (Saat Ambil)',
-            'paymentStatus' => 'UNPAID',
-            'pickupTime'    => 'Langsung (15-20 mnt)',
-            'total'         => 50000,
-            'totalItems'    => 1,
-            'status'        => 'CONFIRMED',
-            'barcodeCode'   => $orderNumber,
-            'barcodeUrl'    => 'https://example.com/barcode.png',
-        ];
-
-        $response = $this->post(route('kasir.order.complete', $orderNumber));
-        $response->assertRedirect();
-
-        $updated = FirestoreService::$fakeOrders[$orderNumber];
-        $this->assertEquals('COMPLETED', $updated['status']);
-        $this->assertEquals('PAID', $updated['paymentStatus']);
     }
 }

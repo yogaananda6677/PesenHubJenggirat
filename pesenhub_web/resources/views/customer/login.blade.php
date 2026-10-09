@@ -71,7 +71,7 @@
                            placeholder="Contoh: 081234567890" 
                            class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-primary focus:bg-white transition">
                 </div>
-                <p class="text-[10px] text-slate-400 mt-1">Untuk verifikasi pengambilan pesanan di kasir</p>
+                <p class="text-[10px] text-slate-400 mt-1">Untuk verifikasi pengambilan pesanan di outlet</p>
             </div>
 
             <button type="submit" 
