@@ -6,6 +6,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import android.widget.Button
+import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.google.firebase.firestore.FirebaseFirestore
@@ -28,9 +30,13 @@ class KasirFragment : Fragment() {
 
     val listKategori = arrayOf("Semua Kategori", "Martabak Telur", "Terang Bulan", "Minuman")
 
-    var menuTerpilih = "Martabak Telur Spesial"
-    var hargaDasar = 35000
+    var menuTerpilih = "Martabak Sosis/Jamur Biasa"
+    var hargaDasar = 20000
+    var qtyPilih = 1
     var metodeBayar = "Tunai"
+
+    // Keranjang Belanja (Order Cart)
+    val listKeranjang = ArrayList<KeranjangItem>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -76,7 +82,32 @@ class KasirFragment : Fragment() {
             }
         }
 
-        // 5. RadioButton Pembayaran (Bab II Modul PM Pak Benni)
+        // 5. Kontrol Kuantitas Pemilihan Menu
+        b.btnKurangQtyPilih.setOnClickListener {
+            if (qtyPilih > 1) {
+                qtyPilih--
+                b.txQtyPilih.text = "$qtyPilih"
+            }
+        }
+
+        b.btnTambahQtyPilih.setOnClickListener {
+            qtyPilih++
+            b.txQtyPilih.text = "$qtyPilih"
+        }
+
+        // 6. Tombol Tambah ke Keranjang
+        b.btnTambahKeKeranjang.setOnClickListener {
+            tambahMenuKeKeranjang()
+        }
+
+        // 7. Tombol Kosongkan Keranjang
+        b.btnKosongkanKeranjang.setOnClickListener {
+            listKeranjang.clear()
+            perbaruiTampilanKeranjang()
+            Toast.makeText(requireContext(), "Keranjang berhasil dikosongkan", Toast.LENGTH_SHORT).show()
+        }
+
+        // 8. RadioButton Pembayaran (Bab II Modul PM Pak Benni)
         b.rgBayar.setOnCheckedChangeListener { _, checkedId ->
             when (checkedId) {
                 b.rbTunai.id -> metodeBayar = "Tunai"
@@ -84,7 +115,7 @@ class KasirFragment : Fragment() {
             }
         }
 
-        // 6. TimePickerDialog Estimasi Jam Ambil (Bab III Modul PM Pak Benni)
+        // 9. TimePickerDialog Estimasi Jam Ambil (Bab III Modul PM Pak Benni)
         var estimasiJamAmbil = "Langsung (15-20 mnt)"
         b.btnPilihJamAmbil.setOnClickListener {
             val cal = java.util.Calendar.getInstance()
@@ -105,7 +136,7 @@ class KasirFragment : Fragment() {
             ).show()
         }
 
-        // 7. Simpan Pesanan ke Cloud Firestore sebagai Basis Data Utama
+        // 10. Simpan Pesanan ke Cloud Firestore sebagai Basis Data Utama
         b.btnSimpanPesanan.setOnClickListener {
             val nama = b.edtNamaPelanggan.text.toString().trim()
             val hp = b.edtHpPelanggan.text.toString().trim()
@@ -117,18 +148,29 @@ class KasirFragment : Fragment() {
                 return@setOnClickListener
             }
 
-            var total = hargaDasar
-            val topping = ArrayList<String>()
-            if (b.cbKeju.isChecked) { total += 5000; topping.add("Keju") }
-            if (b.cbCoklat.isChecked) { total += 4000; topping.add("Coklat") }
-            if (b.cbPedas.isChecked) { topping.add("Pedas Lvl 2") }
+            if (listKeranjang.isEmpty()) {
+                Toast.makeText(requireContext(), "Keranjang masih kosong! Silakan tambah menu ke keranjang terlebih dahulu.", Toast.LENGTH_LONG).show()
+                return@setOnClickListener
+            }
 
+            val total = listKeranjang.sumOf { it.subtotal }
             val sdf = SimpleDateFormat("yyyyMMdd-HHmmss", Locale.getDefault())
             val idPesanan = "ORD-${sdf.format(Date())}"
-            val detailItem = if (topping.isNotEmpty()) {
-                "$menuTerpilih (${topping.joinToString(", ")})"
-            } else {
-                menuTerpilih
+
+            // Ringkasan multi-item untuk tampilan struk QR dan antrean
+            val detailItem = listKeranjang.joinToString("\n") {
+                "${it.qty}x ${it.getDeskripsiLengkap()} - Rp ${formatRupiah(it.subtotal)}"
+            }
+
+            // Data item terstruktur untuk Firestore
+            val itemsFirestore = listKeranjang.map {
+                hashMapOf(
+                    "name" to it.namaMenu,
+                    "unitPrice" to it.hargaSatuan,
+                    "quantity" to it.qty,
+                    "subtotal" to it.subtotal,
+                    "toppings" to it.topping
+                )
             }
 
             val dataFirestore = hashMapOf(
@@ -136,6 +178,9 @@ class KasirFragment : Fragment() {
                 "customerName" to nama,
                 "customerPhone" to hp,
                 "menuItem" to detailItem,
+                "detailItem" to detailItem,
+                "items" to itemsFirestore,
+                "totalItems" to listKeranjang.sumOf { it.qty },
                 "paymentMethod" to metodeBayar,
                 "total" to total,
                 "notes" to "$catatan (Siap: $estimasiJamAmbil)",
@@ -166,6 +211,7 @@ class KasirFragment : Fragment() {
                     }
                     startActivity(intentDetail)
 
+                    // Reset form dan kosongkan keranjang
                     b.edtNamaPelanggan.setText("")
                     b.edtHpPelanggan.setText("")
                     b.edtCatatan.setText("")
@@ -173,10 +219,116 @@ class KasirFragment : Fragment() {
                     b.cbKeju.isChecked = false
                     b.cbCoklat.isChecked = false
                     b.cbPedas.isChecked = false
+                    qtyPilih = 1
+                    b.txQtyPilih.text = "1"
+                    listKeranjang.clear()
+                    perbaruiTampilanKeranjang()
                 }
                 .addOnFailureListener { e ->
                     Toast.makeText(requireContext(), "Gagal simpan ke Firestore: ${e.message}", Toast.LENGTH_LONG).show()
                 }
+        }
+
+        // Tampilan keranjang awal
+        perbaruiTampilanKeranjang()
+    }
+
+    private fun tambahMenuKeKeranjang() {
+        val topping = ArrayList<String>()
+        var hargaTopping = 0
+        if (b.cbKeju.isChecked) { hargaTopping += 5000; topping.add("Keju") }
+        if (b.cbCoklat.isChecked) { hargaTopping += 4000; topping.add("Coklat") }
+        if (b.cbPedas.isChecked) { topping.add("Pedas Lvl 2") }
+
+        // Cek apakah item dengan nama dan kombinasi topping yang sama sudah ada di keranjang
+        val itemSama = listKeranjang.find {
+            it.namaMenu == menuTerpilih && it.topping == topping
+        }
+
+        if (itemSama != null) {
+            itemSama.qty += qtyPilih
+        } else {
+            listKeranjang.add(KeranjangItem(menuTerpilih, hargaDasar, topping, hargaTopping, qtyPilih))
+        }
+
+        Toast.makeText(
+            requireContext(),
+            "$qtyPilih x $menuTerpilih ditambahkan ke keranjang",
+            Toast.LENGTH_SHORT
+        ).show()
+
+        // Reset kontrol topping dan qty
+        qtyPilih = 1
+        b.txQtyPilih.text = "1"
+        b.cbKeju.isChecked = false
+        b.cbCoklat.isChecked = false
+        b.cbPedas.isChecked = false
+
+        perbaruiTampilanKeranjang()
+    }
+
+    private fun perbaruiTampilanKeranjang() {
+        if (!isAdded) return
+
+        b.containerKeranjang.removeAllViews()
+
+        if (listKeranjang.isEmpty()) {
+            b.txKeranjangKosong.visibility = View.VISIBLE
+            b.containerKeranjang.visibility = View.GONE
+            b.layoutTotalKeranjang.visibility = View.GONE
+            b.btnKosongkanKeranjang.visibility = View.GONE
+            b.txJudulKeranjang.text = "Keranjang Pesanan (0 item)"
+        } else {
+            b.txKeranjangKosong.visibility = View.GONE
+            b.containerKeranjang.visibility = View.VISIBLE
+            b.layoutTotalKeranjang.visibility = View.VISIBLE
+            b.btnKosongkanKeranjang.visibility = View.VISIBLE
+
+            val totalItem = listKeranjang.sumOf { it.qty }
+            val totalBelanja = listKeranjang.sumOf { it.subtotal }
+
+            b.txJudulKeranjang.text = "Keranjang Pesanan ($totalItem item)"
+            b.txTotalBelanja.text = "Rp " + formatRupiah(totalBelanja)
+
+            val inflater = LayoutInflater.from(requireContext())
+
+            for ((index, item) in listKeranjang.withIndex()) {
+                val itemView = inflater.inflate(R.layout.item_keranjang, b.containerKeranjang, false)
+
+                val tvNama = itemView.findViewById<TextView>(R.id.tvNamaItemKeranjang)
+                val tvHargaSatuan = itemView.findViewById<TextView>(R.id.tvHargaSatuanKeranjang)
+                val tvSubtotal = itemView.findViewById<TextView>(R.id.tvSubtotalKeranjang)
+                val tvQty = itemView.findViewById<TextView>(R.id.tvQtyItemKeranjang)
+                val btnMinus = itemView.findViewById<Button>(R.id.btnMinusQty)
+                val btnPlus = itemView.findViewById<Button>(R.id.btnPlusQty)
+                val btnHapus = itemView.findViewById<Button>(R.id.btnHapusItemKeranjang)
+
+                tvNama.text = item.getDeskripsiLengkap()
+                tvHargaSatuan.text = "@ Rp ${formatRupiah(item.hargaSatuan)}"
+                tvSubtotal.text = "Subtotal: Rp ${formatRupiah(item.subtotal)}"
+                tvQty.text = "${item.qty}"
+
+                btnMinus.setOnClickListener {
+                    if (item.qty > 1) {
+                        item.qty--
+                    } else {
+                        listKeranjang.removeAt(index)
+                    }
+                    perbaruiTampilanKeranjang()
+                }
+
+                btnPlus.setOnClickListener {
+                    item.qty++
+                    perbaruiTampilanKeranjang()
+                }
+
+                btnHapus.setOnClickListener {
+                    listKeranjang.removeAt(index)
+                    perbaruiTampilanKeranjang()
+                }
+
+                b.containerKeranjang.addView(itemView)
+            }
         }
     }
 

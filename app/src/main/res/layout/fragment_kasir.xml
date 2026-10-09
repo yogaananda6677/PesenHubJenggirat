@@ -12,277 +12,436 @@
         android:orientation="vertical"
         android:padding="12dp">
 
-    <!-- Card 1: Informasi Pelanggan -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:background="@drawable/bg_card_minimal"
-        android:padding="12dp"
-        android:layout_marginBottom="8dp">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Data Pelanggan"
-            android:textStyle="bold"
-            android:textColor="#212529"
-            android:textSize="13sp"
-            android:layout_marginBottom="8dp" />
-
+        <!-- Card 1: Informasi Pelanggan -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <EditText
-                android:id="@+id/edtNamaPelanggan"
-                android:layout_width="0dp"
-                android:layout_height="44dp"
-                android:layout_weight="1"
-                android:hint="Nama Pelanggan"
-                android:inputType="textPersonName"
-                android:paddingHorizontal="12dp"
-                android:background="@drawable/bg_input_field"
-                android:textSize="13sp" />
-
-            <EditText
-                android:id="@+id/edtHpPelanggan"
-                android:layout_width="0dp"
-                android:layout_height="44dp"
-                android:layout_weight="1"
-                android:layout_marginStart="8dp"
-                android:hint="Nomor WhatsApp"
-                android:inputType="phone"
-                android:paddingHorizontal="12dp"
-                android:background="@drawable/bg_input_field"
-                android:textSize="13sp" />
-        </LinearLayout>
-    </LinearLayout>
-
-    <!-- Card 2: Pencarian & Pilihan Menu -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:background="@drawable/bg_card_minimal"
-        android:padding="12dp"
-        android:layout_marginBottom="8dp">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Pencarian &amp; Kategori Menu"
-            android:textStyle="bold"
-            android:textColor="#212529"
-            android:textSize="13sp"
-            android:layout_marginBottom="8dp" />
-
-        <AutoCompleteTextView
-            android:id="@+id/autoCariMenu"
-            android:layout_width="match_parent"
-            android:layout_height="44dp"
-            android:hint="Ketik nama menu martabak..."
-            android:completionThreshold="1"
-            android:inputType="text"
-            android:paddingHorizontal="12dp"
-            android:background="@drawable/bg_input_field"
-            android:textSize="13sp" />
-
-        <TextView
-            android:id="@+id/txMenuTerpilih"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Pilihan: Belum ada menu dipilih"
-            android:textSize="12sp"
-            android:textStyle="bold"
-            android:textColor="@color/primary"
-            android:layout_marginTop="6dp" />
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:layout_marginTop="8dp">
+            android:orientation="vertical"
+            android:background="@drawable/bg_card_minimal"
+            android:padding="12dp"
+            android:layout_marginBottom="8dp">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Kategori:"
-                android:textSize="12sp"
-                android:textColor="#495057"
-                android:layout_marginEnd="8dp" />
-
-            <Spinner
-                android:id="@+id/spKategori"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1" />
-        </LinearLayout>
-
-        <!-- Topping Tambahan -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="8dp">
-
-            <CheckBox
-                android:id="@+id/cbKeju"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Keju (+5rb)"
-                android:textSize="12sp"
-                android:buttonTint="@color/primary" />
-
-            <CheckBox
-                android:id="@+id/cbCoklat"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:text="Coklat (+4rb)"
-                android:textSize="12sp"
-                android:buttonTint="@color/primary" />
-
-            <CheckBox
-                android:id="@+id/cbPedas"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:text="Pedas Level 2"
-                android:textSize="12sp"
-                android:buttonTint="@color/primary" />
-        </LinearLayout>
-    </LinearLayout>
-
-    <!-- Katalog Menu (ListView yang rapi) -->
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Daftar Menu Tersedia"
-        android:textSize="12sp"
-        android:textStyle="bold"
-        android:textColor="#495057"
-        android:layout_marginBottom="4dp" />
-
-    <ListView
-        android:id="@+id/lsMenu"
-        android:layout_width="match_parent"
-        android:layout_height="140dp"
-        android:nestedScrollingEnabled="true"
-        android:background="@drawable/bg_card_minimal"
-        android:divider="#EEEEEE"
-        android:dividerHeight="1dp"
-        android:padding="4dp"
-        android:layout_marginBottom="8dp" />
-
-    <!-- Card 3: Pembayaran & Eksekusi -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:background="@drawable/bg_card_minimal"
-        android:padding="12dp">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Metode Bayar:"
-                android:textSize="12sp"
+                android:text="Data Pelanggan"
                 android:textStyle="bold"
                 android:textColor="#212529"
-                android:layout_marginEnd="12dp" />
+                android:textSize="13sp"
+                android:layout_marginBottom="8dp" />
 
-            <RadioGroup
-                android:id="@+id/rgBayar"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
 
-                <RadioButton
-                    android:id="@+id/rbTunai"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Tunai"
-                    android:textSize="12sp"
-                    android:checked="true"
-                    android:buttonTint="@color/primary" />
+                <EditText
+                    android:id="@+id/edtNamaPelanggan"
+                    android:layout_width="0dp"
+                    android:layout_height="44dp"
+                    android:layout_weight="1"
+                    android:hint="Nama Pelanggan"
+                    android:inputType="textPersonName"
+                    android:paddingHorizontal="12dp"
+                    android:background="@drawable/bg_input_field"
+                    android:textSize="13sp" />
 
-                <RadioButton
-                    android:id="@+id/rbQris"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="14dp"
-                    android:text="QRIS"
-                    android:textSize="12sp"
-                    android:buttonTint="@color/primary" />
-            </RadioGroup>
+                <EditText
+                    android:id="@+id/edtHpPelanggan"
+                    android:layout_width="0dp"
+                    android:layout_height="44dp"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    android:hint="Nomor WhatsApp"
+                    android:inputType="phone"
+                    android:paddingHorizontal="12dp"
+                    android:background="@drawable/bg_input_field"
+                    android:textSize="13sp" />
+            </LinearLayout>
         </LinearLayout>
 
-        <EditText
-            android:id="@+id/edtCatatan"
-            android:layout_width="match_parent"
-            android:layout_height="40dp"
-            android:hint="Catatan pesanan (misal: adonan garing)..."
-            android:paddingHorizontal="12dp"
-            android:background="@drawable/bg_input_field"
-            android:textSize="12sp"
-            android:layout_marginTop="8dp" />
-
+        <!-- Card 2: Pencarian & Pilihan Menu -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:layout_marginTop="8dp">
+            android:orientation="vertical"
+            android:background="@drawable/bg_card_minimal"
+            android:padding="12dp"
+            android:layout_marginBottom="8dp">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Estimasi Siap:"
+                android:text="Pencarian &amp; Kategori Menu"
+                android:textStyle="bold"
+                android:textColor="#212529"
+                android:textSize="13sp"
+                android:layout_marginBottom="8dp" />
+
+            <AutoCompleteTextView
+                android:id="@+id/autoCariMenu"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:hint="Ketik nama menu martabak..."
+                android:completionThreshold="1"
+                android:inputType="text"
+                android:paddingHorizontal="12dp"
+                android:background="@drawable/bg_input_field"
+                android:textSize="13sp" />
+
+            <TextView
+                android:id="@+id/txMenuTerpilih"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Pilihan: Belum ada menu dipilih"
                 android:textSize="12sp"
-                android:textColor="#495057" />
+                android:textStyle="bold"
+                android:textColor="@color/primary"
+                android:layout_marginTop="6dp" />
 
-            <Button
-                android:id="@+id/btnPilihJamAmbil"
-                android:layout_width="wrap_content"
-                android:layout_height="36dp"
-                android:layout_marginStart="8dp"
-                android:text="Atur Jam"
-                android:textSize="11sp"
-                android:backgroundTint="#455A64"
-                android:paddingHorizontal="12dp" />
-
-            <TextView
-                android:id="@+id/txJamAmbilInfo"
-                android:layout_width="0dp"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginStart="8dp"
-                android:text="Langsung (15-20 mnt)"
-                android:textSize="11sp"
-                android:textColor="#424242" />
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginTop="8dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Kategori:"
+                    android:textSize="12sp"
+                    android:textColor="#495057"
+                    android:layout_marginEnd="8dp" />
+
+                <Spinner
+                    android:id="@+id/spKategori"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1" />
+            </LinearLayout>
+
+            <!-- Topping Tambahan -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="8dp">
+
+                <CheckBox
+                    android:id="@+id/cbKeju"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Keju (+5rb)"
+                    android:textSize="12sp"
+                    android:buttonTint="@color/primary" />
+
+                <CheckBox
+                    android:id="@+id/cbCoklat"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:text="Coklat (+4rb)"
+                    android:textSize="12sp"
+                    android:buttonTint="@color/primary" />
+
+                <CheckBox
+                    android:id="@+id/cbPedas"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:text="Pedas Level 2"
+                    android:textSize="12sp"
+                    android:buttonTint="@color/primary" />
+            </LinearLayout>
+
+            <!-- Kontrol Kuantitas & Tombol Tambah ke Keranjang -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginTop="10dp">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <Button
+                        android:id="@+id/btnKurangQtyPilih"
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:text="-"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:textColor="#212529"
+                        android:backgroundTint="#ECEFF1"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
+                        android:padding="0dp" />
+
+                    <TextView
+                        android:id="@+id/txQtyPilih"
+                        android:layout_width="36dp"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:text="1"
+                        android:textStyle="bold"
+                        android:textColor="#212529"
+                        android:textSize="14sp" />
+
+                    <Button
+                        android:id="@+id/btnTambahQtyPilih"
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:text="+"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/white"
+                        android:backgroundTint="@color/primary"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
+                        android:padding="0dp" />
+                </LinearLayout>
+
+                <Button
+                    android:id="@+id/btnTambahKeKeranjang"
+                    android:layout_width="0dp"
+                    android:layout_height="44dp"
+                    android:layout_weight="1"
+                    android:layout_marginStart="12dp"
+                    android:text="+ Tambah ke Keranjang"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/primary"
+                    android:backgroundTint="#FFF3E0"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:paddingHorizontal="8dp" />
+            </LinearLayout>
+
         </LinearLayout>
 
-        <Button
-            android:id="@+id/btnSimpanPesanan"
+        <!-- Card 3: Katalog Menu (ListView yang rapi) -->
+        <TextView
             android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:text="Proses &amp; Simpan Pesanan"
-            android:textSize="14sp"
+            android:layout_height="wrap_content"
+            android:text="Daftar Menu Tersedia (Klik untuk memilih)"
+            android:textSize="12sp"
             android:textStyle="bold"
-            android:textColor="@color/white"
-            android:backgroundTint="@color/primary"
-            android:layout_marginTop="10dp" />
+            android:textColor="#495057"
+            android:layout_marginBottom="4dp" />
 
-    </LinearLayout>
+        <ListView
+            android:id="@+id/lsMenu"
+            android:layout_width="match_parent"
+            android:layout_height="140dp"
+            android:nestedScrollingEnabled="true"
+            android:background="@drawable/bg_card_minimal"
+            android:divider="#EEEEEE"
+            android:dividerHeight="1dp"
+            android:padding="4dp"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Card 4: Keranjang Pesanan -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/bg_card_minimal"
+            android:padding="12dp"
+            android:layout_marginBottom="8dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="8dp">
+
+                <TextView
+                    android:id="@+id/txJudulKeranjang"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Keranjang Pesanan (0 item)"
+                    android:textStyle="bold"
+                    android:textColor="#212529"
+                    android:textSize="13sp" />
+
+                <Button
+                    android:id="@+id/btnKosongkanKeranjang"
+                    android:layout_width="wrap_content"
+                    android:layout_height="30dp"
+                    android:text="Kosongkan"
+                    android:textSize="10sp"
+                    android:textColor="#D32F2F"
+                    android:backgroundTint="#FFEBEE"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:paddingHorizontal="8dp"
+                    android:visibility="gone" />
+            </LinearLayout>
+
+            <!-- Pesan Keranjang Kosong -->
+            <TextView
+                android:id="@+id/txKeranjangKosong"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Keranjang masih kosong. Pilih menu di atas lalu klik Tambah ke Keranjang."
+                android:textSize="12sp"
+                android:textColor="#757575"
+                android:paddingVertical="12dp"
+                android:gravity="center" />
+
+            <!-- Container Item Keranjang Dinamis -->
+            <LinearLayout
+                android:id="@+id/containerKeranjang"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone" />
+
+            <!-- Ringkasan Total Belanja -->
+            <LinearLayout
+                android:id="@+id/layoutTotalKeranjang"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginTop="6dp"
+                android:paddingTop="6dp"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Total Belanja:"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:textColor="#212529" />
+
+                <TextView
+                    android:id="@+id/txTotalBelanja"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Rp 0"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/primary" />
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- Card 5: Pembayaran & Eksekusi -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/bg_card_minimal"
+            android:padding="12dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Metode Bayar:"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:textColor="#212529"
+                    android:layout_marginEnd="12dp" />
+
+                <RadioGroup
+                    android:id="@+id/rgBayar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <RadioButton
+                        android:id="@+id/rbTunai"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Tunai"
+                        android:textSize="12sp"
+                        android:checked="true"
+                        android:buttonTint="@color/primary" />
+
+                    <RadioButton
+                        android:id="@+id/rbQris"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="14dp"
+                        android:text="QRIS"
+                        android:textSize="12sp"
+                        android:buttonTint="@color/primary" />
+                </RadioGroup>
+            </LinearLayout>
+
+            <EditText
+                android:id="@+id/edtCatatan"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:hint="Catatan pesanan (misal: adonan garing)..."
+                android:paddingHorizontal="12dp"
+                android:background="@drawable/bg_input_field"
+                android:textSize="12sp"
+                android:layout_marginTop="8dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginTop="8dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Estimasi Siap:"
+                    android:textSize="12sp"
+                    android:textColor="#495057" />
+
+                <Button
+                    android:id="@+id/btnPilihJamAmbil"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:layout_marginStart="8dp"
+                    android:text="Atur Jam"
+                    android:textSize="11sp"
+                    android:backgroundTint="#455A64"
+                    android:paddingHorizontal="12dp" />
+
+                <TextView
+                    android:id="@+id/txJamAmbilInfo"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    android:text="Langsung (15-20 mnt)"
+                    android:textSize="11sp"
+                    android:textColor="#424242" />
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/btnSimpanPesanan"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:text="Proses &amp; Simpan Pesanan"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="@color/white"
+                android:backgroundTint="@color/primary"
+                android:layout_marginTop="10dp" />
+
+        </LinearLayout>
 
     </LinearLayout>
 
