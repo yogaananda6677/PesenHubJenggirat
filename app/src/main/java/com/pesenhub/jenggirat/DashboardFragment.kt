@@ -45,10 +45,12 @@ class DashboardFragment : Fragment() {
             b.txKasirEmail.text = userEmail
             b.txRoleBadge.text = "ADMIN OUTLET"
             b.btnUndangKasir.visibility = View.VISIBLE
+            b.btnKelolaMenu.visibility = View.VISIBLE
         } else {
             b.txKasirEmail.text = userEmail
             b.txRoleBadge.text = "KASIR OUTLET"
             b.btnUndangKasir.visibility = View.GONE
+            b.btnKelolaMenu.visibility = View.GONE
         }
 
         val sdf = SimpleDateFormat("EEEE, dd MMMM yyyy", Locale("id", "ID"))
@@ -78,6 +80,11 @@ class DashboardFragment : Fragment() {
 
         b.btnUndangKasir.setOnClickListener {
             (activity as? MainActivity)?.tampilkanDialogUndangKasir()
+        }
+
+        b.btnKelolaMenu.setOnClickListener {
+            val intent = android.content.Intent(requireContext(), KelolaMenuActivity::class.java)
+            startActivity(intent)
         }
     }
 

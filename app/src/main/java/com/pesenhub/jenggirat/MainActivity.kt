@@ -138,9 +138,12 @@ class MainActivity : AppCompatActivity() {
         val mnuInflater = menuInflater
         mnuInflater.inflate(R.menu.main_menu, menu)
 
-        // Hanya tampilkan opsi 'Undang Kasir Baru' jika pengguna adalah Admin
+        // Hanya tampilkan opsi 'Undang Kasir Baru' dan 'Kelola Menu' jika pengguna adalah Admin
         val itemUndang = menu?.findItem(R.id.action_invite_kasir)
         itemUndang?.isVisible = (userRole == "admin")
+
+        val itemKelolaMenu = menu?.findItem(R.id.action_kelola_menu)
+        itemKelolaMenu?.isVisible = (userRole == "admin")
 
         return super.onCreateOptionsMenu(menu)
     }
@@ -149,6 +152,11 @@ class MainActivity : AppCompatActivity() {
         return when (item.itemId) {
             R.id.action_refresh -> {
                 Toast.makeText(this, "Data Firestore tersinkron otomatis secara realtime", Toast.LENGTH_SHORT).show()
+                true
+            }
+            R.id.action_kelola_menu -> {
+                val intent = Intent(this, KelolaMenuActivity::class.java)
+                startActivity(intent)
                 true
             }
             R.id.action_invite_kasir -> {

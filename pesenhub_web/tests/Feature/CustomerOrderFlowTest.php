@@ -55,6 +55,44 @@ class CustomerOrderFlowTest extends TestCase
     }
 
     /**
+     * Test customer can login with name and phone number, creating 5-hour session.
+     */
+    public function test_customer_can_login_with_name_and_phone(): void
+    {
+        $response = $this->post(route('customer.login.submit'), [
+            'customer_name'  => 'Yoga Ananda',
+            'customer_phone' => '081234567890',
+        ]);
+
+        $response->assertRedirect(route('order.menu'));
+        $this->assertEquals('Yoga Ananda', session('customer_name'));
+        $this->assertEquals('081234567890', session('customer_phone'));
+        $this->assertGreaterThan(time() + (4 * 3600), session('customer_session_expires_at'));
+        $this->assertLessThanOrEqual(time() + (5 * 3600), session('customer_session_expires_at'));
+
+        // Check catalog view displays customer name
+        $menuRes = $this->get(route('order.menu'));
+        $menuRes->assertSee('Yoga Ananda');
+    }
+
+    /**
+     * Test customer can logout / end guest session.
+     */
+    public function test_customer_can_logout(): void
+    {
+        $this->withSession([
+            'customer_name'               => 'Yoga Ananda',
+            'customer_phone'              => '081234567890',
+            'customer_session_expires_at' => time() + 3600,
+        ]);
+
+        $response = $this->post(route('customer.logout'));
+        $response->assertRedirect(route('order.menu'));
+        $this->assertNull(session('customer_name'));
+        $this->assertNull(session('customer_phone'));
+    }
+
+    /**
      * Test menu catalog is accessible without login (guest) from Cloud Firestore.
      */
     public function test_customer_can_view_menu_catalog_as_guest(): void

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CustomerAuthController;
 use App\Http\Controllers\CustomerOrderController;
 use App\Http\Controllers\KasirConfirmationController;
 use App\Http\Controllers\MenuManagementController;
@@ -7,11 +8,16 @@ use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
-| Web Routes - PesenHub Jenggirat Web Ordering & POS
+| Web Routes - PesenHub Jenggirat Web Ordering (Khusus Pelanggan)
 |--------------------------------------------------------------------------
 */
 
-// Pelanggan: Guest Self-Order ala Gacoan (Tanpa Kredensial)
+// Sesi Pelanggan (Masuk Nama & No HP, Expired 5 Jam)
+Route::get('/masuk', [CustomerAuthController::class, 'showLogin'])->name('customer.login');
+Route::post('/masuk', [CustomerAuthController::class, 'login'])->name('customer.login.submit');
+Route::post('/keluar', [CustomerAuthController::class, 'logout'])->name('customer.logout');
+
+// Pelanggan: Katalog Menu & Pemesanan Mandiri
 Route::get('/', [CustomerOrderController::class, 'index'])->name('order.menu');
 Route::post('/pesan', [CustomerOrderController::class, 'store'])->name('order.store');
 Route::get('/pesanan/{orderNumber}', [CustomerOrderController::class, 'track'])->name('order.track');

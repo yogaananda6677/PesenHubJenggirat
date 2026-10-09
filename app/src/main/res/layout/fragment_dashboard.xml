@@ -357,6 +357,21 @@
             android:visibility="gone"
             android:layout_marginTop="8dp" />
 
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnKelolaMenu"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="Kelola Menu &amp; Harga Multi-Channel"
+            android:textColor="@color/primary"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            app:strokeColor="@color/primary"
+            app:strokeWidth="1.5dp"
+            app:cornerRadius="8dp"
+            android:visibility="gone"
+            android:layout_marginTop="8dp" />
+
         <!-- Card Inspirasi Hari Ini (Volley) -->
         <LinearLayout
             android:layout_width="match_parent"

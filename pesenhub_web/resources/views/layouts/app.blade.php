@@ -58,12 +58,32 @@
                 </div>
             </a>
             <div class="flex items-center gap-2">
-                <a href="{{ route('kasir.menu.index') }}" class="text-xs bg-amber-50 hover:bg-amber-100 text-amber-900 px-3 py-1.5 rounded-lg font-semibold transition border border-amber-200">
-                    Kelola Menu
-                </a>
-                <a href="{{ route('kasir.antrian') }}" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg font-semibold transition border border-slate-200">
-                    Panel Kasir
-                </a>
+                @php
+                    $isCustomerActive = session('customer_name') && (session('customer_session_expires_at') > time());
+                    $remainingHours = $isCustomerActive ? max(1, ceil((session('customer_session_expires_at') - time()) / 3600)) : 0;
+                @endphp
+                @if($isCustomerActive)
+                    <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5">
+                        <div class="text-left">
+                            <p class="text-[11px] font-bold text-slate-800 leading-tight truncate max-w-[120px] sm:max-w-[160px]">
+                                {{ session('customer_name') }}
+                            </p>
+                            <p class="text-[9px] text-amber-600 font-semibold leading-tight">
+                                Sesi {{ $remainingHours }} jam
+                            </p>
+                        </div>
+                        <form action="{{ route('customer.logout') }}" method="POST" class="inline m-0">
+                            @csrf
+                            <button type="submit" title="Ganti Identitas / Keluar" class="text-[10px] text-slate-400 hover:text-rose-600 font-bold p-1 rounded hover:bg-slate-100">
+                                ✕
+                            </button>
+                        </form>
+                    </div>
+                @else
+                    <a href="{{ route('customer.login') }}" class="text-xs bg-primary hover:bg-primary-dark text-white px-3.5 py-1.5 rounded-xl font-bold transition shadow-sm flex items-center gap-1.5">
+                        <span>👤</span> <span>Masuk</span>
+                    </a>
+                @endif
             </div>
         </div>
     </header>

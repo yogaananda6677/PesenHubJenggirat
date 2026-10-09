@@ -37,6 +37,8 @@
         <activity android:name=".MapsActivity" android:exported="false" />
         <activity android:name=".QRScanActivity" android:exported="false" />
         <activity android:name=".UploadMenuActivity" android:exported="false" />
+        <activity android:name=".KelolaMenuActivity" android:exported="false" />
+        <activity android:name=".FormMenuActivity" android:exported="false" />
 
         <service
             android:name=".PesenHubFCMService"

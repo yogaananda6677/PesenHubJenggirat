@@ -119,6 +119,13 @@ class CustomerOrderController extends Controller
             'items'         => $items,
         ];
 
+        // Otomatis set/refresh sesi pelanggan 5 jam saat membuat pesanan
+        session([
+            'customer_name'               => $validated['customer_name'],
+            'customer_phone'              => $validated['customer_phone'],
+            'customer_session_expires_at' => now()->addHours(5)->timestamp,
+        ]);
+
         // Simpan langsung ke Cloud Firestore
         $this->firestore->createOrder($orderData);
 
