@@ -8,13 +8,17 @@ import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.ImageButton
 import android.widget.TextView
-import androidx.appcompat.widget.PopupMenu
 
 class AntrianAdapter(
     private val context: Context,
-    private val listOrder: List<Map<String, Any?>>,
-    private val onMenuClick: (orderId: String, view: View) -> Unit
+    private var listOrder: List<Map<String, Any?>>,
+    private val onMenuClick: (order: Map<String, Any?>, view: View) -> Unit
 ) : BaseAdapter() {
+
+    fun updateData(newList: List<Map<String, Any?>>) {
+        this.listOrder = newList
+        notifyDataSetChanged()
+    }
 
     override fun getCount(): Int = listOrder.size
 
@@ -26,51 +30,58 @@ class AntrianAdapter(
         val view = convertView ?: LayoutInflater.from(context).inflate(R.layout.item_antrian, parent, false)
         val data = listOrder[position]
 
-        val txOrderNumber = view.findViewById<TextView>(R.id.txOrderNumber)
-        val txCustomerName = view.findViewById<TextView>(R.id.txCustomerName)
-        val txMenuDetail = view.findViewById<TextView>(R.id.txMenuDetail)
-        val txStatus = view.findViewById<TextView>(R.id.txStatus)
-        val txSource = view.findViewById<TextView>(R.id.txSource)
+        val tvOrderNumber = view.findViewById<TextView>(R.id.tvOrderNumber)
+        val tvCustomerName = view.findViewById<TextView>(R.id.tvCustomerName)
+        val tvMenuDetail = view.findViewById<TextView>(R.id.tvMenuDetail)
+        val tvStatus = view.findViewById<TextView>(R.id.tvStatus)
+        val tvSource = view.findViewById<TextView>(R.id.tvSource)
         val btnOpsi = view.findViewById<ImageButton>(R.id.btnOpsi)
 
-        val id = data["orderNumber"]?.toString() ?: "-"
+        val docId = data["idDoc"]?.toString() ?: ""
+        val id = data["orderNumber"]?.toString() ?: docId
         val nama = data["customerName"]?.toString() ?: "Pelanggan"
-        val menu = data["menuItem"]?.toString() ?: "-"
+        val menu = (data["menuItem"] ?: data["detailItem"])?.toString() ?: "-"
         val status = data["status"]?.toString() ?: "PENDING"
         val source = data["source"]?.toString() ?: "CASHIER"
 
-        txOrderNumber.text = "#$id"
-        txCustomerName.text = nama
-        txMenuDetail.text = menu
-        txSource.text = "Sumber: $source"
+        tvOrderNumber.text = "#$id"
+        tvCustomerName.text = nama
+        tvMenuDetail.text = menu
+        tvSource.text = "Sumber: $source"
 
         when (status) {
             "PENDING" -> {
-                txStatus.text = "MASUK"
-                txStatus.setBackgroundColor(Color.parseColor("#FFE082")) // Kuning
-                txStatus.setTextColor(Color.parseColor("#E65100"))
+                tvStatus.text = "MASUK"
+                tvStatus.setBackgroundColor(Color.parseColor("#FFE082")) // Kuning
+                tvStatus.setTextColor(Color.parseColor("#E65100"))
             }
             "PREPARING" -> {
-                txStatus.text = "DIPROSES"
-                txStatus.setBackgroundColor(Color.parseColor("#BBDEFB")) // Biru
-                txStatus.setTextColor(Color.parseColor("#0D47A1"))
+                tvStatus.text = "DIPROSES"
+                tvStatus.setBackgroundColor(Color.parseColor("#BBDEFB")) // Biru
+                tvStatus.setTextColor(Color.parseColor("#0D47A1"))
             }
             "COMPLETED" -> {
-                txStatus.text = "SELESAI"
-                txStatus.setBackgroundColor(Color.parseColor("#C8E6C9")) // Hijau
-                txStatus.setTextColor(Color.parseColor("#1B5E20"))
+                tvStatus.text = "SELESAI"
+                tvStatus.setBackgroundColor(Color.parseColor("#C8E6C9")) // Hijau
+                tvStatus.setTextColor(Color.parseColor("#1B5E20"))
+            }
+            "CANCELLED" -> {
+                tvStatus.text = "DIBATALKAN"
+                tvStatus.setBackgroundColor(Color.parseColor("#FFCDD2")) // Merah muda
+                tvStatus.setTextColor(Color.parseColor("#B71C1C"))
             }
             else -> {
-                txStatus.text = status
-                txStatus.setBackgroundColor(Color.LTGRAY)
-                txStatus.setTextColor(Color.BLACK)
+                tvStatus.text = status
+                tvStatus.setBackgroundColor(Color.LTGRAY)
+                tvStatus.setTextColor(Color.BLACK)
             }
         }
 
         btnOpsi.setOnClickListener {
-            onMenuClick(id, it)
+            onMenuClick(data, it)
         }
 
         return view
     }
 }
+

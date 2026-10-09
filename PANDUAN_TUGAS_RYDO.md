@@ -1,4 +1,5 @@
 # BRIEF & PANDUAN PENGERJAAN TUGAS — RYDO
+
 **Proyek:** PesenHub Jenggirat (Android Kotlin Native)  
 **Repository GitHub:** https://github.com/yogaananda6677/PesenHubJenggirat  
 **Branch Utama:** `main` (Silakan buat branch per fitur, misal: `feat/antrian-kds`, `feat/auth`, dll)

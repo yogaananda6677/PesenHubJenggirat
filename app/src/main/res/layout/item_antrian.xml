@@ -19,7 +19,7 @@
             android:orientation="horizontal">
 
             <TextView
-                android:id="@+id/txOrderNumber"
+                android:id="@+id/tvOrderNumber"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="#ORD-001"
@@ -28,7 +28,7 @@
                 android:textSize="14sp" />
 
             <TextView
-                android:id="@+id/txCustomerName"
+                android:id="@+id/tvCustomerName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
@@ -39,7 +39,7 @@
         </LinearLayout>
 
         <TextView
-            android:id="@+id/txMenuDetail"
+            android:id="@+id/tvMenuDetail"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Martabak Telur Spesial (Keju)"
@@ -54,7 +54,7 @@
             android:layout_marginTop="4dp">
 
             <TextView
-                android:id="@+id/txStatus"
+                android:id="@+id/tvStatus"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="MASUK"
@@ -65,7 +65,7 @@
                 android:background="#FFE082" />
 
             <TextView
-                android:id="@+id/txSource"
+                android:id="@+id/tvSource"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Sumber: WEB"
