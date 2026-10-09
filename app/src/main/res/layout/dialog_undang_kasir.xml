@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="20dp"
+    android:background="@color/surface">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="✉️ Undang Kasir Baru"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="@color/primary"
+        android:layout_marginBottom="4dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Buat kode undangan khusus agar staf kasir dapat mendaftar ke akun outlet ini."
+        android:textSize="12sp"
+        android:textColor="#616161"
+        android:layout_marginBottom="16dp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Nama Kasir"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:textColor="#424242"
+        android:layout_marginBottom="4dp" />
+
+    <EditText
+        android:id="@+id/edDialogNamaKasir"
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        android:hint="Contoh: Siti Rahma"
+        android:inputType="textPersonName"
+        android:paddingHorizontal="12dp"
+        android:background="@drawable/bg_input_field"
+        android:textSize="13sp"
+        android:layout_marginBottom="12dp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Email Kasir"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:textColor="#424242"
+        android:layout_marginBottom="4dp" />
+
+    <EditText
+        android:id="@+id/edDialogEmailKasir"
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        android:hint="kasir.outlet@gmail.com"
+        android:inputType="textEmailAddress"
+        android:paddingHorizontal="12dp"
+        android:background="@drawable/bg_input_field"
+        android:textSize="13sp"
+        android:layout_marginBottom="16dp" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnGenerateKode"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:text="GENERATE KODE UNDANGAN"
+        android:textSize="13sp"
+        android:textStyle="bold"
+        android:textColor="@color/white"
+        app:backgroundTint="@color/primary"
+        app:cornerRadius="6dp" />
+
+    <!-- Container Hasil Generate Kode -->
+    <LinearLayout
+        android:id="@+id/layoutHasilKode"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="#FFF3E0"
+        android:padding="14dp"
+        android:layout_marginTop="16dp"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Kode Undangan Berhasil Dibuat:"
+            android:textSize="11sp"
+            android:textColor="#E65100"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/txKodeHasil"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="JGR-0000"
+            android:textSize="26sp"
+            android:textStyle="bold"
+            android:textColor="@color/primary"
+            android:layout_marginVertical="6dp" />
+
+        <TextView
+            android:id="@+id/txInfoStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Status: PENDING (Menunggu kasir mendaftar)"
+            android:textSize="11sp"
+            android:textColor="#5D4037"
+            android:layout_marginBottom="10dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnSalinKode"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:text="📋 Salin Kode"
+                android:textSize="11sp"
+                android:backgroundTint="#757575"
+                android:layout_marginEnd="4dp" />
+
+            <Button
+                android:id="@+id/btnBagikanKode"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:text="📲 Bagikan"
+                android:textSize="11sp"
+                android:backgroundTint="#2E7D32"
+                android:layout_marginStart="4dp" />
+        </LinearLayout>
+    </LinearLayout>
+
+</LinearLayout>

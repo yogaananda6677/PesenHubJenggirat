@@ -39,8 +39,15 @@ class DashboardFragment : Fragment() {
         dbHelper = DBOpenHelper(requireContext())
 
         // 1. Tampilkan Info Kasir & Tanggal
-        val userEmail = auth.currentUser?.email ?: "Kasir Outlet"
-        b.txKasirEmail.text = "Kasir Aktif: $userEmail"
+        val userEmail = auth.currentUser?.email ?: "Pengguna Outlet"
+        val userRole = (activity as? MainActivity)?.getUserRole() ?: "kasir"
+        if (userRole == "admin") {
+            b.txKasirEmail.text = "👑 Login sebagai Admin: $userEmail"
+            b.btnUndangKasir.visibility = View.VISIBLE
+        } else {
+            b.txKasirEmail.text = "👤 Kasir Aktif: $userEmail"
+            b.btnUndangKasir.visibility = View.GONE
+        }
 
         val sdf = SimpleDateFormat("EEEE, dd MMMM yyyy", Locale("id", "ID"))
         b.txTanggalHariIni.text = "Hari ini: ${sdf.format(Date())}"
@@ -65,6 +72,10 @@ class DashboardFragment : Fragment() {
 
         b.btnAksiRiwayat.setOnClickListener {
             (activity as? MainActivity)?.navigasiKeTab(R.id.nav_laporan)
+        }
+
+        b.btnUndangKasir.setOnClickListener {
+            (activity as? MainActivity)?.tampilkanDialogUndangKasir()
         }
     }
 

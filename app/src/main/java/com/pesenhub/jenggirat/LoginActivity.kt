@@ -82,34 +82,44 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener {
                 auth.signInWithEmailAndPassword(email, password)
                     .addOnCompleteListener { task ->
                         if (task.isSuccessful) {
-                            Toast.makeText(this, "Login berhasil! Selamat datang $email", Toast.LENGTH_SHORT).show()
-                            val intent = Intent(this, MainActivity::class.java)
-                            startActivity(intent)
-                            finish()
+                            val uid = auth.currentUser?.uid ?: ""
+                            val dbFirestore = com.google.firebase.firestore.FirebaseFirestore.getInstance()
+
+                            dbFirestore.collection("users").document(uid).get()
+                                .addOnSuccessListener { doc ->
+                                    val role = doc.getString("role") ?: "kasir"
+                                    val nama = doc.getString("nama") ?: email
+                                    val outlet = doc.getString("namaOutlet") ?: "PesenHub Jenggirat"
+
+                                    val userSession = getSharedPreferences("UserSession", Context.MODE_PRIVATE)
+                                    userSession.edit()
+                                        .putString("uid", uid)
+                                        .putString("nama", nama)
+                                        .putString("email", email)
+                                        .putString("role", role)
+                                        .putString("namaOutlet", outlet)
+                                        .apply()
+
+                                    Toast.makeText(this, "Login berhasil sebagai ${role.uppercase()}! Halo $nama", Toast.LENGTH_SHORT).show()
+                                    val intent = Intent(this, MainActivity::class.java)
+                                    startActivity(intent)
+                                    finish()
+                                }
+                                .addOnFailureListener {
+                                    Toast.makeText(this, "Login berhasil! Selamat datang $email", Toast.LENGTH_SHORT).show()
+                                    val intent = Intent(this, MainActivity::class.java)
+                                    startActivity(intent)
+                                    finish()
+                                }
                         } else {
-                            // Bila akun belum ada / gagal, beri opsi login demo atau tampilkan error
                             Toast.makeText(this, "Gagal login: ${task.exception?.message}", Toast.LENGTH_LONG).show()
                         }
                     }
             }
             b.txDaftarBaru.id -> {
-                val email = b.edUsername.text.toString().trim()
-                val password = b.edPassword.text.toString().trim()
-
-                if (email.isEmpty() || password.length < 6) {
-                    Toast.makeText(this, "Untuk daftar baru, isi email & password minimal 6 karakter", Toast.LENGTH_SHORT).show()
-                    return
-                }
-
-                // Pendaftaran akun baru di Firebase Auth
-                auth.createUserWithEmailAndPassword(email, password)
-                    .addOnCompleteListener { task ->
-                        if (task.isSuccessful) {
-                            Toast.makeText(this, "Akun kasir berhasil didaftarkan! Silakan tekan LOGIN", Toast.LENGTH_LONG).show()
-                        } else {
-                            Toast.makeText(this, "Pendaftaran gagal: ${task.exception?.message}", Toast.LENGTH_LONG).show()
-                        }
-                    }
+                // Navigasi ke Halaman Pendaftaran Akun (Admin Outlet & Kasir)
+                val intent = Intent(this, RegisterActivity::class.java)
+                startActivity(intent)
             }
         }
     }

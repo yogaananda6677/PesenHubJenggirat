@@ -285,6 +285,15 @@
             android:backgroundTint="#1976D2"
             android:layout_marginTop="4dp" />
 
+        <Button
+            android:id="@+id/btnUndangKasir"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="✉️ Undang Staf Kasir Baru (Khusus Admin)"
+            android:backgroundTint="#4E342E"
+            android:visibility="gone"
+            android:layout_marginTop="4dp" />
+
         <!-- Card Volley HTTP Request (Checklist #19) -->
         <LinearLayout
             android:layout_width="match_parent"
