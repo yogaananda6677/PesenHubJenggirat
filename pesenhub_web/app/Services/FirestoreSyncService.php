@@ -64,4 +64,47 @@ class FirestoreSyncService
             return false;
         }
     }
+
+    /**
+     * Sync menu item to Firestore collection 'menus'.
+     */
+    public function syncMenu(\App\Models\Menu $menu): bool
+    {
+        try {
+            $docId = $menu->sku ?: "MENU-{$menu->id}";
+            $endpoint = "https://firestore.googleapis.com/v1/projects/{$this->projectId}/databases/(default)/documents/menus/{$docId}?key={$this->apiKey}";
+
+            $fields = [
+                'name'         => ['stringValue' => $menu->name],
+                'sku'          => ['stringValue' => $menu->sku ?? ''],
+                'category'     => ['stringValue' => $menu->category],
+                'price'        => ['integerValue' => (string) $menu->base_price],
+                'available'    => ['booleanValue' => (bool) $menu->is_available],
+                'description'  => ['stringValue' => $menu->description ?? ''],
+                'imageUrl'     => ['stringValue' => $menu->image_url ?? 'default_food_icon'],
+                'hppAmount'    => ['integerValue' => (string) $menu->hpp_amount],
+                'updatedAt'    => ['timestampValue' => now()->toIso8601String()],
+            ];
+
+            // Masukkan harga channel jika ada
+            $channelMap = [];
+            foreach ($menu->channelPrices as $cp) {
+                $channelMap[$cp->channel] = ['integerValue' => (string) $cp->amount];
+            }
+            if (!empty($channelMap)) {
+                $fields['channelPrices'] = [
+                    'mapValue' => ['fields' => $channelMap]
+                ];
+            }
+
+            $response = Http::patch($endpoint, [
+                'fields' => $fields,
+            ]);
+
+            return $response->successful();
+        } catch (\Throwable $e) {
+            Log::warning('Firestore menu sync warning: ' . $e->getMessage());
+            return false;
+        }
+    }
 }

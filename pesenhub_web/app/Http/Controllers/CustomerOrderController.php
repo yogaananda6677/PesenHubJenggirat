@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Menu;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Services\FirestoreSyncService;
@@ -22,105 +23,133 @@ class CustomerOrderController extends Controller
      */
     public function index()
     {
-        $katalogMenu = [
-            'Martabak Telur' => [
-                [
-                    'id'        => 'm1',
-                    'nama'      => 'Martabak Sosis/Jamur Biasa',
-                    'harga'     => 20000,
-                    'kategori'  => 'Martabak Telur',
-                    'deskripsi' => 'Kulit renyah gurih dengan isian telur & sosis/jamur pilihan',
+        $dbMenus = Menu::with('channelPrices')
+            ->where('is_available', true)
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get();
+
+        $katalogMenu = [];
+
+        if ($dbMenus->isNotEmpty()) {
+            foreach ($dbMenus as $m) {
+                $category = $m->category ?: 'Martabak Telur';
+                if (!isset($katalogMenu[$category])) {
+                    $katalogMenu[$category] = [];
+                }
+
+                $katalogMenu[$category][] = [
+                    'id'        => (string) $m->id,
+                    'nama'      => $m->name,
+                    'harga'     => $m->priceForChannel('CUSTOMER_WEB'),
+                    'kategori'  => $m->category,
+                    'deskripsi' => $m->description ?? '',
+                    'sku'       => $m->sku,
+                    'image_url' => $m->image_url,
+                ];
+            }
+        } else {
+            // Fallback default catalog jika database belum di-seed
+            $katalogMenu = [
+                'Martabak Telur' => [
+                    [
+                        'id'        => 'm1',
+                        'nama'      => 'Martabak Sosis/Jamur Biasa',
+                        'harga'     => 20000,
+                        'kategori'  => 'Martabak Telur',
+                        'deskripsi' => 'Kulit renyah gurih dengan isian telur & sosis/jamur pilihan',
+                    ],
+                    [
+                        'id'        => 'm2',
+                        'nama'      => 'Martabak Sosis/Jamur Spesial',
+                        'harga'     => 30000,
+                        'kategori'  => 'Martabak Telur',
+                        'deskripsi' => 'Porsi spesial telur lebih tebal dengan isian sosis/jamur melimpah',
+                    ],
+                    [
+                        'id'        => 'm3',
+                        'nama'      => 'Martabak Daging Ayam Biasa',
+                        'harga'     => 25000,
+                        'kategori'  => 'Martabak Telur',
+                        'deskripsi' => 'Daging ayam cincang gurih dipadu telur bebek berkualitas',
+                    ],
+                    [
+                        'id'        => 'm4',
+                        'nama'      => 'Martabak Daging Ayam Spesial',
+                        'harga'     => 35000,
+                        'kategori'  => 'Martabak Telur',
+                        'deskripsi' => 'Daging ayam spesial porsi besar dengan aroma rempah harum',
+                    ],
+                    [
+                        'id'        => 'm5',
+                        'nama'      => 'Martabak Daging Sapi Biasa',
+                        'harga'     => 30000,
+                        'kategori'  => 'Martabak Telur',
+                        'deskripsi' => 'Daging sapi cincang lezat pilihan favorit pelanggan setia',
+                    ],
+                    [
+                        'id'        => 'm6',
+                        'nama'      => 'Martabak Daging Sapi Spesial',
+                        'harga'     => 40000,
+                        'kategori'  => 'Martabak Telur',
+                        'deskripsi' => 'Daging sapi spesial berlimpah dengan bumbu racikan khas Jenggirat',
+                    ],
+                    [
+                        'id'        => 'm7',
+                        'nama'      => 'Martabak Mozarella 1 Isian',
+                        'harga'     => 50000,
+                        'kategori'  => 'Martabak Telur',
+                        'deskripsi' => 'Martabak telur gurih dibalut lelehan keju mozzarella molor nikmat',
+                    ],
                 ],
-                [
-                    'id'        => 'm2',
-                    'nama'      => 'Martabak Sosis/Jamur Spesial',
-                    'harga'     => 30000,
-                    'kategori'  => 'Martabak Telur',
-                    'deskripsi' => 'Porsi spesial telur lebih tebal dengan isian sosis/jamur melimpah',
+                'Terang Bulan' => [
+                    [
+                        'id'        => 'tb1',
+                        'nama'      => 'Terang Bulan 1 Toping Biasa',
+                        'harga'     => 18000,
+                        'kategori'  => 'Terang Bulan',
+                        'deskripsi' => 'Adonan lembut bersarang mentega manis wangi dengan 1 pilihan topping',
+                    ],
+                    [
+                        'id'        => 'tb2',
+                        'nama'      => 'Terang Bulan 1 Toping Besar',
+                        'harga'     => 25000,
+                        'kategori'  => 'Terang Bulan',
+                        'deskripsi' => 'Porsi besar tebal pas dinikmati bersama keluarga tercinta',
+                    ],
+                    [
+                        'id'        => 'tb3',
+                        'nama'      => 'Terang Bulan 2 Toping Biasa',
+                        'harga'     => 23000,
+                        'kategori'  => 'Terang Bulan',
+                        'deskripsi' => 'Kombinasi 2 topping lezat (Keju + Meses Coklat / Kacang)',
+                    ],
+                    [
+                        'id'        => 'tb4',
+                        'nama'      => 'Terang Bulan Cut Pizza All In One',
+                        'harga'     => 45000,
+                        'kategori'  => 'Terang Bulan',
+                        'deskripsi' => 'Potongan pizza aneka topping warna-warni premium lezat melimpah',
+                    ],
                 ],
-                [
-                    'id'        => 'm3',
-                    'nama'      => 'Martabak Daging Ayam Biasa',
-                    'harga'     => 25000,
-                    'kategori'  => 'Martabak Telur',
-                    'deskripsi' => 'Daging ayam cincang gurih dipadu telur bebek berkualitas',
+                'Minuman' => [
+                    [
+                        'id'        => 'dr1',
+                        'nama'      => 'Es Teh Manis Jumbo',
+                        'harga'     => 5000,
+                        'kategori'  => 'Minuman',
+                        'deskripsi' => 'Teh melati wangi segar dingin ukuran jumbo penyejuk dahaga',
+                    ],
+                    [
+                        'id'        => 'dr2',
+                        'nama'      => 'Es Jeruk Peras',
+                        'harga'     => 7000,
+                        'kategori'  => 'Minuman',
+                        'deskripsi' => 'Jeruk peras murni kaya vitamin C nikmat menyegarkan',
+                    ],
                 ],
-                [
-                    'id'        => 'm4',
-                    'nama'      => 'Martabak Daging Ayam Spesial',
-                    'harga'     => 35000,
-                    'kategori'  => 'Martabak Telur',
-                    'deskripsi' => 'Daging ayam spesial porsi besar dengan aroma rempah harum',
-                ],
-                [
-                    'id'        => 'm5',
-                    'nama'      => 'Martabak Daging Sapi Biasa',
-                    'harga'     => 30000,
-                    'kategori'  => 'Martabak Telur',
-                    'deskripsi' => 'Daging sapi cincang lezat pilihan favorit pelanggan setia',
-                ],
-                [
-                    'id'        => 'm6',
-                    'nama'      => 'Martabak Daging Sapi Spesial',
-                    'harga'     => 40000,
-                    'kategori'  => 'Martabak Telur',
-                    'deskripsi' => 'Daging sapi spesial berlimpah dengan bumbu racikan khas Jenggirat',
-                ],
-                [
-                    'id'        => 'm7',
-                    'nama'      => 'Martabak Mozarella 1 Isian',
-                    'harga'     => 50000,
-                    'kategori'  => 'Martabak Telur',
-                    'deskripsi' => 'Martabak telur gurih dibalut lelehan keju mozzarella molor nikmat',
-                ],
-            ],
-            'Terang Bulan' => [
-                [
-                    'id'        => 'tb1',
-                    'nama'      => 'Terang Bulan 1 Toping Biasa',
-                    'harga'     => 18000,
-                    'kategori'  => 'Terang Bulan',
-                    'deskripsi' => 'Adonan lembut bersarang mentega manis wangi dengan 1 pilihan topping',
-                ],
-                [
-                    'id'        => 'tb2',
-                    'nama'      => 'Terang Bulan 1 Toping Besar',
-                    'harga'     => 25000,
-                    'kategori'  => 'Terang Bulan',
-                    'deskripsi' => 'Porsi besar tebal pas dinikmati bersama keluarga tercinta',
-                ],
-                [
-                    'id'        => 'tb3',
-                    'nama'      => 'Terang Bulan 2 Toping Biasa',
-                    'harga'     => 23000,
-                    'kategori'  => 'Terang Bulan',
-                    'deskripsi' => 'Kombinasi 2 topping lezat (Keju + Meses Coklat / Kacang)',
-                ],
-                [
-                    'id'        => 'tb4',
-                    'nama'      => 'Terang Bulan Cut Pizza All In One',
-                    'harga'     => 45000,
-                    'kategori'  => 'Terang Bulan',
-                    'deskripsi' => 'Potongan pizza aneka topping warna-warni premium lezat melimpah',
-                ],
-            ],
-            'Minuman' => [
-                [
-                    'id'        => 'dr1',
-                    'nama'      => 'Es Teh Manis Jumbo',
-                    'harga'     => 5000,
-                    'kategori'  => 'Minuman',
-                    'deskripsi' => 'Teh melati wangi segar dingin ukuran jumbo penyejuk dahaga',
-                ],
-                [
-                    'id'        => 'dr2',
-                    'nama'      => 'Es Jeruk Peras',
-                    'harga'     => 7000,
-                    'kategori'  => 'Minuman',
-                    'deskripsi' => 'Jeruk peras murni kaya vitamin C nikmat menyegarkan',
-                ],
-            ],
-        ];
+            ];
+        }
 
         $daftarTopping = [
             ['nama' => 'Keju Mozzarella', 'harga' => 15000],

@@ -58,6 +58,9 @@
                 </div>
             </a>
             <div class="flex items-center gap-2">
+                <a href="{{ route('kasir.menu.index') }}" class="text-xs bg-amber-50 hover:bg-amber-100 text-amber-900 px-3 py-1.5 rounded-lg font-semibold transition border border-amber-200">
+                    Kelola Menu
+                </a>
                 <a href="{{ route('kasir.antrian') }}" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg font-semibold transition border border-slate-200">
                     Panel Kasir
                 </a>
