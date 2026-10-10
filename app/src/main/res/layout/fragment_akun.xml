@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F8F9FA"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Card 1: Ringkasan Profil Pengguna -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/bg_card_minimal"
+            android:padding="20dp"
+            android:gravity="center_horizontal"
+            android:layout_marginBottom="16dp">
+
+            <!-- Avatar Lingkaran Inisial -->
+            <FrameLayout
+                android:layout_width="72dp"
+                android:layout_height="72dp"
+                android:background="@drawable/bg_card_minimal"
+                android:backgroundTint="@color/primary"
+                android:layout_marginBottom="12dp">
+
+                <TextView
+                    android:id="@+id/txAvatarInisial"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:text="U"
+                    android:textColor="@color/white"
+                    android:textSize="32sp"
+                    android:textStyle="bold"
+                    android:gravity="center" />
+            </FrameLayout>
+
+            <TextView
+                android:id="@+id/txHeaderNama"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Nama Pengguna"
+                android:textStyle="bold"
+                android:textColor="#212529"
+                android:textSize="18sp"
+                android:layout_marginBottom="4dp" />
+
+            <TextView
+                android:id="@+id/txHeaderEmail"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="email@example.com"
+                android:textColor="#6C757D"
+                android:textSize="13sp"
+                android:layout_marginBottom="8dp" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="6dp">
+
+                <TextView
+                    android:id="@+id/txHeaderRole"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="KASIR OUTLET"
+                    android:textStyle="bold"
+                    android:textSize="11sp"
+                    android:textColor="@color/primary_variant"
+                    android:background="#FFE0B2"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="3dp" />
+
+                <TextView
+                    android:id="@+id/txHeaderOutlet"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:text="Jenggirat Kediri"
+                    android:textSize="11sp"
+                    android:textColor="#495057"
+                    android:background="#E9ECEF"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="3dp" />
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- Card 2: Form Ubah Biodata Diri -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/bg_card_minimal"
+            android:padding="20dp"
+            android:layout_marginBottom="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Biodata Diri Akun"
+                android:textStyle="bold"
+                android:textColor="#212529"
+                android:textSize="15sp"
+                android:layout_marginBottom="2dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Anda dapat mengubah nama lengkap, nomor WhatsApp, domisili, dan bio."
+                android:textColor="#6C757D"
+                android:textSize="11sp"
+                android:layout_marginBottom="16dp" />
+
+            <!-- Input Nama Lengkap -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Nama Lengkap"
+                android:textStyle="bold"
+                android:textColor="#495057"
+                android:textSize="12sp"
+                android:layout_marginBottom="4dp" />
+
+            <EditText
+                android:id="@+id/edNamaProfil"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:hint="Masukkan nama lengkap Anda"
+                android:inputType="textPersonName"
+                android:paddingHorizontal="12dp"
+                android:textSize="14sp"
+                android:background="@android:drawable/editbox_background"
+                android:layout_marginBottom="14dp" />
+
+            <!-- Input No HP / WhatsApp -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Nomor WhatsApp / HP"
+                android:textStyle="bold"
+                android:textColor="#495057"
+                android:textSize="12sp"
+                android:layout_marginBottom="4dp" />
+
+            <EditText
+                android:id="@+id/edPhoneProfil"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:hint="Contoh: 081234567890"
+                android:inputType="phone"
+                android:paddingHorizontal="12dp"
+                android:textSize="14sp"
+                android:background="@android:drawable/editbox_background"
+                android:layout_marginBottom="14dp" />
+
+            <!-- Input Alamat Domisili -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Alamat Domisili"
+                android:textStyle="bold"
+                android:textColor="#495057"
+                android:textSize="12sp"
+                android:layout_marginBottom="4dp" />
+
+            <EditText
+                android:id="@+id/edAlamatProfil"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="48dp"
+                android:hint="Masukkan alamat tinggal Anda"
+                android:inputType="textPostalAddress|textMultiLine"
+                android:padding="12dp"
+                android:textSize="14sp"
+                android:background="@android:drawable/editbox_background"
+                android:layout_marginBottom="14dp" />
+
+            <!-- Input Bio Singkat -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Bio / Catatan Diri"
+                android:textStyle="bold"
+                android:textColor="#495057"
+                android:textSize="12sp"
+                android:layout_marginBottom="4dp" />
+
+            <EditText
+                android:id="@+id/edBioProfil"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="48dp"
+                android:hint="Tulis catatan singkat tentang Anda..."
+                android:inputType="textMultiLine"
+                android:padding="12dp"
+                android:textSize="14sp"
+                android:background="@android:drawable/editbox_background"
+                android:layout_marginBottom="16dp" />
+
+            <!-- Info Read-only Role -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:background="#F1F3F5"
+                android:padding="12dp"
+                android:layout_marginBottom="16dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Peran Akun (Role):"
+                    android:textColor="#495057"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/txRoleDetail"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="KASIR"
+                    android:textStyle="bold"
+                    android:textColor="@color/primary_variant"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <!-- Tombol Simpan Perubahan -->
+            <Button
+                android:id="@+id/btnSimpanBiodata"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:text="Simpan Perubahan Biodata"
+                android:backgroundTint="@color/primary"
+                android:textColor="@color/white"
+                android:textStyle="bold"
+                android:textSize="14sp" />
+
+        </LinearLayout>
+
+        <!-- Tombol Logout -->
+        <Button
+            android:id="@+id/btnLogoutAkun"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:text="Keluar dari Akun (Logout)"
+            android:backgroundTint="#D32F2F"
+            android:textColor="@color/white"
+            android:textStyle="bold"
+            android:layout_marginBottom="24dp" />
+
+    </LinearLayout>
+</ScrollView>
