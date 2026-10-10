@@ -9,6 +9,8 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.media.AudioAttributes
+import android.media.RingtoneManager
 import android.os.Build
 import android.os.Bundle
 import android.view.Menu
@@ -160,14 +162,23 @@ class MainActivity : AppCompatActivity() {
 
     private fun buatNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+            val audioAttributes = AudioAttributes.Builder()
+                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+                .build()
+
             val channel = NotificationChannel(
-                "pesenhub_orders_channel",
+                "pesenhub_orders_channel_v3",
                 "Pesanan Pelanggan Web",
                 NotificationManager.IMPORTANCE_HIGH
             ).apply {
                 description = "Notifikasi pesanan baru masuk dari website pelanggan"
                 enableVibration(true)
-                vibrationPattern = longArrayOf(0, 300, 200, 300)
+                vibrationPattern = longArrayOf(0, 400, 200, 400)
+                setSound(soundUri, audioAttributes)
+                lockscreenVisibility = android.app.Notification.VISIBILITY_PUBLIC
+                setShowBadge(true)
             }
             val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             manager.createNotificationChannel(channel)
@@ -212,12 +223,18 @@ class MainActivity : AppCompatActivity() {
                             // 2. Notifikasi di HP Sendiri (Status Bar Heads-up & Vibration)
                             tampilkanNotifikasiStatusBar(orderNumber, custName, total, detailItem)
 
-                            // 3. Notifikasi di Dalam Aplikasi (In-App Dialog Alert)
+                            // 3. Notifikasi di Dalam Aplikasi (In-App Dialog Modern)
                             tampilkanNotifikasiInApp(orderNumber, custName, total, detailItem)
                         }
                     }
                 }
             }
+    }
+
+    private fun formatRupiah(nominal: Long): String {
+        val format = java.text.NumberFormat.getCurrencyInstance(java.util.Locale("id", "ID"))
+        format.maximumFractionDigits = 0
+        return format.format(nominal)
     }
 
     private fun tampilkanNotifikasiStatusBar(
@@ -226,7 +243,7 @@ class MainActivity : AppCompatActivity() {
         total: Long,
         detailItem: String
     ) {
-        val totalFormatted = java.text.NumberFormat.getCurrencyInstance(java.util.Locale("id", "ID")).format(total)
+        val totalFormatted = formatRupiah(total)
         val title = "🔔 Pesanan Baru dari Web ($orderNumber)"
         val body = "$customerName: $detailItem • $totalFormatted"
 
@@ -242,12 +259,19 @@ class MainActivity : AppCompatActivity() {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        val notification = NotificationCompat.Builder(this, "pesenhub_orders_channel")
-            .setSmallIcon(R.mipmap.ic_launcher)
+        val soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+
+        val notification = NotificationCompat.Builder(this, "pesenhub_orders_channel_v3")
+            .setSmallIcon(R.drawable.ic_stat_order)
+            .setColor(ContextCompat.getColor(this, R.color.primary))
             .setContentTitle(title)
             .setContentText(body)
             .setStyle(NotificationCompat.BigTextStyle().bigText("$body\nSentuh notifikasi ini untuk membuka daftar antrean."))
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setPriority(NotificationCompat.PRIORITY_MAX)
+            .setCategory(NotificationCompat.CATEGORY_EVENT)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            .setSound(soundUri)
+            .setVibrate(longArrayOf(0, 400, 200, 400))
             .setDefaults(NotificationCompat.DEFAULT_ALL)
             .setAutoCancel(true)
             .setContentIntent(pendingIntent)
@@ -265,22 +289,36 @@ class MainActivity : AppCompatActivity() {
     ) {
         if (isFinishing || isDestroyed) return
 
-        val totalFormatted = java.text.NumberFormat.getCurrencyInstance(java.util.Locale("id", "ID")).format(total)
+        val dialogView = layoutInflater.inflate(R.layout.dialog_pesanan_baru_web, null)
+        val txOrderNumber = dialogView.findViewById<TextView>(R.id.txDialogOrderNumber)
+        val txCustomerName = dialogView.findViewById<TextView>(R.id.txDialogCustomerName)
+        val txItems = dialogView.findViewById<TextView>(R.id.txDialogItems)
+        val txTotal = dialogView.findViewById<TextView>(R.id.txDialogTotal)
+        val btnTutup = dialogView.findViewById<View>(R.id.btnDialogTutup)
+        val btnBukaAntrian = dialogView.findViewById<View>(R.id.btnDialogBukaAntrian)
 
-        AlertDialog.Builder(this)
-            .setTitle("🔔 Pesanan Baru Masuk dari Web!")
-            .setMessage(
-                "No. Order: $orderNumber\n" +
-                "Pelanggan: $customerName\n" +
-                "Item: $detailItem\n" +
-                "Total: $totalFormatted\n\n" +
-                "Pesanan sudah masuk ke daftar antrean. Buka menu Antrean sekarang?"
-            )
-            .setPositiveButton("Buka Antrean") { _, _ ->
-                navigasiKeTab(R.id.nav_antrian)
-            }
-            .setNegativeButton("Tutup", null)
-            .show()
+        txOrderNumber.text = "#$orderNumber"
+        txCustomerName.text = customerName.replaceFirstChar { if (it.isLowerCase()) it.titlecase(java.util.Locale.getDefault()) else it.toString() }
+        txItems.text = detailItem
+        txTotal.text = formatRupiah(total)
+
+        val dialog = AlertDialog.Builder(this)
+            .setView(dialogView)
+            .setCancelable(true)
+            .create()
+
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+
+        btnTutup.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        btnBukaAntrian.setOnClickListener {
+            dialog.dismiss()
+            navigasiKeTab(R.id.nav_antrian)
+        }
+
+        dialog.show()
     }
 
     private fun muatSesiPengguna() {
@@ -318,8 +356,8 @@ class MainActivity : AppCompatActivity() {
         }
         supportActionBar?.title = currentTabTitle
         val roleLabel = if (userRole == "admin") "Admin" else "Kasir"
-        val namaLabel = if (userNama.isNotEmpty()) " • $userNama" else ""
-        supportActionBar?.subtitle = "$namaOutlet • $roleLabel$namaLabel"
+        // Subtitle ringkas dan proporsional agar tidak terpotong di layar HP
+        supportActionBar?.subtitle = "$namaOutlet • $roleLabel"
     }
 
     fun perbaruiToolbarSubtitle() {
