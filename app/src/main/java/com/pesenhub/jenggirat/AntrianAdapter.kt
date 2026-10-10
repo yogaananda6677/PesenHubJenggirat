@@ -82,6 +82,11 @@ class AntrianAdapter(
             }
         }
 
+        // Klik di mana saja pada kartu item antrean langsung memicu PopupMenu
+        view.setOnClickListener {
+            onMenuClick(data, it)
+        }
+
         btnOpsi.setOnClickListener {
             onMenuClick(data, it)
         }

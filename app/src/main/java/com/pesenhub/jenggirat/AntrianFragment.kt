@@ -54,24 +54,11 @@ class AntrianFragment : Fragment() {
         // 1. Daftarkan ContextMenu pada ListView (Bab 05 & Bab 08 PM)
         registerForContextMenu(b.lsAntrian)
 
-        // Klik Item membuka Detail Pesanan & QR Code (Bab 10 PM)
-        b.lsAntrian.setOnItemClickListener { _, _, position, _ ->
+        // Klik 1 Kali di mana saja pada item antrean langsung memunculkan PopupMenu
+        b.lsAntrian.setOnItemClickListener { _, view, position, _ ->
             if (position in listOrders.indices) {
                 val order = listOrders[position]
-                val intent = Intent(requireContext(), OrderDetailActivity::class.java).apply {
-                    putExtra("EXTRA_DOC_ID", (order["idDoc"] ?: order["orderNumber"]).toString())
-                    putExtra("EXTRA_ORDER_NUMBER", (order["orderNumber"] ?: order["idDoc"]).toString())
-                    putExtra("EXTRA_CUSTOMER_NAME", (order["customerName"] ?: "-").toString())
-                    putExtra("EXTRA_CUSTOMER_PHONE", (order["customerPhone"] ?: "-").toString())
-                    putExtra("EXTRA_MENU_ITEM", (order["menuItem"] ?: order["detailItem"] ?: "-").toString())
-                    putExtra("EXTRA_PAYMENT_METHOD", (order["paymentMethod"] ?: "Tunai").toString())
-                    putExtra("EXTRA_TOTAL", (order["total"] as? Number)?.toInt() ?: 0)
-                    putExtra("EXTRA_STATUS", (order["status"] ?: "PENDING").toString())
-                    putExtra("EXTRA_SOURCE", (order["source"] ?: "CASHIER").toString())
-                    putExtra("EXTRA_BARCODE_URL", (order["barcodeUrl"] ?: order["barcode_url"] ?: "").toString())
-                    putExtra("EXTRA_NOTES", (order["notes"] ?: "-").toString())
-                }
-                startActivity(intent)
+                tampilkanPopupMenu(order, view)
             }
         }
     }
@@ -150,7 +137,7 @@ class AntrianFragment : Fragment() {
             }
     }
 
-    // 3. PopupMenu (Bab V Modul PM Pak Benni & Checklist #12) — Klik tombol titik tiga per item
+    // 3. PopupMenu (Bab V Modul PM Pak Benni & Checklist #12) — Klik 1 kali di mana saja pada item antrean
     private fun tampilkanPopupMenu(order: Map<String, Any?>, view: View) {
         val docId = order["idDoc"]?.toString() ?: return
         val popMenu = PopupMenu(requireContext(), view)
@@ -158,6 +145,10 @@ class AntrianFragment : Fragment() {
 
         popMenu.setOnMenuItemClickListener { item ->
             when (item.itemId) {
+                R.id.menu_detail -> {
+                    bukaDetailPesanan(order)
+                    true
+                }
                 R.id.menu_terima -> {
                     updateStatusOrder(docId, order, "CONFIRMED")
                     true
@@ -178,6 +169,23 @@ class AntrianFragment : Fragment() {
             }
         }
         popMenu.show()
+    }
+
+    private fun bukaDetailPesanan(order: Map<String, Any?>) {
+        val intent = Intent(requireContext(), OrderDetailActivity::class.java).apply {
+            putExtra("EXTRA_DOC_ID", (order["idDoc"] ?: order["orderNumber"]).toString())
+            putExtra("EXTRA_ORDER_NUMBER", (order["orderNumber"] ?: order["idDoc"]).toString())
+            putExtra("EXTRA_CUSTOMER_NAME", (order["customerName"] ?: "-").toString())
+            putExtra("EXTRA_CUSTOMER_PHONE", (order["customerPhone"] ?: "-").toString())
+            putExtra("EXTRA_MENU_ITEM", (order["menuItem"] ?: order["detailItem"] ?: "-").toString())
+            putExtra("EXTRA_PAYMENT_METHOD", (order["paymentMethod"] ?: "Tunai").toString())
+            putExtra("EXTRA_TOTAL", (order["total"] as? Number)?.toInt() ?: 0)
+            putExtra("EXTRA_STATUS", (order["status"] ?: "PENDING").toString())
+            putExtra("EXTRA_SOURCE", (order["source"] ?: "CASHIER").toString())
+            putExtra("EXTRA_BARCODE_URL", (order["barcodeUrl"] ?: order["barcode_url"] ?: "").toString())
+            putExtra("EXTRA_NOTES", (order["notes"] ?: "-").toString())
+        }
+        startActivity(intent)
     }
 
     // 4. ContextMenu (Bab V Modul PM Pak Benni & Checklist #11) — Saat item ditekan tahan (Long Click)
@@ -208,6 +216,10 @@ class AntrianFragment : Fragment() {
         val docId = order["idDoc"]?.toString() ?: return super.onContextItemSelected(item)
 
         val res = when (item.itemId) {
+            R.id.ctx_detail -> {
+                bukaDetailPesanan(order)
+                true
+            }
             R.id.ctx_terima -> {
                 updateStatusOrder(docId, order, "CONFIRMED")
                 true
