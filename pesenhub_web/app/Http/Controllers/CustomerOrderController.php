@@ -222,7 +222,7 @@ class CustomerOrderController extends Controller
             'order_number'   => $order['orderNumber'] ?? $order['id'],
             'status'         => $order['status'] ?? 'PENDING',
             'payment_status' => $order['paymentStatus'] ?? 'UNPAID',
-            'barcode_url'    => $order['barcodeUrl'] ?? null,
+            'barcode_url'    => $order['barcodeUrl'] ?? $order['barcode_url'] ?? null,
             'total_price'    => (int) ($order['total'] ?? $order['totalPrice'] ?? 0),
             'updated_at'     => $order['updatedAt'] ?? now()->toIso8601String(),
         ]);

@@ -69,10 +69,14 @@
                     <p class="text-xs text-slate-400">Tunjukkan barcode ini saat mengambil pesanan di outlet Martabak Jenggirat</p>
                 </div>
 
+                @php
+                    $displayQrUrl = $order->barcode_url ?: 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' . urlencode($order->order_number);
+                @endphp
+
                 <!-- Gambar Barcode / QR Code -->
                 <div class="bg-white p-4 rounded-xl inline-block mx-auto shadow-inner border border-slate-200">
                     <img id="barcodeImage" 
-                         src="{{ $order->barcode_url ?: asset('storage/barcodes/barcode_' . preg_replace('/[^A-Za-z0-9_\-]/', '_', $order->order_number) . '.png') }}" 
+                         src="{{ $displayQrUrl }}" 
                          alt="Barcode Pesanan {{ $order->order_number }}" 
                          class="w-48 h-48 mx-auto object-contain">
                     <p class="text-[11px] font-mono font-bold text-slate-700 mt-2 tracking-wider">{{ $order->order_number }}</p>
@@ -81,8 +85,9 @@
                 <!-- Tombol Unduh Barcode -->
                 <div class="pt-1 flex flex-col sm:flex-row items-center justify-center gap-2">
                     <a id="btnDownloadBarcode" 
-                       href="{{ $order->barcode_url ?: asset('storage/barcodes/barcode_' . preg_replace('/[^A-Za-z0-9_\-]/', '_', $order->order_number) . '.png') }}" 
+                       href="{{ $displayQrUrl }}" 
                        download="barcode_{{ $order->order_number }}.png"
+                       target="_blank"
                        class="w-full sm:w-auto bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs px-5 py-2.5 rounded-xl transition flex items-center justify-center gap-1.5 shadow">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
@@ -174,15 +179,19 @@
 <script>
     const orderNumber = "{{ $order->order_number }}";
     let currentStatus = "{{ $order->status }}";
+    let currentBarcodeUrl = "{{ $order->barcode_url ?? '' }}";
 
     // Polling realtime status pesanan setiap 3 detik
     const pollInterval = setInterval(() => {
         fetch(`/api/pesanan/${orderNumber}/status`)
             .then(res => res.json())
             .then(data => {
-                if (data.status && data.status !== currentStatus) {
-                    currentStatus = data.status;
-                    // Reload halaman jika status berubah agar barcode dan status card ter-render sempurna
+                const statusChanged = data.status && data.status !== currentStatus;
+                const barcodeChanged = data.barcode_url && data.barcode_url !== currentBarcodeUrl;
+                if (statusChanged || barcodeChanged) {
+                    currentStatus = data.status || currentStatus;
+                    currentBarcodeUrl = data.barcode_url || currentBarcodeUrl;
+                    // Reload halaman jika status atau barcode berubah agar barcode dan status card ter-render sempurna
                     window.location.reload();
                 }
             })

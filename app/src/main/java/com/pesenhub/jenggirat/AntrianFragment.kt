@@ -1,6 +1,7 @@
 package com.pesenhub.jenggirat
 
 import android.content.Intent
+import android.graphics.Bitmap
 import android.os.Bundle
 import android.view.ContextMenu
 import android.view.LayoutInflater
@@ -14,7 +15,10 @@ import androidx.fragment.app.Fragment
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
+import com.google.zxing.BarcodeFormat
+import com.journeyapps.barcodescanner.BarcodeEncoder
 import com.pesenhub.jenggirat.databinding.FragmentAntrianBinding
+import java.io.ByteArrayOutputStream
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -55,6 +59,7 @@ class AntrianFragment : Fragment() {
             if (position in listOrders.indices) {
                 val order = listOrders[position]
                 val intent = Intent(requireContext(), OrderDetailActivity::class.java).apply {
+                    putExtra("EXTRA_DOC_ID", (order["idDoc"] ?: order["orderNumber"]).toString())
                     putExtra("EXTRA_ORDER_NUMBER", (order["orderNumber"] ?: order["idDoc"]).toString())
                     putExtra("EXTRA_CUSTOMER_NAME", (order["customerName"] ?: "-").toString())
                     putExtra("EXTRA_CUSTOMER_PHONE", (order["customerPhone"] ?: "-").toString())
@@ -62,6 +67,8 @@ class AntrianFragment : Fragment() {
                     putExtra("EXTRA_PAYMENT_METHOD", (order["paymentMethod"] ?: "Tunai").toString())
                     putExtra("EXTRA_TOTAL", (order["total"] as? Number)?.toInt() ?: 0)
                     putExtra("EXTRA_STATUS", (order["status"] ?: "PENDING").toString())
+                    putExtra("EXTRA_SOURCE", (order["source"] ?: "CASHIER").toString())
+                    putExtra("EXTRA_BARCODE_URL", (order["barcodeUrl"] ?: order["barcode_url"] ?: "").toString())
                     putExtra("EXTRA_NOTES", (order["notes"] ?: "-").toString())
                 }
                 startActivity(intent)
@@ -93,9 +100,9 @@ class AntrianFragment : Fragment() {
         // Hapus listener sebelumnya jika ada
         orderListener?.remove()
 
-        // Ambil pesanan yang aktif (MASUK / PENDING dan DIPROSES / PREPARING)
+        // Ambil pesanan yang aktif (MASUK / PENDING, DITERIMA / CONFIRMED, dan DIPROSES / PREPARING)
         orderListener = dbFirestore.collection("orders")
-            .whereIn("status", listOf("PENDING", "PREPARING"))
+            .whereIn("status", listOf("PENDING", "CONFIRMED", "PREPARING"))
             .addSnapshotListener { snapshot, e ->
                 if (!isAdded) return@addSnapshotListener
 
@@ -126,7 +133,7 @@ class AntrianFragment : Fragment() {
                     b.tvInfoAntrian.text = "Antrean Aktif Dapur: ${listOrders.size} Pesanan"
                 } else {
                     listOrders.clear()
-                    b.tvKosong.visibility = View.VISIBLE
+                    b.tvKosong.visibility = View.GONE
                     b.lsAntrian.visibility = View.GONE
                     b.tvInfoAntrian.text = "Antrean Aktif Dapur: 0 Pesanan"
                 }
@@ -151,6 +158,10 @@ class AntrianFragment : Fragment() {
 
         popMenu.setOnMenuItemClickListener { item ->
             when (item.itemId) {
+                R.id.menu_terima -> {
+                    updateStatusOrder(docId, order, "CONFIRMED")
+                    true
+                }
                 R.id.menu_proses -> {
                     updateStatusOrder(docId, order, "PREPARING")
                     true
@@ -197,6 +208,10 @@ class AntrianFragment : Fragment() {
         val docId = order["idDoc"]?.toString() ?: return super.onContextItemSelected(item)
 
         val res = when (item.itemId) {
+            R.id.ctx_terima -> {
+                updateStatusOrder(docId, order, "CONFIRMED")
+                true
+            }
             R.id.ctx_proses -> {
                 updateStatusOrder(docId, order, "PREPARING")
                 true
@@ -217,11 +232,72 @@ class AntrianFragment : Fragment() {
 
     // 4. Update Status Firestore + 7. Arsipkan ke SQLite jika COMPLETED
     private fun updateStatusOrder(docId: String, order: Map<String, Any?>, statusBaru: String): Boolean {
-        val orderNumber = order["orderNumber"]?.toString() ?: docId
+        val orderNumber = (order["orderNumber"] ?: docId).toString()
+        val source = order["source"]?.toString() ?: ""
+        val isWebOrder = source == "CUSTOMER_WEB" || orderNumber.startsWith("ORD-WEB")
+        val existingBarcodeUrl = order["barcodeUrl"]?.toString() ?: order["barcode_url"]?.toString()
 
-        // 5. Gunakan ID dokumen Firestore untuk update
+        // Khusus pesanan website: jika status berubah ke DITERIMA/DIPROSES dan belum punya barcodeUrl, generate QR & upload ke Supabase
+        if (isWebOrder && (statusBaru == "CONFIRMED" || statusBaru == "PREPARING") && existingBarcodeUrl.isNullOrEmpty()) {
+            if (isAdded) {
+                Toast.makeText(
+                    requireContext(),
+                    "Membuat & mengunggah QR Code pesanan #$orderNumber ke Supabase...",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+
+            try {
+                val barcodeEncoder = BarcodeEncoder()
+                val bitmap = barcodeEncoder.encodeBitmap(orderNumber, BarcodeFormat.QR_CODE, 500, 500)
+                val stream = ByteArrayOutputStream()
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
+                val qrBytes = stream.toByteArray()
+
+                SupabaseStorageHelper.uploadOrderQrCode(orderNumber, qrBytes) { success, publicUrl, error ->
+                    val updateData = mutableMapOf<String, Any>(
+                        "status" to statusBaru,
+                        "updatedAt" to Timestamp.now()
+                    )
+                    if (success && publicUrl != null) {
+                        updateData["barcodeUrl"] = publicUrl
+                        updateData["barcode_url"] = publicUrl
+                        updateData["barcodeCode"] = orderNumber
+                    }
+
+                    dbFirestore.collection("orders").document(docId)
+                        .update(updateData)
+                        .addOnSuccessListener {
+                            if (isAdded) {
+                                val pesan = if (success) {
+                                    "Pesanan #$orderNumber $statusBaru! QR Code aktif di Supabase."
+                                } else {
+                                    "Pesanan #$orderNumber $statusBaru (Gagal Supabase: $error)"
+                                }
+                                Toast.makeText(requireContext(), pesan, Toast.LENGTH_LONG).show()
+                            }
+                        }
+                        .addOnFailureListener { e ->
+                            if (isAdded) {
+                                Toast.makeText(requireContext(), "Gagal update Firestore: ${e.message}", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                // Fallback update status biasa
+                dbFirestore.collection("orders").document(docId).update("status", statusBaru)
+            }
+            return true
+        }
+
+        // 5. Update Status Standar (Bukan Web Order atau QR sudah ada)
+        val updateMap = mutableMapOf<String, Any>(
+            "status" to statusBaru,
+            "updatedAt" to Timestamp.now()
+        )
         dbFirestore.collection("orders").document(docId)
-            .update("status", statusBaru)
+            .update(updateMap)
             .addOnSuccessListener {
                 if (isAdded) {
                     Toast.makeText(

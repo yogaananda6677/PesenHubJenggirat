@@ -70,4 +70,60 @@ object SupabaseStorageHelper {
             }
         }
     }
+
+    /**
+     * Upload PNG QR Code bytes ke Supabase Storage (Bucket: Storage, folder: order-qrcodes).
+     * Mengembalikan URL publik Supabase yang langsung dimuat oleh website customer.
+     */
+    fun uploadOrderQrCode(
+        orderNumber: String,
+        qrBytes: ByteArray,
+        onComplete: (success: Boolean, publicUrl: String?, errorMessage: String?) -> Unit
+    ) {
+        executor.execute {
+            try {
+                val cleanFilename = "qr_" + orderNumber.replace(Regex("[^A-Za-z0-9_\\-]"), "_") + ".png"
+                val uploadEndpoint = "$SUPABASE_URL/storage/v1/object/$BUCKET_NAME/order-qrcodes/$cleanFilename"
+                val url = URL(uploadEndpoint)
+                val conn = url.openConnection() as HttpURLConnection
+
+                conn.requestMethod = "POST"
+                conn.doOutput = true
+                conn.setRequestProperty("apikey", SUPABASE_KEY)
+                conn.setRequestProperty("Authorization", "Bearer $SUPABASE_KEY")
+                conn.setRequestProperty("Content-Type", "image/png")
+                conn.setRequestProperty("x-upsert", "true")
+                conn.connectTimeout = 15000
+                conn.readTimeout = 15000
+
+                val os = DataOutputStream(conn.outputStream)
+                os.write(qrBytes)
+                os.flush()
+                os.close()
+
+                val responseCode = conn.responseCode
+                if (responseCode in 200..299) {
+                    val publicUrl = "$SUPABASE_URL/storage/v1/object/public/$BUCKET_NAME/order-qrcodes/$cleanFilename"
+                    Log.d("SupabaseHelper", "Upload QR Code sukses: $publicUrl")
+                    mainHandler.post {
+                        onComplete(true, publicUrl, null)
+                    }
+                } else {
+                    val errorStream = conn.errorStream ?: conn.inputStream
+                    val errorMsg = errorStream?.bufferedReader()?.use { it.readText() } ?: "HTTP $responseCode"
+                    Log.e("SupabaseHelper", "Upload QR gagal: HTTP $responseCode - $errorMsg")
+                    mainHandler.post {
+                        onComplete(false, null, "Supabase HTTP $responseCode: $errorMsg")
+                    }
+                }
+                conn.disconnect()
+            } catch (e: Exception) {
+                Log.e("SupabaseHelper", "Exception upload QR Supabase", e)
+                mainHandler.post {
+                    onComplete(false, null, e.message ?: "Koneksi Supabase gagal")
+                }
+            }
+        }
+    }
 }
+

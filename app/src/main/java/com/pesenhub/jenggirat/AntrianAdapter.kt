@@ -55,6 +55,11 @@ class AntrianAdapter(
                 tvStatus.setBackgroundColor(Color.parseColor("#FFE082")) // Kuning
                 tvStatus.setTextColor(Color.parseColor("#E65100"))
             }
+            "CONFIRMED" -> {
+                tvStatus.text = "DITERIMA"
+                tvStatus.setBackgroundColor(Color.parseColor("#E0F2F1")) // Teal muda
+                tvStatus.setTextColor(Color.parseColor("#004D40"))
+            }
             "PREPARING" -> {
                 tvStatus.text = "DIPROSES"
                 tvStatus.setBackgroundColor(Color.parseColor("#BBDEFB")) // Biru

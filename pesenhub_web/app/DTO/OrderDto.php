@@ -34,8 +34,8 @@ class OrderDto
         $this->notes          = (string) ($data['notes'] ?? '');
         $this->total_price    = (int) ($data['total'] ?? $data['totalPrice'] ?? 0);
         $this->total_items    = (int) ($data['totalItems'] ?? 0);
-        $this->barcode_url    = $data['barcodeUrl'] ?? null;
-        $this->barcode_code   = $data['barcodeCode'] ?? $this->order_number;
+        $this->barcode_url    = $data['barcodeUrl'] ?? $data['barcode_url'] ?? null;
+        $this->barcode_code   = $data['barcodeCode'] ?? $data['barcode_code'] ?? $this->order_number;
 
         $createdStr = $data['createdAt'] ?? $data['createTime'] ?? now()->toIso8601String();
         $this->created_at = Carbon::parse($createdStr);
