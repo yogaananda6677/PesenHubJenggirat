@@ -16,4 +16,8 @@
         android:id="@+id/nav_laporan"
         android:icon="@drawable/ic_nav_riwayat"
         android:title="Riwayat" />
+    <item
+        android:id="@+id/nav_akun"
+        android:icon="@drawable/ic_nav_account"
+        android:title="Akun" />
 </menu>
