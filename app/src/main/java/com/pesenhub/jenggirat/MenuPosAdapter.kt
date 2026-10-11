@@ -35,17 +35,29 @@ class MenuPosAdapter(
                 else -> "Menu pilihan istimewa khas Jenggirat Kediri"
             }
 
-            // Set placeholder / logo sesuai kategori
-            when (item.kategori) {
-                "Minuman" -> {
-                    imgMenuPos.setImageResource(R.drawable.logo_jenggirat_transparent)
+            // Tampilkan foto dari Supabase jika ada, atau fallback ke logo Jenggirat
+            if (item.imageUrl.startsWith("http")) {
+                imgMenuPos.tag = item.imageUrl
+                java.util.concurrent.Executors.newSingleThreadExecutor().execute {
+                    try {
+                        val input = java.net.URL(item.imageUrl).openStream()
+                        val bitmap = android.graphics.BitmapFactory.decodeStream(input)
+                        if (bitmap != null) {
+                            imgMenuPos.post {
+                                if (imgMenuPos.tag == item.imageUrl) {
+                                    imgMenuPos.setPadding(0, 0, 0, 0)
+                                    imgMenuPos.scaleType = android.widget.ImageView.ScaleType.CENTER_CROP
+                                    imgMenuPos.setImageBitmap(bitmap)
+                                }
+                            }
+                        }
+                    } catch (_: Exception) {
+                    }
                 }
-                "Terang Bulan" -> {
-                    imgMenuPos.setImageResource(R.drawable.logo_jenggirat_transparent)
-                }
-                else -> {
-                    imgMenuPos.setImageResource(R.drawable.logo_jenggirat_transparent)
-                }
+            } else {
+                imgMenuPos.setPadding(6, 6, 6, 6)
+                imgMenuPos.scaleType = android.widget.ImageView.ScaleType.CENTER_INSIDE
+                imgMenuPos.setImageResource(R.drawable.logo_jenggirat_transparent)
             }
 
             btnPilihMenuPos.setOnClickListener {
