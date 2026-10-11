@@ -36,7 +36,8 @@ class KasirFragment : Fragment() {
     data class MenuModel(
         val nama: String,
         val harga: Int,
-        val kategori: String
+        val kategori: String,
+        val imageUrl: String = ""
     )
 
     private val listSemuaMenu = ArrayList<MenuModel>()
@@ -207,7 +208,8 @@ class KasirFragment : Fragment() {
                         val nama = doc.getString("name") ?: "Menu"
                         val harga = (doc.getLong("price") ?: 0L).toInt()
                         val kategori = doc.getString("category") ?: "Martabak Telur"
-                        listSemuaMenu.add(MenuModel(nama, harga, kategori))
+                        val imageUrl = doc.getString("imageUrl") ?: ""
+                        listSemuaMenu.add(MenuModel(nama, harga, kategori, imageUrl))
                     }
                 }
 
