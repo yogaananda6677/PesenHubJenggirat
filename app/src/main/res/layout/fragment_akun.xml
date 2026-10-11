@@ -115,7 +115,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Anda dapat mengubah nama lengkap, nomor WhatsApp, domisili, dan bio."
+                android:text="Anda dapat mengubah nama lengkap, nomor WhatsApp, dan alamat domisili."
                 android:textColor="#6C757D"
                 android:textSize="11sp"
                 android:layout_marginBottom="16dp" />
@@ -179,28 +179,6 @@
                 android:minHeight="48dp"
                 android:hint="Masukkan alamat tinggal Anda"
                 android:inputType="textPostalAddress|textMultiLine"
-                android:padding="12dp"
-                android:textSize="14sp"
-                android:background="@android:drawable/editbox_background"
-                android:layout_marginBottom="14dp" />
-
-            <!-- Input Bio Singkat -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Bio / Catatan Diri"
-                android:textStyle="bold"
-                android:textColor="#495057"
-                android:textSize="12sp"
-                android:layout_marginBottom="4dp" />
-
-            <EditText
-                android:id="@+id/edBioProfil"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:minHeight="48dp"
-                android:hint="Tulis catatan singkat tentang Anda..."
-                android:inputType="textMultiLine"
                 android:padding="12dp"
                 android:textSize="14sp"
                 android:background="@android:drawable/editbox_background"

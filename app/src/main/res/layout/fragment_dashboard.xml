@@ -320,10 +320,13 @@
                 android:text="Antrean Dapur"
                 android:textColor="@color/primary"
                 android:textSize="13sp"
+                android:textStyle="bold"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                 app:strokeColor="@color/primary"
                 app:strokeWidth="1.5dp"
                 app:cornerRadius="8dp"
+                app:icon="@drawable/ic_nav_antrian"
+                app:iconTint="@color/primary"
                 android:layout_marginEnd="4dp" />
 
             <com.google.android.material.button.MaterialButton
@@ -332,16 +335,36 @@
                 android:layout_height="48dp"
                 android:layout_weight="1"
                 android:text="Riwayat Transaksi"
-                android:textColor="@color/primary"
+                android:textColor="#1565C0"
                 android:textSize="13sp"
+                android:textStyle="bold"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                app:strokeColor="@color/primary"
+                app:strokeColor="#1976D2"
                 app:strokeWidth="1.5dp"
                 app:cornerRadius="8dp"
+                app:icon="@drawable/ic_nav_riwayat"
+                app:iconTint="#1565C0"
                 android:layout_marginStart="4dp" />
         </LinearLayout>
 
-        <!-- Tombol Khusus Admin -->
+        <!-- Tombol Khusus Admin: Highlight Kelola Menu & Harga (Solid Coklat Martabak) -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnKelolaMenu"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:text="Kelola Menu &amp; Harga Multi-Channel"
+            android:textColor="@color/white"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            app:backgroundTint="#4E342E"
+            app:cornerRadius="8dp"
+            app:icon="@drawable/ic_menu_martabak"
+            app:iconTint="@color/white"
+            app:iconGravity="textStart"
+            android:elevation="2dp"
+            android:visibility="gone"
+            android:layout_marginTop="8dp" />
+
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnUndangKasir"
             android:layout_width="match_parent"
@@ -354,21 +377,9 @@
             app:strokeColor="#8D6E63"
             app:strokeWidth="1.5dp"
             app:cornerRadius="8dp"
-            android:visibility="gone"
-            android:layout_marginTop="8dp" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnKelolaMenu"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:text="Kelola Menu &amp; Harga Multi-Channel"
-            android:textColor="@color/primary"
-            android:textSize="13sp"
-            android:textStyle="bold"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-            app:strokeColor="@color/primary"
-            app:strokeWidth="1.5dp"
-            app:cornerRadius="8dp"
+            app:icon="@drawable/ic_nav_account"
+            app:iconTint="#4E342E"
+            app:iconGravity="textStart"
             android:visibility="gone"
             android:layout_marginTop="8dp" />
 
@@ -379,7 +390,8 @@
             android:orientation="vertical"
             android:background="@drawable/bg_card_minimal"
             android:padding="14dp"
-            android:layout_marginTop="16dp">
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="24dp">
 
             <TextView
                 android:layout_width="wrap_content"
@@ -398,49 +410,6 @@
                 android:textStyle="italic"
                 android:textColor="#495057"
                 android:layout_marginTop="4dp" />
-        </LinearLayout>
-
-        <!-- Card Status Sistem Minimalis -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:background="@drawable/bg_card_minimal"
-            android:padding="14dp"
-            android:layout_marginTop="12dp"
-            android:layout_marginBottom="24dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Status Koneksi &amp; Sistem"
-                android:textStyle="bold"
-                android:textSize="12sp"
-                android:textColor="#495057" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="• Cloud Firestore: Sinkron Realtime (Koleksi 'orders' &amp; 'menus')"
-                android:textSize="11sp"
-                android:textColor="#6C757D"
-                android:layout_marginTop="6dp" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="• SQLite Database: Aktif (Arsip 'riwayat_transaksi')"
-                android:textSize="11sp"
-                android:textColor="#6C757D"
-                android:layout_marginTop="3dp" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="• Customer Web Portal: Terhubung"
-                android:textSize="11sp"
-                android:textColor="#6C757D"
-                android:layout_marginTop="3dp" />
         </LinearLayout>
 
     </LinearLayout>
