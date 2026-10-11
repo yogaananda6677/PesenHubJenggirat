@@ -64,9 +64,8 @@ class AkunFragment : Fragment() {
         val outlet = pref.getString("namaOutlet", "Jenggirat Kediri") ?: "Jenggirat Kediri"
         val phone = pref.getString("phone", "") ?: ""
         val alamat = pref.getString("alamat", "") ?: ""
-        val bio = pref.getString("bio", "") ?: ""
 
-        tampilkanKeView(nama, email, role, outlet, phone, alamat, bio)
+        tampilkanKeView(nama, email, role, outlet, phone, alamat)
     }
 
     private fun ambilDataDariFirestore() {
@@ -83,7 +82,6 @@ class AkunFragment : Fragment() {
                 val docOutlet = doc.getString("namaOutlet") ?: "Jenggirat Kediri"
                 val phone = doc.getString("phone") ?: ""
                 val alamat = doc.getString("alamat") ?: ""
-                val bio = doc.getString("bio") ?: ""
 
                 role = docRole
                 email = docEmail
@@ -98,10 +96,9 @@ class AkunFragment : Fragment() {
                     .putString("namaOutlet", docOutlet)
                     .putString("phone", phone)
                     .putString("alamat", alamat)
-                    .putString("bio", bio)
                     .apply()
 
-                tampilkanKeView(nama, docEmail, docRole, docOutlet, phone, alamat, bio)
+                tampilkanKeView(nama, docEmail, docRole, docOutlet, phone, alamat)
             }
     }
 
@@ -111,8 +108,7 @@ class AkunFragment : Fragment() {
         role: String,
         outlet: String,
         phone: String,
-        alamat: String,
-        bio: String
+        alamat: String
     ) {
         val displayNama = nama.ifEmpty { email.substringBefore("@") }
         b.txHeaderNama.text = displayNama
@@ -128,14 +124,12 @@ class AkunFragment : Fragment() {
         if (b.edNamaProfil.text.isNullOrEmpty()) b.edNamaProfil.setText(displayNama)
         if (b.edPhoneProfil.text.isNullOrEmpty()) b.edPhoneProfil.setText(phone)
         if (b.edAlamatProfil.text.isNullOrEmpty()) b.edAlamatProfil.setText(alamat)
-        if (b.edBioProfil.text.isNullOrEmpty()) b.edBioProfil.setText(bio)
     }
 
     private fun simpanPerubahanBiodata() {
         val namaBaru = b.edNamaProfil.text.toString().trim()
         val phoneBaru = b.edPhoneProfil.text.toString().trim()
         val alamatBaru = b.edAlamatProfil.text.toString().trim()
-        val bioBaru = b.edBioProfil.text.toString().trim()
 
         if (namaBaru.isEmpty()) {
             b.edNamaProfil.error = "Nama lengkap tidak boleh kosong"
@@ -156,7 +150,6 @@ class AkunFragment : Fragment() {
             "nama" to namaBaru,
             "phone" to phoneBaru,
             "alamat" to alamatBaru,
-            "bio" to bioBaru,
             "updatedAt" to Timestamp.now()
         )
 
@@ -173,7 +166,6 @@ class AkunFragment : Fragment() {
                     .putString("nama", namaBaru)
                     .putString("phone", phoneBaru)
                     .putString("alamat", alamatBaru)
-                    .putString("bio", bioBaru)
                     .apply()
 
                 // Update tampilan profil atas
