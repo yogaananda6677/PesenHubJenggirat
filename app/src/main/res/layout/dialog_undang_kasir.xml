@@ -111,7 +111,22 @@
             android:text="Status: PENDING (Menunggu kasir mendaftar)"
             android:textSize="11sp"
             android:textColor="#5D4037"
-            android:layout_marginBottom="10dp" />
+            android:layout_marginBottom="12dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnKirimEmail"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:text="Kirim Email Undangan"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:textColor="@color/white"
+            app:icon="@drawable/ic_email"
+            app:iconGravity="textStart"
+            app:iconTint="@color/white"
+            app:backgroundTint="#1565C0"
+            app:cornerRadius="6dp"
+            android:layout_marginBottom="8dp" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -136,7 +151,7 @@
                 android:layout_width="0dp"
                 android:layout_height="40dp"
                 android:layout_weight="1"
-                android:text="Bagikan Kode"
+                android:text="Bagikan Chat"
                 android:textSize="11sp"
                 android:textColor="@color/white"
                 app:backgroundTint="#2E7D32"

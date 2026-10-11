@@ -11,6 +11,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.media.AudioAttributes
 import android.media.RingtoneManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.view.Menu
@@ -458,6 +459,7 @@ class MainActivity : AppCompatActivity() {
         val btnGenerate = dialogView.findViewById<View>(R.id.btnGenerateKode)
         val layoutHasil = dialogView.findViewById<View>(R.id.layoutHasilKode)
         val txKodeHasil = dialogView.findViewById<TextView>(R.id.txKodeHasil)
+        val btnKirimEmail = dialogView.findViewById<View>(R.id.btnKirimEmail)
         val btnSalin = dialogView.findViewById<View>(R.id.btnSalinKode)
         val btnBagikan = dialogView.findViewById<View>(R.id.btnBagikanKode)
 
@@ -498,6 +500,62 @@ class MainActivity : AppCompatActivity() {
                 }
         }
 
+        btnKirimEmail.setOnClickListener {
+            val kode = txKodeHasil.text.toString()
+            val namaKasir = edNamaKasir.text.toString().trim().ifEmpty { "Rekan Kasir" }
+            val emailKasir = edEmailKasir.text.toString().trim()
+            val adminEmail = auth.currentUser?.email ?: "Admin Outlet"
+
+            if (emailKasir.isEmpty()) {
+                edEmailKasir.error = "Email kasir wajib diisi untuk mengirim undangan"
+                Toast.makeText(this, "Masukkan Email Kasir terlebih dahulu!", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            val subject = "[PesenHub Jenggirat] Undangan Bergabung sebagai Staf Kasir - $namaOutlet"
+            val body = """
+                Halo $namaKasir,
+
+                Anda telah diundang oleh Admin ($adminEmail) untuk bergabung sebagai Staf Kasir resmi di outlet:
+                Outlet : $namaOutlet
+                Role   : Kasir (Cashier POS)
+
+                Berikut detail kredensial dan kode aktivasi Anda:
+                =================================================
+                KODE UNDANGAN : $kode
+                EMAIL TUJUAN  : $emailKasir
+                STATUS        : PENDING (Siap diaktivasi)
+                =================================================
+
+                Panduan Aktivasi Akun Kasir:
+                1. Buka aplikasi PesenHub Jenggirat di smartphone Android Anda.
+                2. Pada halaman Login, klik 'Belum punya akun? Daftar sekarang'.
+                3. Pilih tipe akun 'Kasir (Memerlukan Undangan)'.
+                4. Lengkapi Nama Lengkap Anda, Email ($emailKasir), buat Password, dan masukkan Kode Undangan di atas ($kode).
+                5. Klik 'DAFTAR SEBAGAI KASIR'.
+                6. Selesai! Anda dapat langsung login dan melayani transaksi kasir di $namaOutlet.
+
+                Jika ada kendala aktivasi, silakan hubungi Admin Outlet melalui email: $adminEmail.
+
+                Salam hangat,
+                Manajemen $namaOutlet
+                PesenHub Jenggirat System
+            """.trimIndent()
+
+            val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
+                data = Uri.parse("mailto:$emailKasir")
+                putExtra(Intent.EXTRA_EMAIL, arrayOf(emailKasir))
+                putExtra(Intent.EXTRA_SUBJECT, subject)
+                putExtra(Intent.EXTRA_TEXT, body)
+            }
+
+            try {
+                startActivity(Intent.createChooser(emailIntent, "Kirim Undangan Kasir via Email"))
+            } catch (e: Exception) {
+                Toast.makeText(this, "Tidak ada aplikasi email yang terpasang: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
+
         btnSalin.setOnClickListener {
             val kode = txKodeHasil.text.toString()
             val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
@@ -508,13 +566,34 @@ class MainActivity : AppCompatActivity() {
 
         btnBagikan.setOnClickListener {
             val kode = txKodeHasil.text.toString()
-            val namaKasir = edNamaKasir.text.toString().trim()
-            val pesan = "Halo $namaKasir! Anda diundang menjadi Kasir di $namaOutlet. Silakan unduh/buka aplikasi PesenHub Jenggirat, pilih 'Daftar Kasir (Diundang)', dan masukkan Kode Undangan: *$kode*"
+            val namaKasir = edNamaKasir.text.toString().trim().ifEmpty { "Rekan Kasir" }
+            val emailKasir = edEmailKasir.text.toString().trim()
+            val emailInfo = if (emailKasir.isNotEmpty()) "\n📧 *Email Terdaftar:* $emailKasir" else ""
+            val pesan = """
+                *UNDANGAN RESMI KASIR - PESENHUB JENGGIRAT* ☕🍽️
+
+                Halo *$namaKasir*,
+                Anda telah diundang oleh Admin untuk bergabung sebagai *Staf Kasir* di outlet:
+                🏪 *Outlet:* $namaOutlet
+                👤 *Role:* Kasir$emailInfo
+
+                🔑 *KODE UNDANGAN:* *$kode*
+
+                *Langkah Aktivasi Akun:*
+                1. Buka aplikasi *PesenHub Jenggirat*.
+                2. Di halaman Login, klik *Daftar Sekarang*.
+                3. Pilih tipe akun *Kasir (Memerlukan Undangan)*.
+                4. Masukkan nama, email ($emailKasir), password, serta Kode Undangan di atas (*$kode*).
+                5. Selesai! Anda langsung terhubung dan siap melayani transaksi di outlet.
+
+                _Harap simpan kode undangan ini dengan baik._
+            """.trimIndent()
+
             val shareIntent = Intent(Intent.ACTION_SEND).apply {
                 type = "text/plain"
                 putExtra(Intent.EXTRA_TEXT, pesan)
             }
-            startActivity(Intent.createChooser(shareIntent, "Bagikan Kode Undangan Kasir"))
+            startActivity(Intent.createChooser(shareIntent, "Bagikan Undangan Kasir via Chat"))
         }
 
         dialog.show()
