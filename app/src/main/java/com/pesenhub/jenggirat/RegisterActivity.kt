@@ -92,13 +92,18 @@ class RegisterActivity : AppCompatActivity() {
                 // Simpan profil admin ke koleksi Firestore users
                 dbFirestore.collection("users").document(uid).set(adminData)
                     .addOnSuccessListener {
-                        simpanSessionLocal(uid, nama, email, "admin", namaOutlet)
-                        setSedangMemuat(false)
-                        Toast.makeText(this, "Registrasi Admin Outlet berhasil!", Toast.LENGTH_SHORT).show()
-                        val intent = Intent(this, MainActivity::class.java)
-                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                        startActivity(intent)
-                        finish()
+                        // Sesuai Modul 04 PML: Kirim email verifikasi akun resmi
+                        result.user?.sendEmailVerification()
+                            ?.addOnCompleteListener {
+                                auth.signOut()
+                                setSedangMemuat(false)
+                                Toast.makeText(
+                                    this,
+                                    "Berhasil mendaftarkan user, silahkan cek email anda untuk memverifikasi akun anda",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                                tampilkanDialogVerifikasiBerhasil(email)
+                            }
                     }
                     .addOnFailureListener { e ->
                         setSedangMemuat(false)
@@ -111,7 +116,8 @@ class RegisterActivity : AppCompatActivity() {
                     // Coba sign in untuk menyimpan data profil Firestore
                     auth.signInWithEmailAndPassword(email, password)
                         .addOnSuccessListener { result ->
-                            val uid = result.user?.uid ?: ""
+                            val user = result.user
+                            val uid = user?.uid ?: ""
                             val adminData = hashMapOf(
                                 "uid" to uid,
                                 "nama" to nama,
@@ -122,13 +128,17 @@ class RegisterActivity : AppCompatActivity() {
                             )
                             dbFirestore.collection("users").document(uid).set(adminData)
                                 .addOnSuccessListener {
-                                    simpanSessionLocal(uid, nama, email, "admin", namaOutlet)
+                                    if (user?.isEmailVerified == false) {
+                                        user.sendEmailVerification()
+                                    }
+                                    auth.signOut()
                                     setSedangMemuat(false)
-                                    Toast.makeText(this, "Profil Admin berhasil diperbarui!", Toast.LENGTH_SHORT).show()
-                                    val intent = Intent(this, MainActivity::class.java)
-                                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                                    startActivity(intent)
-                                    finish()
+                                    Toast.makeText(
+                                        this,
+                                        "Profil Admin diperbarui. Silakan cek email untuk verifikasi akun anda.",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                    tampilkanDialogVerifikasiBerhasil(email)
                                 }
                                 .addOnFailureListener { err ->
                                     setSedangMemuat(false)
@@ -240,13 +250,18 @@ class RegisterActivity : AppCompatActivity() {
 
                         dbFirestore.collection("users").document(uid).set(kasirData)
                             .addOnSuccessListener {
-                                simpanSessionLocal(uid, nama, email, "kasir", namaOutlet)
-                                setSedangMemuat(false)
-                                Toast.makeText(this, "Registrasi Kasir berhasil via Undangan Admin!", Toast.LENGTH_SHORT).show()
-                                val intent = Intent(this, MainActivity::class.java)
-                                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                                startActivity(intent)
-                                finish()
+                                // Sesuai Modul 04 PML: Kirim email verifikasi akun resmi
+                                result.user?.sendEmailVerification()
+                                    ?.addOnCompleteListener {
+                                        auth.signOut()
+                                        setSedangMemuat(false)
+                                        Toast.makeText(
+                                            this,
+                                            "Berhasil mendaftarkan kasir, silahkan cek email anda untuk memverifikasi akun anda",
+                                            Toast.LENGTH_LONG
+                                        ).show()
+                                        tampilkanDialogVerifikasiBerhasil(email)
+                                    }
                             }
                             .addOnFailureListener { e ->
                                 setSedangMemuat(false)
@@ -262,6 +277,29 @@ class RegisterActivity : AppCompatActivity() {
                 setSedangMemuat(false)
                 Toast.makeText(this, "Gagal memverifikasi kode undangan: ${e.message}", Toast.LENGTH_LONG).show()
             }
+    }
+
+    private fun tampilkanDialogVerifikasiBerhasil(email: String) {
+        androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle("Registrasi Berhasil! 📧")
+            .setMessage("Akun Anda ($email) berhasil didaftarkan.\n\nSesuai standar keamanan Modul 04 PML, tautan aktivasi telah dikirimkan ke Gmail Anda. Silakan buka aplikasi Gmail dan klik tautan verifikasi sebelum melakukan login.")
+            .setPositiveButton("Buka Gmail") { _, _ ->
+                val intent = Intent(Intent.ACTION_MAIN).apply {
+                    addCategory(Intent.CATEGORY_APP_EMAIL)
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                }
+                try {
+                    startActivity(intent)
+                } catch (e: Exception) {
+                    Toast.makeText(this, "Silakan buka Gmail secara manual untuk aktivasi", Toast.LENGTH_SHORT).show()
+                }
+                finish()
+            }
+            .setNegativeButton("Ke Halaman Login") { _, _ ->
+                finish()
+            }
+            .setCancelable(false)
+            .show()
     }
 
     private fun simpanSessionLocal(uid: String, nama: String, email: String, role: String, outlet: String) {

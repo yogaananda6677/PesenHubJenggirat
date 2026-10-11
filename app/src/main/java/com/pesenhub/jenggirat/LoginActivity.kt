@@ -82,35 +82,51 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener {
                 auth.signInWithEmailAndPassword(email, password)
                     .addOnCompleteListener { task ->
                         if (task.isSuccessful) {
-                            val uid = auth.currentUser?.uid ?: ""
-                            val dbFirestore = com.google.firebase.firestore.FirebaseFirestore.getInstance()
+                            val user = auth.currentUser
+                            if (user == null) {
+                                Toast.makeText(this, "Pengguna tidak ditemukan", Toast.LENGTH_SHORT).show()
+                                return@addOnCompleteListener
+                            }
 
-                            dbFirestore.collection("users").document(uid).get()
-                                .addOnSuccessListener { doc ->
-                                    val role = doc.getString("role") ?: "kasir"
-                                    val nama = doc.getString("nama") ?: email
-                                    val outlet = doc.getString("namaOutlet") ?: "PesenHub Jenggirat"
+                            // Reload user state agar status isEmailVerified terbaru tersinkronisasi dari server Firebase
+                            user.reload().addOnCompleteListener {
+                                if (user.isEmailVerified) {
+                                    // Sesuai Modul 04 PML: Email valid dan terverifikasi
+                                    val uid = user.uid
+                                    val dbFirestore = com.google.firebase.firestore.FirebaseFirestore.getInstance()
 
-                                    val userSession = getSharedPreferences("UserSession", Context.MODE_PRIVATE)
-                                    userSession.edit()
-                                        .putString("uid", uid)
-                                        .putString("nama", nama)
-                                        .putString("email", email)
-                                        .putString("role", role)
-                                        .putString("namaOutlet", outlet)
-                                        .apply()
+                                    dbFirestore.collection("users").document(uid).get()
+                                        .addOnSuccessListener { doc ->
+                                            val role = doc.getString("role") ?: "kasir"
+                                            val nama = doc.getString("nama") ?: email
+                                            val outlet = doc.getString("namaOutlet") ?: "PesenHub Jenggirat"
 
-                                    Toast.makeText(this, "Login berhasil sebagai ${role.uppercase()}! Halo $nama", Toast.LENGTH_SHORT).show()
-                                    val intent = Intent(this, MainActivity::class.java)
-                                    startActivity(intent)
-                                    finish()
+                                            val userSession = getSharedPreferences("UserSession", Context.MODE_PRIVATE)
+                                            userSession.edit()
+                                                .putString("uid", uid)
+                                                .putString("nama", nama)
+                                                .putString("email", email)
+                                                .putString("role", role)
+                                                .putString("namaOutlet", outlet)
+                                                .apply()
+
+                                            Toast.makeText(this, "Login berhasil sebagai ${role.uppercase()}! Halo $nama", Toast.LENGTH_SHORT).show()
+                                            val intent = Intent(this, MainActivity::class.java)
+                                            startActivity(intent)
+                                            finish()
+                                        }
+                                        .addOnFailureListener {
+                                            Toast.makeText(this, "Login berhasil! Selamat datang $email", Toast.LENGTH_SHORT).show()
+                                            val intent = Intent(this, MainActivity::class.java)
+                                            startActivity(intent)
+                                            finish()
+                                        }
+                                } else {
+                                    // Sesuai Modul 04 PML: Toast "Email anda belum terverifikasi"
+                                    Toast.makeText(this, "Email anda belum terverifikasi", Toast.LENGTH_SHORT).show()
+                                    tampilkanDialogBelumVerifikasi(user, email)
                                 }
-                                .addOnFailureListener {
-                                    Toast.makeText(this, "Login berhasil! Selamat datang $email", Toast.LENGTH_SHORT).show()
-                                    val intent = Intent(this, MainActivity::class.java)
-                                    startActivity(intent)
-                                    finish()
-                                }
+                            }
                         } else {
                             Toast.makeText(this, "Gagal login: ${task.exception?.message}", Toast.LENGTH_LONG).show()
                         }
@@ -122,5 +138,39 @@ class LoginActivity : AppCompatActivity(), View.OnClickListener {
                 startActivity(intent)
             }
         }
+    }
+
+    private fun tampilkanDialogBelumVerifikasi(user: com.google.firebase.auth.FirebaseUser, email: String) {
+        androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle("Email Belum Terverifikasi ⚠️")
+            .setMessage("Akun Anda ($email) belum diaktivasi via tautan email.\n\nSesuai standar autentikasi Modul 04 PML, silakan periksa kotak masuk atau spam pada aplikasi Gmail Anda dan klik tautan aktivasi.")
+            .setPositiveButton("Kirim Ulang Link Aktivasi") { _, _ ->
+                user.sendEmailVerification()
+                    .addOnSuccessListener {
+                        Toast.makeText(this, "Link aktivasi baru telah dikirimkan ke $email. Silakan periksa Gmail Anda!", Toast.LENGTH_LONG).show()
+                        auth.signOut()
+                    }
+                    .addOnFailureListener { e ->
+                        Toast.makeText(this, "Gagal mengirim ulang email: ${e.message}", Toast.LENGTH_SHORT).show()
+                        auth.signOut()
+                    }
+            }
+            .setNeutralButton("Buka Gmail") { _, _ ->
+                auth.signOut()
+                val intent = Intent(Intent.ACTION_MAIN).apply {
+                    addCategory(Intent.CATEGORY_APP_EMAIL)
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                }
+                try {
+                    startActivity(intent)
+                } catch (e: Exception) {
+                    Toast.makeText(this, "Silakan buka aplikasi Gmail secara manual", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .setNegativeButton("Tutup") { _, _ ->
+                auth.signOut()
+            }
+            .setCancelable(false)
+            .show()
     }
 }
