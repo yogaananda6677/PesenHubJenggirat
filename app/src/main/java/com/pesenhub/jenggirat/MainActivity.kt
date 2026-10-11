@@ -60,9 +60,11 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Cek Sesi Firebase Auth: Jika belum login, arahkan ke LoginActivity
+        // Cek Sesi Firebase Auth: Jika belum login atau belum verifikasi email, arahkan ke LoginActivity (Modul 04 PML)
         auth = FirebaseAuth.getInstance()
-        if (auth.currentUser == null) {
+        val currentUser = auth.currentUser
+        if (currentUser == null || !currentUser.isEmailVerified) {
+            auth.signOut()
             val intent = Intent(this, LoginActivity::class.java)
             startActivity(intent)
             finish()
