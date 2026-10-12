@@ -8,6 +8,7 @@ import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.ImageView
@@ -97,6 +98,18 @@ class KasirFragment : Fragment() {
 
         b.btnClearSearch.setOnClickListener {
             b.edtCariMenuPos.setText("")
+        }
+
+        // AutoCompleteTextView item click listener (UTS Fitur No. 5)
+        b.edtCariMenuPos.setOnItemClickListener { _, _, position, _ ->
+            val adapter = b.edtCariMenuPos.adapter
+            val selectedNama = adapter?.getItem(position) as? String
+            if (selectedNama != null) {
+                val menu = listSemuaMenu.find { it.nama.equals(selectedNama, ignoreCase = true) }
+                if (menu != null) {
+                    tampilkanBottomSheetPilihMenu(menu)
+                }
+            }
         }
 
         // 3. Setup Filter Kategori Horizontal Chips
@@ -234,7 +247,16 @@ class KasirFragment : Fragment() {
                 }
 
                 filterDanTampilkanMenu()
+                setupAutoCompleteSuggestions()
             }
+    }
+
+    private fun setupAutoCompleteSuggestions() {
+        if (!isAdded) return
+        val namaList = listSemuaMenu.map { it.nama }.distinct()
+        val autoAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, namaList)
+        b.edtCariMenuPos.setAdapter(autoAdapter)
+        b.edtCariMenuPos.threshold = 1
     }
 
     private fun perbaruiFloatingCartBar() {
