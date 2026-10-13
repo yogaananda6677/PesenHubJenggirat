@@ -197,9 +197,9 @@ class CustomerOrderController extends Controller
         $outlet = [
             'name'      => 'Jenggirat Kediri',
             'fullName'  => 'Martabak & Terang Bulan Jenggirat Kediri',
-            'latitude'  => -7.8166,
-            'longitude' => 112.0116,
-            'address'   => 'Kediri, Jawa Timur',
+            'latitude'  => -7.811504,
+            'longitude' => 112.050470,
+            'address'   => 'Jl. Erlangga (Katang), Kec. Ngasem, Kab. Kediri, Jawa Timur 64182',
             'hours'     => '16.00 - 23.00 WIB',
             'phone'     => '0812-3456-7890',
         ];

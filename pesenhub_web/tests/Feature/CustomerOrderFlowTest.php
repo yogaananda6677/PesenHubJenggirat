@@ -215,8 +215,8 @@ class CustomerOrderFlowTest extends TestCase
         $response = $this->get(route('outlet.location'));
         $response->assertStatus(200);
         $response->assertSee('Peta Lokasi Outlet Jenggirat');
-        $response->assertSee('112.0116');
-        $response->assertSee('-7.8166');
+        $response->assertSee('112.05047');
+        $response->assertSee('-7.811504');
     }
 }
 

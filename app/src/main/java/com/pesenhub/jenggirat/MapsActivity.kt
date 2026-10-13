@@ -21,8 +21,8 @@ class MapsActivity : AppCompatActivity() {
     lateinit var b: ActivityMapsBinding
     private lateinit var fusedLocationClient: FusedLocationProviderClient
 
-    // Koordinat Outlet Martabak Jenggirat (Kediri)
-    private val outletPoint = GeoPoint(-7.8166, 112.0116)
+    // Koordinat Outlet Martabak Jenggirat (Katang, Ngasem, Kediri)
+    private val outletPoint = GeoPoint(-7.811504, 112.050470)
     private var markerUser: Marker? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,17 +40,19 @@ class MapsActivity : AppCompatActivity() {
         b.mapView.setTileSource(TileSourceFactory.MAPNIK)
         b.mapView.setMultiTouchControls(true)
         val mapController = b.mapView.controller
-        mapController.setZoom(16.0)
+        mapController.setZoom(16.5)
         mapController.setCenter(outletPoint)
 
         // 3. Tambahkan Pin / Marker Lokasi Outlet
         val markerOutlet = Marker(b.mapView)
         markerOutlet.position = outletPoint
         markerOutlet.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-        markerOutlet.title = "Jenggirat Kediri"
-        markerOutlet.snippet = "Outlet Martabak & Terang Bulan Jenggirat Kediri"
+        markerOutlet.title = "Martabak & Terang Bulan Jenggirat"
+        markerOutlet.snippet = "Jl. Erlangga (Katang), Ngasem, Kediri"
         b.mapView.overlays.add(markerOutlet)
         b.mapView.invalidate()
+
+        b.txInfoLokasi.text = "Outlet: Martabak Jenggirat (-7.8115, 112.0505) - Jl. Erlangga, Katang"
 
         // 4. Tombol Pusatkan ke Outlet
         b.btnPusatOutlet.setOnClickListener {

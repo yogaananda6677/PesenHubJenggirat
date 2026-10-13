@@ -73,7 +73,7 @@
             android:id="@+id/txInfoLokasi"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Outlet: Jenggirat Kediri (-7.8166, 112.0116)"
+            android:text="Outlet: Martabak Jenggirat (-7.8115, 112.0505) - Jl. Erlangga, Katang"
             android:textSize="12sp"
             android:textStyle="bold"
             android:textColor="@color/black" />
