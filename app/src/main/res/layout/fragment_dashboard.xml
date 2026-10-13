@@ -360,6 +360,8 @@
             app:cornerRadius="8dp"
             app:icon="@drawable/ic_menu_martabak"
             app:iconTint="@color/white"
+            app:iconSize="20dp"
+            app:iconPadding="8dp"
             app:iconGravity="textStart"
             android:elevation="2dp"
             android:visibility="gone"
