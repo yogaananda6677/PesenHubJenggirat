@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Bedah Kode Lengkap: PesenHub Jenggirat (Web & Mobile)</title>
+<style>
+  @page {
+    size: A4 portrait;
+    margin: 10mm 12mm 10mm 12mm;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'DejaVu Sans', 'Liberation Sans', Arial, sans-serif;
+    color: #1e293b;
+    background-color: #ffffff;
+    line-height: 1.35;
+    font-size: 8pt;
+    margin: 0;
+    padding: 0;
+  }
+  .header-box {
+    background: linear-gradient(135deg, #9a3412, #ea580c, #f97316);
+    color: #ffffff;
+    padding: 12px 16px;
+    border-radius: 6px;
+    margin-bottom: 10px;
+  }
+  .header-box h1 {
+    margin: 0 0 2px 0;
+    font-size: 15pt;
+    font-weight: bold;
+    letter-spacing: -0.3px;
+  }
+  .header-box .subtitle {
+    margin: 0;
+    font-size: 9pt;
+    opacity: 0.95;
+    font-weight: 500;
+  }
+  .header-box .meta-row {
+    margin-top: 5px;
+    padding-top: 4px;
+    border-top: 1px solid rgba(255,255,255,0.3);
+    font-size: 7.4pt;
+    opacity: 0.9;
+    display: table;
+    width: 100%;
+  }
+  .header-box .meta-left { display: table-cell; text-align: left; }
+  .header-box .meta-right { display: table-cell; text-align: right; }
+
+  h2 {
+    color: #9a3412;
+    font-size: 11pt;
+    border-bottom: 1.5px solid #fdba74;
+    padding-bottom: 2px;
+    margin-top: 10px;
+    margin-bottom: 6px;
+    page-break-after: avoid;
+  }
+  h3 {
+    color: #0f172a;
+    font-size: 9pt;
+    margin-top: 8px;
+    margin-bottom: 3px;
+    page-break-after: avoid;
+  }
+
+  p { margin: 0 0 4px 0; }
+
+  .badge {
+    display: inline-block;
+    padding: 1.5px 5px;
+    font-size: 6.8pt;
+    font-weight: bold;
+    border-radius: 3px;
+    text-transform: uppercase;
+  }
+  .badge-mobile { background-color: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
+  .badge-web { background-color: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+  .badge-db { background-color: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+  .badge-cloud { background-color: #f3e8ff; color: #6b21a8; border: 1px solid #e9d5ff; }
+
+  .card-code {
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-left: 3.5px solid #ea580c;
+    border-radius: 4px;
+    padding: 7px 10px;
+    margin-bottom: 8px;
+    page-break-inside: avoid;
+  }
+  .card-code.blue { border-left-color: #0284c7; }
+  .card-code.green { border-left-color: #10b981; }
+  .card-code.purple { border-left-color: #8b5cf6; }
+
+  .code-title {
+    font-family: 'DejaVu Sans Mono', monospace;
+    font-size: 8.5pt;
+    font-weight: bold;
+    color: #0f172a;
+    display: flex;
+    justify-content: space-between;
+  }
+  .code-sub {
+    font-size: 7.2pt;
+    color: #64748b;
+    margin-bottom: 4px;
+  }
+
+  .box-desc {
+    margin-top: 4px;
+    font-size: 7.6pt;
+    line-height: 1.35;
+  }
+  .box-desc b { color: #334155; }
+  .box-desc code {
+    font-family: 'DejaVu Sans Mono', monospace;
+    background-color: #f1f5f9;
+    padding: 1px 3px;
+    border-radius: 2px;
+    color: #c2410c;
+    font-size: 7.2pt;
+  }
+
+  .snippet {
+    background: #0f172a;
+    color: #f8fafc;
+    padding: 5px 8px;
+    border-radius: 4px;
+    font-family: 'DejaVu Sans Mono', monospace;
+    font-size: 6.8pt;
+    line-height: 1.35;
+    margin-top: 4px;
+    margin-bottom: 2px;
+  }
+  .snippet .c { color: #94a3b8; }
+  .snippet .k { color: #f472b6; }
+  .snippet .s { color: #facc15; }
+  .snippet .f { color: #38bdf8; }
+
+  .page-break { page-break-before: always; }
+
+  .footer-bar {
+    font-size: 6.8pt;
+    color: #64748b;
+    text-align: center;
+    margin-top: 8px;
+    border-top: 1px solid #e2e8f0;
+    padding-top: 3px;
+    page-break-inside: avoid;
+  }
+</style>
+</head>
+<body>
+
+  <!-- ==================== COVER / HALAMAN 1 ==================== -->
+  <div class="header-box">
+    <h1>BEDAH KODE LENGKAP: PESENHUB JENGGIRAT</h1>
+    <div class="subtitle">Penjelasan Mendalam Setiap Komponen Kode: Fungsi Nyata, Logika Internal, dan Alasan Desain</div>
+    <div class="meta-row">
+      <div class="meta-left">Repositori: PesenHub Jenggirat &bull; Modul: PM &amp; PML 2026/2027</div>
+      <div class="meta-right">Platform: Android Kotlin Native + Laravel PHP Web</div>
+    </div>
+  </div>
+
+  <h2>1. Arsitektur &amp; Hubungan Antar-Komponen Sistem</h2>
+  <div class="card-code green">
+    <b>Bagaimana Web dan Android Saling Berkomunikasi?</b>
+    <div class="box-desc">
+      Sistem ini tidak menggunakan server socket mandiri, melainkan bertumpu pada <b>Cloud Firestore</b> sebagai <i>event broker</i> realtime:
+      <ol style="margin: 3px 0 0 14px; padding: 0;">
+        <li><b>Pelanggan Web (Laravel):</b> Mengirimkan data formulir pesanan melalui HTTP POST. Controller Laravel memformat dokumen NoSQL dan memanggil <code>FirestoreService->createOrder()</code> via Google Cloud REST API v1. Dokumen masuk ke koleksi <code>/orders</code> dengan field <code>status: "PENDING"</code> dan <code>source: "CUSTOMER_WEB"</code>.</li>
+        <li><b>Android Gateway (MainActivity):</b> Memasang <code>addSnapshotListener</code> pada koleksi <code>/orders</code> dengan filter status PENDING. Saat dokumen web masuk, event <code>DocumentChange.Type.ADDED</code> terpicu secara instan (sub-second), membunyikan alarm bel lewat <code>SoundHelper</code> dan menampilkan dialog konfirmasi di layar kasir.</li>
+        <li><b>Dapur KDS (AntrianFragment):</b> Kru dapur memproses pesanan dengan mengubah status ke <code>PREPARING</code>. Halaman web pelanggan yang sedang memantau secara berkala (polling API status) mendeteksi perubahan ini dan memperbarui indikator visual di browser pelanggan secara live.</li>
+        <li><b>Serah Terima &amp; Pengambilan (QRScanActivity):</b> Kasir memindai QR Code di layar pelanggan dengan kamera HP. Status pesanan diubah ke <code>COMPLETED</code> di Firestore, dan seluruh rincian transaksi otomatis disimpan permanen ke dalam tabel SQLite lokal <code>riwayat_transaksi</code> via <code>DBOpenHelper</code> sebagai arsip offline.</li>
+      </ol>
+    </div>
+  </div>
+
+  <h2>2. Bedah Kode Sisi Mobile Android — Gateway, POS &amp; KDS</h2>
+
+  <!-- MainActivity.kt -->
+  <div class="card-code blue">
+    <div class="code-title">
+      <span>MainActivity.kt</span>
+      <span class="badge badge-mobile">Core Gateway</span>
+    </div>
+    <div class="code-sub">app/src/main/java/com/pesenhub/jenggirat/MainActivity.kt &bull; 604 baris</div>
+    <div class="box-desc">
+      <b>Untuk Apa?</b>
+      Menjadi kontainer utama dengan <code>BottomNavigationView</code> (Kasir, Antrean, Riwayat, Dashboard, Akun), memeriksa status verifikasi sesi email Firebase Auth, mendaftarkan Notification Channel sistem Android 13+, serta menjalankan background snapshot listener Firestore untuk mendeteksi pesanan web baru.
+      <br><b>Kenapa Dibuat Begini?</b>
+      Jika listener Firestore dipasang di level Fragment, listener akan mati saat kasir berpindah tab. Meletakkan listener di <code>MainActivity</code> menjamin pesanan pelanggan web selalu tertangkap dan alarm bel selalu berbunyi di mana pun kasir sedang berada.
+      <div class="snippet">
+<span class="c">// Cuplikan Logika Kunci: Deteksi Realtime Web Order di Root</span>
+webOrderListener = FirebaseFirestore.getInstance().collection(<span class="s">"orders"</span>)
+    .whereEqualTo(<span class="s">"status"</span>, <span class="s">"PENDING"</span>)
+    .addSnapshotListener { snapshots, error ->
+        <span class="k">for</span> (dc <span class="k">in</span> snapshots.documentChanges) {
+            <span class="k">if</span> (dc.type == DocumentChange.Type.ADDED &amp;&amp; isFromWeb) {
+                SoundHelper.playBell()
+                tampilkanDialogOrderBaru(dc.document)
+            }
+        }
+    }
+      </div>
+    </div>
+  </div>
+
+  <!-- KasirFragment.kt -->
+  <div class="card-code">
+    <div class="code-title">
+      <span>KasirFragment.kt</span>
+      <span class="badge badge-mobile">POS Module</span>
+    </div>
+    <div class="code-sub">app/src/main/java/com/pesenhub/jenggirat/KasirFragment.kt &bull; 698 baris</div>
+    <div class="box-desc">
+      <b>Untuk Apa?</b>
+      Modul POS kasir outlet yang menangani: (1) Pencarian nama martabak cepat via <code>AutoCompleteTextView</code>, (2) Filter kategori menu horizontal chips, (3) Modal kustomisasi topping/ekstra isian (keju mozzarella, sapi, ayam, dll), (4) Keranjang belanja melayang, (5) Pilihan metode pembayaran (Tunai/QRIS) via <code>RadioButton</code>, (6) Pemilihan estimasi jam siap ambil via <code>TimePickerDialog</code>, dan (7) Pengiriman order ke Firestore koleksi <code>/orders</code>.
+      <br><b>Kenapa Dibuat Begini?</b>
+      Memenuhi checklist komponen interaktif UI PM &amp; PML. Pemisahan input ke dalam 2 modal BottomSheet (Sheet Kustomisasi Menu &amp; Sheet Checkout Bayar) mencegah tampilan layar menjadi sesak di layar smartphone vertikal.
+      <div class="snippet">
+<span class="c">// Cuplikan Logika Kunci: TimePickerDialog &amp; Submit Order Kasir</span>
+TimePickerDialog(requireContext(), { _, h, m ->
+    estimasiJamAmbil = <span class="s">"Jam $h:$m"</span>
+}, cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE), <span class="k">true</span>).show()
+
+dbFirestore.collection(<span class="s">"orders"</span>).document(idPesanan).set(dataFirestore)
+    .addOnSuccessListener { SoundHelper.playBell(); startActivity(intentDetail) }
+      </div>
+    </div>
+  </div>
+
+
+
+  <!-- AntrianFragment.kt & Adapter -->
+  <div class="card-code">
+    <div class="code-title">
+      <span>AntrianFragment.kt &amp; AntrianAdapter.kt</span>
+      <span class="badge badge-mobile">KDS Dapur</span>
+    </div>
+    <div class="code-sub">app/src/main/java/com/pesenhub/jenggirat/AntrianFragment.kt &bull; 370 baris</div>
+    <div class="box-desc">
+      <b>Untuk Apa?</b>
+      Layar KDS (Kitchen Display System) dapur outlet martabak. Memantau dokumen pesanan yang berstatus <code>PENDING</code>, <code>CONFIRMED</code>, dan <code>PREPARING</code> secara urut waktu (FIFO). Mengizinkan kru dapur mengubah status pesanan melalui:
+      (1) <code>ContextMenu</code> saat item ditekan tahan (long-press), dan (2) <code>PopupMenu</code> saat tombol opsi ⋮ diklik.
+      <br><b>Kenapa Dibuat Begini?</b>
+      Sesuai materi Bab V Modul PM (Menu &amp; Dialog). Saat kru dapur menandai pesanan menjadi <code>COMPLETED</code>, fungsi <code>arsipKeSQLite()</code> otomatis dijalankan untuk menyalin data ke SQLite lokal sebelum pesanan hilang dari daftar antrean aktif.
+      <div class="snippet">
+<span class="c">// Cuplikan: ContextMenu &amp; Otomatis Arsip ke SQLite saat Selesai</span>
+<span class="k">override fun</span> <span class="f">onContextItemSelected</span>(item: MenuItem): Boolean {
+    <span class="k">if</span> (item.itemId == R.id.ctx_selesai) {
+        updateStatusOrder(docId, order, <span class="s">"COMPLETED"</span>) <span class="c">// trigger arsip SQLite</span>
+    }
+}
+      </div>
+    </div>
+  </div>
+
+  <!-- DBOpenHelper.kt -->
+  <div class="card-code green">
+    <div class="code-title">
+      <span>DBOpenHelper.kt</span>
+      <span class="badge badge-db">Local Database</span>
+    </div>
+    <div class="code-sub">app/src/main/java/com/pesenhub/jenggirat/DBOpenHelper.kt &bull; 35 baris</div>
+    <div class="box-desc">
+      <b>Untuk Apa?</b>
+      Mewarisi <code>SQLiteOpenHelper</code> untuk mengelola database lokal smartphone kasir bernama <code>pesenhub_riwayat.db</code> dengan tabel <code>riwayat_transaksi</code> (id_pesanan, nama_pelanggan, hp, detail_item, metode_bayar, total_bayar, status_order, waktu_selesai).
+      <br><b>Kenapa Dibuat Begini?</b>
+      Mengikuti konvensi Bab VIII Modul PM dosen (DML/DDL langsung via <code>execSQL</code> dan <code>rawQuery</code> tanpa Room library). Data pesanan yang sudah selesai bersifat final dan permanen, sehingga tidak perlu terus-menerus membebani kuota baca cloud Firestore.
+      <div class="snippet">
+<span class="c">// Cuplikan DDL Tabel SQLite</span>
+val sqlRiwayat = <span class="s">"create table riwayat_transaksi(id_pesanan text primary key, nama_pelanggan text not null, hp_pelanggan text, detail_item text, metode_bayar text, total_bayar integer, status_order text, waktu_selesai text)"</span>
+db?.execSQL(sqlRiwayat)
+      </div>
+    </div>
+  </div>
+
+  <!-- RiwayatFragment.kt & Adapter -->
+  <div class="card-code green">
+    <div class="code-title">
+      <span>RiwayatFragment.kt &amp; RiwayatAdapter.kt</span>
+      <span class="badge badge-db">Laporan SQLite</span>
+    </div>
+    <div class="code-sub">app/src/main/java/com/pesenhub/jenggirat/RiwayatFragment.kt &bull; 159 baris</div>
+    <div class="box-desc">
+      <b>Untuk Apa?</b>
+      Membaca arsip transaksi selesai dari SQLite lokal melalui <code>db.rawQuery("select * from riwayat_transaksi...", null)</code>, menghitung total omzet penjualan kotor outlet, dan menyediakan filter transaksi berdasarkan tanggal dengan <code>DatePickerDialog</code>.
+      <br><b>Kenapa Dibuat Begini?</b>
+      Menjamin laporan penjualan outlet tetap dapat dibuka dan dihitung secara akurat meskipun outlet martabak sedang berada di lokasi tanpa koneksi internet sama sekali (*zero internet dependency*).
+    </div>
+  </div>
+
+  <!-- DashboardFragment.kt -->
+  <div class="card-code blue">
+    <div class="code-title">
+      <span>DashboardFragment.kt</span>
+      <span class="badge badge-mobile">Analytics &amp; Volley</span>
+    </div>
+    <div class="code-sub">app/src/main/java/com/pesenhub/jenggirat/DashboardFragment.kt &bull; 166 baris</div>
+    <div class="box-desc">
+      <b>Untuk Apa?</b>
+      Menampilkan beranda ringkasan outlet: menghitung jumlah pesanan aktif (Firestore realtime), total transaksi selesai &amp; omzet (SQLite lokal), info profil login, navigasi cepat antar menu, dan mengambil kutipan motivasi operasional melalui HTTP GET Request pustaka **Volley**.
+      <br><b>Kenapa Dibuat Begini?</b>
+      Memenuhi checklist Volley HTTP Request (#19). Menggabungkan metrik cloud dan lokal dalam satu layar sehingga kasir memiliki visibilitas menyeluruh atas kondisi outlet.
+      <div class="snippet">
+<span class="c">// Cuplikan Volley HTTP Request</span>
+val queue = Volley.newRequestQueue(requireContext())
+val request = JsonObjectRequest(Request.Method.GET, <span class="s">"https://dummyjson.com/quotes/random"</span>, <span class="k">null</span>,
+    { res -> b.txQuoteText.text = res.optString(<span class="s">"quote"</span>) }, { })
+queue.add(request)
+      </div>
+    </div>
+  </div>
+
+  <!-- OrderDetailActivity.kt -->
+  <div class="card-code purple">
+    <div class="code-title">
+      <span>OrderDetailActivity.kt</span>
+      <span class="badge badge-mobile">Struk &amp; QR Generator</span>
+    </div>
+    <div class="code-sub">app/src/main/java/com/pesenhub/jenggirat/OrderDetailActivity.kt &bull; 147 baris</div>
+    <div class="box-desc">
+      <b>Untuk Apa?</b>
+      Menampilkan rincian struk digital pesanan (nama pelanggan, daftar item, metode bayar, catatan) dan meng-<i>generate</i> gambar QR Code dari ID pesanan menggunakan pustaka ZXing <code>BarcodeEncoder().encodeBitmap(orderNumber, BarcodeFormat.QR_CODE, 400, 400)</code>.
+      <br><b>Kenapa Dibuat Begini?</b>
+      Memenuhi checklist QR Code Generator (#25) sesuai Bab 10 Modul PM. QR code pada struk digital ini berfungsi sebagai token bukti fisik yang siap diverifikasi saat pelanggan datang ke kasir.
+    </div>
+  </div>
+
+
+
+  <!-- QRScanActivity.kt -->
+  <div class="card-code purple">
+    <div class="code-title">
+      <span>QRScanActivity.kt</span>
+      <span class="badge badge-mobile">Hardware Kamera &amp; QR Scan</span>
+    </div>
+    <div class="code-sub">app/src/main/java/com/pesenhub/jenggirat/QRScanActivity.kt &bull; 151 baris</div>
+    <div class="box-desc">
+      <b>Untuk Apa?</b>
+      Membuka kamera gawai menggunakan ZXing <code>CompoundBarcodeView</code>, memindai QR Code di layar HP pelanggan, mencocokkan dokumen pesanan di Firestore, dan menyediakan tombol verifikasi untuk mengubah status menjadi <code>COMPLETED</code> serta mengarsipkannya ke SQLite.
+      <br><b>Kenapa Dibuat Begini?</b>
+      Memenuhi checklist Hardware Kamera &amp; Scanner QR (#20 &amp; #25). Menghilangkan potensi human error kasir saat mencari pesanan di tumpukan antrean manual.
+      <div class="snippet">
+<span class="c">// Cuplikan Verifikasi Scan Kamera</span>
+b.barcodeScannerView.decodeSingle { result ->
+    dbFirestore.collection(<span class="s">"orders"</span>).document(result.text).get()
+        .addOnSuccessListener { doc -> tampilkanHasilVerifikasi(doc) }
+}
+      </div>
+    </div>
+  </div>
+
+  <!-- FormMenuActivity.kt & KelolaMenu -->
+  <div class="card-code">
+    <div class="code-title">
+      <span>FormMenuActivity.kt &amp; KelolaMenuActivity.kt</span>
+      <span class="badge badge-mobile">CRUD Menu Cloud</span>
+    </div>
+    <div class="code-sub">app/src/main/java/com/pesenhub/jenggirat/FormMenuActivity.kt &bull; 212 baris</div>
+    <div class="box-desc">
+      <b>Untuk Apa?</b>
+      Menangani operasi CRUD katalog martabak langsung ke Cloud Firestore koleksi <code>/menus</code>: menambah item, mengubah harga per channel (kasir vs web pelanggan), mengubah status ketersediaan stok menu (available true/false), dan memilih gambar menu.
+      <br><b>Kenapa Dibuat Begini?</b>
+      Memastikan katalog produk yang tampil di Website Pelanggan selalu sinkron secara otomatis saat admin outlet mengubah harga atau mematikan stok yang sedang habis di gerai.
+    </div>
+  </div>
+
+  <!-- UploadMenuActivity & SupabaseStorageHelper -->
+  <div class="card-code green">
+    <div class="code-title">
+      <span>UploadMenuActivity.kt &amp; SupabaseStorageHelper.kt</span>
+      <span class="badge badge-cloud">Kamera/Galeri + CDN</span>
+    </div>
+    <div class="code-sub">app/src/main/java/com/pesenhub/jenggirat/SupabaseStorageHelper.kt &bull; 130 baris</div>
+    <div class="box-desc">
+      <b>Untuk Apa?</b>
+      Mengambil foto martabak baru langsung dari Kamera gawai atau Galeri, mengompresnya menjadi byte array, lalu mengunggahnya secara asinkron ke bucket Supabase Storage via REST HTTP API.
+      <br><b>Kenapa Dibuat Begini?</b>
+      Memenuhi checklist Kamera (#20), Galeri (#26), dan Supabase (#33). Firestore tidak efisien dan boros kuota jika dipaksa menyimpan binary base64 gambar. CDN Supabase menghasilkan link URL publik yang ringan dibuka oleh browser web maupun aplikasi mobile.
+      <div class="snippet">
+<span class="c">// Cuplikan REST Upload Supabase</span>
+val conn = URL(<span class="s">"$SUPABASE_URL/storage/v1/object/$BUCKET_NAME/menu-images/$filename"</span>).openConnection() as HttpURLConnection
+conn.requestMethod = <span class="s">"POST"</span>; conn.setRequestProperty(<span class="s">"apikey"</span>, SUPABASE_KEY)
+conn.outputStream.write(imageBytes) <span class="c">// Menghasilkan URL publik CDN</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- MapsActivity.kt -->
+  <div class="card-code blue">
+    <div class="code-title">
+      <span>MapsActivity.kt</span>
+      <span class="badge badge-mobile">GPS &amp; Peta OSMdroid</span>
+    </div>
+    <div class="code-sub">app/src/main/java/com/pesenhub/jenggirat/MapsActivity.kt &bull; 141 baris</div>
+    <div class="box-desc">
+      <b>Untuk Apa?</b>
+      Menampilkan peta interaktif OpenStreetMap menggunakan pustaka <b>OSMdroid</b> (<code>MapView</code>, <code>Marker</code>), menandai koordinat titik outlet Martabak Jenggirat Kediri (-7.8166, 112.0116), dan melacak lokasi real kasir via <code>FusedLocationProviderClient</code> (GPS).
+      <br><b>Kenapa Dibuat Begini?</b>
+      Memenuhi materi Bab 13 Modul PM dosen (GPS &amp; Peta). Menggunakan OSMdroid yang bersifat *open-source* dan bebas biaya token API Google Maps.
+    </div>
+  </div>
+
+  <!-- LoginActivity & RegisterActivity -->
+  <div class="card-code">
+    <div class="code-title">
+      <span>LoginActivity.kt &amp; RegisterActivity.kt</span>
+      <span class="badge badge-mobile">Firebase Auth &amp; Session</span>
+    </div>
+    <div class="code-sub">app/src/main/java/com/pesenhub/jenggirat/LoginActivity.kt &bull; 210 baris</div>
+    <div class="box-desc">
+      <b>Untuk Apa?</b>
+      Otentikasi staf gerai menggunakan <b>Firebase Authentication</b> (<code>signInWithEmailAndPassword</code>, <code>createUserWithEmailAndPassword</code>), memeriksa verifikasi email pengguna, dan menyimpan username di <code>SharedPreferences</code> saat opsi "Ingat Username" dicentang.
+      <br><b>Kenapa Dibuat Begini?</b>
+      Memenuhi Bab 04 PML (Firebase Auth) dan Bab 07 PM (SharedPreferences). Mengamankan menu kelola kasir dan memudahkan proses login harian staf gerai.
+    </div>
+  </div>
+
+  <!-- SoundHelper & FCM -->
+  <div class="card-code">
+    <div class="code-title">
+      <span>SoundHelper.kt &amp; PesenHubFCMService.kt</span>
+      <span class="badge badge-mobile">Audio Alert &amp; Push FCM</span>
+    </div>
+    <div class="code-sub">app/src/main/java/com/pesenhub/jenggirat/SoundHelper.kt &bull; 40 baris</div>
+    <div class="box-desc">
+      <b>Untuk Apa?</b>
+      Memutar nada dering bel pesanan menggunakan <code>MediaPlayer</code> (Checklist #24) dan menangani penerimaan pesan push notification dari server Firebase Cloud Messaging (Checklist #31).
+      <br><b>Kenapa Dibuat Begini?</b>
+      Di dapur yang bising saat memasak martabak, staf tidak dapat selalu menatap layar smartphone. Audio alert menjamin pesanan web yang baru masuk langsung ditangani kru dapur tanpa tertunda.
+    </div>
+  </div>
+
+
+
+  <h2>3. Bedah Kode Sisi Web Pelanggan (Laravel PHP — <code>pesenhub_web/</code>)</h2>
+
+  <!-- routes/web.php & api.php -->
+  <div class="card-code">
+    <div class="code-title">
+      <span>routes/web.php &amp; routes/api.php</span>
+      <span class="badge badge-web">Routing Layer</span>
+    </div>
+    <div class="code-sub">pesenhub_web/routes/web.php &bull; 30 baris</div>
+    <div class="box-desc">
+      <b>Untuk Apa?</b>
+      Mendefinisikan titik masuk URL pelanggan: <code>GET /</code> (katalog menu), <code>POST /pesan</code> (simpan order), <code>GET /pesanan/{id}</code> (halaman status), <code>GET /lokasi</code> (info outlet), serta endpoint API <code>GET /api/pesanan/{id}/status</code> untuk polling realtime.
+      <br><b>Kenapa Dibuat Begini?</b>
+      Memisahkan jalur tampilan HTML Blade dari endpoint API JSON yang dikonsumsi secara asinkron oleh skrip polling JavaScript frontend pelanggan.
+    </div>
+  </div>
+
+  <!-- CustomerAuthController.php -->
+  <div class="card-code">
+    <div class="code-title">
+      <span>CustomerAuthController.php</span>
+      <span class="badge badge-web">Guest Session</span>
+    </div>
+    <div class="code-sub">pesenhub_web/app/Http/Controllers/CustomerAuthController.php &bull; 71 baris</div>
+    <div class="box-desc">
+      <b>Untuk Apa?</b>
+      Menyimpan sesi identitas tamu pelanggan (Nama &amp; Nomor WhatsApp) ke dalam session server Laravel dengan masa kedaluwarsa 5 jam.
+      <br><b>Kenapa Dibuat Begini?</b>
+      Menghilangkan friksi pendaftaran akun. Pelanggan restoran tidak suka mendaftar email/password hanya untuk memesan martabak. Sesi 5 jam cukup untuk memesan dan melacak status antrean hingga selesai makan.
+    </div>
+  </div>
+
+  <!-- CustomerOrderController.php -->
+  <div class="card-code blue">
+    <div class="code-title">
+      <span>CustomerOrderController.php</span>
+      <span class="badge badge-web">Core Controller</span>
+    </div>
+    <div class="code-sub">pesenhub_web/app/Http/Controllers/CustomerOrderController.php &bull; 250 baris</div>
+    <div class="box-desc">
+      <b>Untuk Apa?</b>
+      (1) Mengambil menu aktif dari Firestore lewat <code>getMenus()</code>, (2) Memvalidasi keranjang belanja JSON dan opsi topping, (3) Menghitung total harga &amp; subtotal secara aman di sisi server, (4) Mengirimkan order ke Firestore via <code>createOrder()</code>, dan (5) Melayani API status pesanan untuk polling browser.
+      <br><b>Kenapa Dibuat Begini?</b>
+      Semua kalkulasi harga dikerjakan ulang di server untuk mencegah manipulasi nominal harga belanja oleh pengguna melalui inspect element browser.
+      <div class="snippet">
+<span class="c">// Cuplikan Simpan Dokumen Pesanan ke Firestore</span>
+$orderData = [
+    <span class="s">'orderNumber'</span> => <span class="s">'ORD-WEB-'</span> . date(<span class="s">'Ymd-His'</span>) . <span class="s">'-'</span> . rand(100, 999),
+    <span class="s">'status'</span>      => <span class="s">'PENDING'</span>,
+    <span class="s">'source'</span>      => <span class="s">'CUSTOMER_WEB'</span>,
+    <span class="s">'total'</span>       => $totalPrice,
+    <span class="s">'items'</span>       => $items,
+];
+$this->firestore->createOrder($orderData);
+      </div>
+    </div>
+  </div>
+
+  <!-- FirestoreService.php -->
+  <div class="card-code green">
+    <div class="code-title">
+      <span>FirestoreService.php</span>
+      <span class="badge badge-cloud">Firestore REST Client</span>
+    </div>
+    <div class="code-sub">pesenhub_web/app/Services/FirestoreService.php &bull; 454 baris</div>
+    <div class="box-desc">
+      <b>Untuk Apa?</b>
+      Membangun komunikasi langsung ke Google Cloud Firestore REST API v1 menggunakan Laravel <code>Http::get</code>, <code>Http::post</code>, dan <code>Http::patch</code>. Bertanggung jawab mem-parsing struktur format dokumen Firestore (seperti <code>stringValue</code>, <code>integerValue</code>, <code>mapValue</code>, <code>arrayValue</code>) menjadi array PHP murni, dan sebaliknya saat mengirim data.
+      <br><b>Kenapa Dibuat Begini?</b>
+      <b>Keputusan Kunci:</b> Pustaka resmi Google Cloud PHP SDK memerlukan ekstensi binary C (gRPC) yang sering kali tidak didukung atau sulit diinstal pada lingkungan web hosting standar. Menggunakan REST API murni menjamin web Laravel dapat berjalan di hosting apa pun tanpa dependensi C tambahan.
+      <div class="snippet">
+<span class="c">// Cuplikan Parser Firestore REST</span>
+<span class="k">public function</span> <span class="f">parseValue</span>(array $val) {
+    <span class="k">if</span> (isset($val[<span class="s">'stringValue'</span>])) <span class="k">return</span> $val[<span class="s">'stringValue'</span>];
+    <span class="k">if</span> (isset($val[<span class="s">'integerValue'</span>])) <span class="k">return</span> (int) $val[<span class="s">'integerValue'</span>];
+    <span class="k">if</span> (isset($val[<span class="s">'mapValue'</span>])) { ... }
+}
+      </div>
+    </div>
+  </div>
+
+  <!-- BarcodeGeneratorService.php -->
+  <div class="card-code purple">
+    <div class="code-title">
+      <span>BarcodeGeneratorService.php</span>
+      <span class="badge badge-web">QR Code Generator</span>
+    </div>
+    <div class="code-sub">pesenhub_web/app/Services/BarcodeGeneratorService.php &bull; 65 baris</div>
+    <div class="box-desc">
+      <b>Untuk Apa?</b>
+      Menggunakan pustaka <code>chillerlan/php-qrcode</code> untuk merender ID pesanan web menjadi gambar QR Code berbasis SVG atau Base64 Image string.
+      <br><b>Kenapa Dibuat Begini?</b>
+      QR code yang dihasilkan ditampilkan di halaman bukti pesanan pelanggan (<code>status.blade.php</code>) agar siap dipindai oleh kasir Android saat pengambilan martabak.
+    </div>
+  </div>
+
+  <!-- Blade Views -->
+  <div class="card-code">
+    <div class="code-title">
+      <span>views/customer/menu.blade.php &amp; status.blade.php</span>
+      <span class="badge badge-web">Frontend UI</span>
+    </div>
+    <div class="code-sub">pesenhub_web/resources/views/customer/ &bull; Mobile-First Blade Views</div>
+    <div class="box-desc">
+      <b>Untuk Apa?</b>
+      <code>menu.blade.php</code> menyajikan katalog martabak, modal pemilihan ekstra topping, dan keranjang belanja melayang (floating cart). <code>status.blade.php</code> menyajikan timeline visual status pesanan dengan script JavaScript polling berkala setiap 5 detik ke endpoint API status.
+      <br><b>Kenapa Dibuat Begini?</b>
+      Memungkinkan halaman pelacakan pesanan pelanggan di browser berubah secara live (misal: dari <i>Menunggu</i> menjadi <i>Sedang Dimasak</i>) saat kru dapur menekan tombol di HP Android tanpa perlu reload halaman manual.
+    </div>
+  </div>
+
+  <div class="footer-bar">
+    Dokumen Bedah Kode Resmi PesenHub Jenggirat &bull; UTS PML 2026/2027 &bull; Yoga Ananda S. R. &amp; Rydo &bull; Lengkap (Web &amp; Mobile)
+  </div>
+
+</body>
+</html>
