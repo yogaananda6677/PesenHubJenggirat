@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Support\OrderCrypto;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -322,6 +323,7 @@ class FirestoreService
     {
         if (self::$fake) {
             $orders = array_values(self::$fakeOrders);
+            $orders = array_map(fn($o) => OrderCrypto::decryptFields($o), $orders);
             if ($status) {
                 $orders = array_filter($orders, fn($o) => ($o['status'] ?? '') === $status);
             }
@@ -337,7 +339,7 @@ class FirestoreService
                 $data = $response->json();
                 foreach ($data['documents'] ?? [] as $doc) {
                     $parsed = $this->parseDocument($doc);
-                    $results[] = $parsed;
+                    $results[] = OrderCrypto::decryptFields($parsed);
                 }
             }
 
@@ -363,14 +365,16 @@ class FirestoreService
     public function getOrder(string $orderNumber): ?array
     {
         if (self::$fake) {
-            return self::$fakeOrders[$orderNumber] ?? null;
+            $order = self::$fakeOrders[$orderNumber] ?? null;
+            return $order ? OrderCrypto::decryptFields($order) : null;
         }
 
         try {
             $url = "{$this->baseUrl}/orders/{$orderNumber}?key={$this->apiKey}";
             $response = Http::timeout(10)->get($url);
             if ($response->successful()) {
-                return $this->parseDocument($response->json());
+                $parsed = $this->parseDocument($response->json());
+                return OrderCrypto::decryptFields($parsed);
             }
         } catch (\Throwable $e) {
             Log::warning("Firestore getOrder({$orderNumber}) error: " . $e->getMessage());
@@ -387,13 +391,16 @@ class FirestoreService
         $orderNumber = $orderData['orderNumber'] ?? ('ORD-WEB-' . date('Ymd-His') . '-' . rand(100, 999));
         $orderData['orderNumber'] = $orderNumber;
 
+        // Enkripsi field yang berhak sebelum menyusun payload Firestore
+        $encryptedData = OrderCrypto::encryptFields($orderData);
+
         if (self::$fake) {
-            self::$fakeOrders[$orderNumber] = $orderData;
+            self::$fakeOrders[$orderNumber] = $encryptedData;
             return $orderData;
         }
 
         $formattedFields = [];
-        foreach ($orderData as $k => $v) {
+        foreach ($encryptedData as $k => $v) {
             $formattedFields[$k] = $this->formatValue($v);
         }
         $formattedFields['createdAt'] = ['timestampValue' => now()->toIso8601String()];
@@ -405,7 +412,8 @@ class FirestoreService
             ]);
 
             if ($response->successful()) {
-                return $this->parseDocument($response->json());
+                $parsed = $this->parseDocument($response->json());
+                return OrderCrypto::decryptFields($parsed);
             }
         } catch (\Throwable $e) {
             Log::warning("Firestore createOrder error: " . $e->getMessage());
@@ -419,9 +427,12 @@ class FirestoreService
      */
     public function updateOrder(string $orderNumber, array $fields): bool
     {
+        // Enkripsi field yang berhak sebelum menyusun payload
+        $encryptedFields = OrderCrypto::encryptFields($fields);
+
         if (self::$fake) {
             if (isset(self::$fakeOrders[$orderNumber])) {
-                self::$fakeOrders[$orderNumber] = array_merge(self::$fakeOrders[$orderNumber], $fields);
+                self::$fakeOrders[$orderNumber] = array_merge(self::$fakeOrders[$orderNumber], $encryptedFields);
                 return true;
             }
             return false;
@@ -429,7 +440,7 @@ class FirestoreService
 
         $updateMasks = [];
         $firestoreFields = [];
-        foreach ($fields as $k => $v) {
+        foreach ($encryptedFields as $k => $v) {
             $updateMasks[] = "updateMask.fieldPaths={$k}";
             $firestoreFields[$k] = $this->formatValue($v);
         }

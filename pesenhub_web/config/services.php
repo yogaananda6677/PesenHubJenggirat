@@ -35,4 +35,5 @@ return [
         ],
     ],
 
+    'aes_key' => env('AES_SECRET_KEY'),
 ];
