@@ -26,4 +26,8 @@ Route::get('/lokasi', [CustomerOrderController::class, 'location'])->name('outle
 // API Polling Realtime Status Pesanan Pelanggan
 Route::get('/api/pesanan/{orderNumber}/status', [CustomerOrderController::class, 'checkStatus'])->name('order.status.check');
 
+// Dashboard Modul 12: Server Backup MySQL & Penjelasan Coding Coroutines
+Route::get('/backup', [\App\Http\Controllers\BackupWebController::class, 'index'])->name('backup.index');
+
+
 

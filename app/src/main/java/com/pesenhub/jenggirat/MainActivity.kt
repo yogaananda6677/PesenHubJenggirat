@@ -441,6 +441,11 @@ class MainActivity : AppCompatActivity() {
                 startActivity(intent)
                 true
             }
+            R.id.action_sync_backup -> {
+                val intent = Intent(this, SyncBackupActivity::class.java)
+                startActivity(intent)
+                true
+            }
             R.id.action_logout -> {
                 getSharedPreferences("UserSession", Context.MODE_PRIVATE).edit().clear().apply()
                 auth.signOut()

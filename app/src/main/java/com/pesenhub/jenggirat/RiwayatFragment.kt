@@ -44,6 +44,12 @@ class RiwayatFragment : Fragment() {
             muatRiwayatDariSQLite()
         }
 
+        // Tombol Buka Panel Sinkronisasi & Backup Server (Modul 12 Threads)
+        b.btnSyncRiwayat.setOnClickListener {
+            val intent = android.content.Intent(requireContext(), SyncBackupActivity::class.java)
+            startActivity(intent)
+        }
+
         // 3. Muat Riwayat Awal
         muatRiwayatDariSQLite()
 

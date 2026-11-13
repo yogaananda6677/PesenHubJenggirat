@@ -23,6 +23,10 @@
         android:title="Undang Staf Kasir"
         app:showAsAction="never" />
     <item
+        android:id="@+id/action_sync_backup"
+        android:title="Sinkronisasi Data (Threads)"
+        app:showAsAction="never" />
+    <item
         android:id="@+id/action_logout"
         android:title="Keluar (Logout)"
         app:showAsAction="never" />
