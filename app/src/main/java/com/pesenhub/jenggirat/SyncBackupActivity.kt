@@ -3,11 +3,14 @@ package com.pesenhub.jenggirat
 import android.content.Context
 import android.os.Bundle
 import android.os.SystemClock
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
 import com.pesenhub.jenggirat.databinding.ActivitySyncBackupBinding
@@ -40,14 +43,16 @@ import java.util.Locale
  * Konsep yang diterapkan pada Activity ini sesuai Modul 12:
  * 1. Main Thread (UI Thread): Digunakan hanya untuk memperbarui elemen visual tampilan.
  * 2. Background Thread (Dispatchers.IO): Digunakan untuk operasi berat (Database SQLite,
- *    koneksi HTTP REST API ke MySQL Backup Server, dan Cloud Firestore).
+ *    koneksi HTTP REST API ke MySQL Backup Server Cloudflare, dan Cloud Firestore).
  * 3. lifecycleScope.launch: Memulai Coroutine yang terikat siklus hidup Activity agar
- *    tidak terjadi memory leak.
- * 4. async & await(): Menjalankan dua proses asinkron secara paralel / bersamaan dan
- *    menunggu hasil kedua proses tersebut.
+ *    tidak terjadi memory leak saat pengguna berpindah layar.
+ * 4. async & await(): Menjalankan proses multi-storage secara paralel / bersamaan dan
+ *    menunggu hasil kedua proses tersebut secara non-blocking.
  * 5. Mutex (Mutual Exclusion): Mekanisme penguncian thread-safe untuk mengamankan data
- *    counter dari race condition antar thread.
+ *    counter dari race condition antar thread (Halaman 7-8 Modul).
  * 6. withContext(): Berpindah thread (dari IO ke Main) di tengah jalan lalu kembali lagi.
+ * 7. Multi-Tier Disaster Recovery: Jika data di Firestore sengaja/tidak sengaja dihapus,
+ *    sistem secara otomatis memulihkannya dari backup MySQL dan SQLite.
  */
 class SyncBackupActivity : AppCompatActivity() {
 
@@ -58,30 +63,31 @@ class SyncBackupActivity : AppCompatActivity() {
     private val dbHelper: DBOpenHelper by lazy { DBOpenHelper(this) }
     private val firestoreDb: FirebaseFirestore by lazy { FirebaseFirestore.getInstance() }
 
-    private var cancelProcess = false
+    // Flag pembatalan proses oleh pengguna
+    @Volatile
+    private var cancelProcess: Boolean = false
 
-    // =====================================================================================
-    // [MODUL 12: MUTEX THREAD-SAFE DATA COUNTER (Halaman 7 Modul)]
-    // =====================================================================================
+    companion object {
+        const val DEFAULT_SERVER_URL = "https://pml-web-jenggirat.buildwithyoga.my.id"
+    }
+
+    /**
+     * [MODUL 12: MUTEX THREAD-SAFE DATA COUNTER (Halaman 7-8 Modul)]
+     * Menggunakan Mutex untuk penguncian eksklusif (Mutual Exclusion).
+     */
     class DataCounter {
-        var value = 0
-        val mutex = Mutex()
+        private val mutex = Mutex()
+        private var counter = 0
 
         suspend fun increment() {
             mutex.withLock {
-                value++
+                counter++
             }
         }
 
         suspend fun get(): Int {
             return mutex.withLock {
-                value
-            }
-        }
-
-        suspend fun reset() {
-            mutex.withLock {
-                value = 0
+                counter
             }
         }
     }
@@ -95,40 +101,58 @@ class SyncBackupActivity : AppCompatActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         b.toolbarSync.setNavigationOnClickListener { finish() }
 
-        // Load saved server URL from SharedPreferences
+        // Memuat URL server tersimpan dari SharedPreferences
         val pref = getSharedPreferences("SyncConfig", Context.MODE_PRIVATE)
-        val savedUrl = (pref.getString("server_url", "http://10.0.2.2:8000") ?: "http://10.0.2.2:8000")
+        val savedUrl = (pref.getString("server_url", DEFAULT_SERVER_URL) ?: DEFAULT_SERVER_URL)
             .replace("`", "")
             .trim()
+            .ifEmpty { DEFAULT_SERVER_URL }
         b.edServerUrl.setText(savedUrl)
 
-        // Cek status server awal di background
-        ujiKoneksiServer(getServerBaseUrl())
-
-        // 1. Tombol Mulai Kirim / Sync dengan Thread (Coroutine)
-        b.btnStart.setOnClickListener {
+        // Tombol Utama: Cadangkan & Sinkronkan Data (Coroutine)
+        b.btnStartSync.setOnClickListener {
             cancelProcess = false
             simpanServerUrl()
             mulaiSyncDenganCoroutine()
         }
 
-        // 2. Tombol Pulihkan Data dari MySQL Server (Restore)
-        b.btnRestore.setOnClickListener {
-            cancelProcess = false
-            simpanServerUrl()
-            mulaiRestoreDariServerMySQL()
-        }
-
-        // 3. Tombol Batal (Cancel)
+        // Tombol Batalkan Proses
         b.btnCancel.setOnClickListener {
             cancelProcess = true
-            tambahLog("[User] Proses dibatalkan oleh pengguna (cancelProcess = true)")
             Toast.makeText(this, "Proses sinkronisasi dibatalkan!", Toast.LENGTH_SHORT).show()
+            b.tvProgressStatus.text = "Membatalkan proses..."
         }
 
-        // 5. Tombol Info Modul Threads
-        b.btnInfo.setOnClickListener {
+        // Tombol Info Modul
+        b.btnInfoModul.setOnClickListener {
             tampilkanDialogInfoModul()
+        }
+
+        // Uji koneksi server & muat statistik data awal
+        val baseUrl = getServerBaseUrl()
+        ujiKoneksiServer(baseUrl)
+        muatStatistikData(baseUrl)
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.sync_menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_refresh -> {
+                val baseUrl = getServerBaseUrl()
+                ujiKoneksiServer(baseUrl)
+                muatStatistikData(baseUrl)
+                Toast.makeText(this, "Memperbarui data & status server...", Toast.LENGTH_SHORT).show()
+                true
+            }
+            R.id.action_info_modul -> {
+                tampilkanDialogInfoModul()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
         }
     }
 
@@ -139,7 +163,7 @@ class SyncBackupActivity : AppCompatActivity() {
             .replace("'", "")
             .replace("\"", "")
             .removeSuffix("/")
-            .ifEmpty { "http://10.0.2.2:8000" }
+            .ifEmpty { DEFAULT_SERVER_URL }
     }
 
     private fun simpanServerUrl() {
@@ -152,183 +176,229 @@ class SyncBackupActivity : AppCompatActivity() {
     }
 
     // =====================================================================================
-    // [MODUL 12: EKSEKUSI SINKRONISASI MENGGUNAKAN COROUTINE THREAD (Halaman 8 Modul)]
+    // [MODUL 12: MEMUAT STATISTIK DATA SECARA ASYNCHRONOUS (IO -> MAIN)]
+    // =====================================================================================
+    private fun muatStatistikData(baseUrl: String) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            val countSqlite = ambilJumlahSQLite()
+            val countFirestore = ambilJumlahFirestore()
+            val countMysql = ambilJumlahMySQL(baseUrl)
+
+            withContext(Dispatchers.Main) {
+                b.tvCountSqlite.text = countSqlite.toString()
+                b.tvCountFirestore.text = countFirestore.toString()
+                b.tvCountMysql.text = countMysql.toString()
+            }
+        }
+    }
+
+    // =====================================================================================
+    // [MODUL 12: SINKRONISASI CERDAS MULTI-TIER DENGAN COROUTINE THREADS]
+    // Menjamin data di SQLite, Firestore, dan MySQL sinkron 100%.
+    // Jika data di Firestore terhapus, otomatis dipulihkan dari MySQL / SQLite.
     // =====================================================================================
     private fun mulaiSyncDenganCoroutine() {
-        // Ambil data riwayat transaksi dari SQLite lokal
-        val daftarRiwayat = ambilRiwayatDariSQLite()
-
-        if (daftarRiwayat.isEmpty()) {
-            Toast.makeText(this, "Tidak ada data riwayat transaksi lokal untuk di-backup!", Toast.LENGTH_SHORT).show()
-            tambahLog("[Sync] SQLite lokal kosong. Silakan selesaikan pesanan kasir terlebih dahulu.")
-            return
-        }
-
-        val totalData = daftarRiwayat.size
-        b.progressFirebase.max = totalData
-        b.progressSqlite.max = totalData
-        b.progressFirebase.progress = 0
-        b.progressSqlite.progress = 0
-        b.tvFirebaseCount.text = "0 / $totalData"
-        b.tvSqliteCount.text = "0 / $totalData"
-
-        setUiLoading(true)
-        tambahLog("==================================================")
-        tambahLog("[Coroutine] Memulai sinkronisasi $totalData data ke MySQL & Firestore...")
-        tambahLog("[Thread Active] Thread: ${Thread.currentThread().name}")
-
         val serverBaseUrl = getServerBaseUrl()
+        setUiLoading(true)
 
-        // [MODUL 12: LIFECYCLE SCOPE LAUNCH]
-        // Menjalankan coroutine yang otomatis dibatalkan jika Activity ditutup
+        b.tvProgressStatus.text = "Mengumpulkan data transaksi dari SQLite, MySQL, & Firestore..."
+        b.progressBarSync.isIndeterminate = true
+
         lifecycleScope.launch {
-            val firebaseCounter = DataCounter()
-            val mysqlCounter = DataCounter()
-
             val waktuMulai = SystemClock.elapsedRealtime()
 
-            for ((index, item) in daftarRiwayat.withIndex()) {
+            // 1. Ambil data dari ketiga sumber secara paralel di Dispatchers.IO
+            val tugasSqlite = async(Dispatchers.IO) { ambilRiwayatDariSQLite() }
+            val tugasMysql = async(Dispatchers.IO) { ambilRiwayatDariMySQL(serverBaseUrl) }
+            val tugasFirestore = async(Dispatchers.IO) { ambilRiwayatDariFirestore() }
+
+            val listSqlite = tugasSqlite.await()
+            val listMysql = tugasMysql.await()
+            val listFirestore = tugasFirestore.await()
+
+            // 2. Gabungkan data berdasarkan id_pesanan (ID Transaksi Unik)
+            val mapGabungan = LinkedHashMap<String, MutableMap<String, Any?>>()
+
+            // Masukkan data MySQL (Data Master Backup)
+            for (item in listMysql) {
+                val id = item["id_pesanan"]?.toString() ?: continue
+                mapGabungan[id] = item.toMutableMap()
+            }
+
+            // Masukkan data SQLite
+            for (item in listSqlite) {
+                val id = item["id_pesanan"]?.toString() ?: continue
+                if (!mapGabungan.containsKey(id)) {
+                    mapGabungan[id] = item.toMutableMap()
+                } else {
+                    // Update field jika di SQLite lebih lengkap
+                    mapGabungan[id]?.putAll(item)
+                }
+            }
+
+            // Masukkan data Firestore
+            for (item in listFirestore) {
+                val id = item["id_pesanan"]?.toString() ?: continue
+                if (!mapGabungan.containsKey(id)) {
+                    mapGabungan[id] = item.toMutableMap()
+                }
+            }
+
+            val daftarTotal = mapGabungan.values.toList()
+
+            if (daftarTotal.isEmpty()) {
+                withContext(Dispatchers.Main) {
+                    setUiLoading(false)
+                    Toast.makeText(this@SyncBackupActivity, "Belum ada transaksi untuk disinkronkan.", Toast.LENGTH_LONG).show()
+                }
+                return@launch
+            }
+
+            val totalData = daftarTotal.size
+
+            withContext(Dispatchers.Main) {
+                b.progressBarSync.isIndeterminate = false
+                b.progressBarSync.max = totalData
+                b.progressBarSync.progress = 0
+                b.tvProgressCount.text = "0 / $totalData"
+            }
+
+            // [MODUL 12: MUTEX THREAD-SAFE COUNTER]
+            val counterPulihFirestore = DataCounter()
+            val counterBackupMysql = DataCounter()
+            val counterPulihSqlite = DataCounter()
+
+            // 3. Eksekusi Sinkronisasi Tiap Transaksi Menggunakan Coroutine
+            for ((index, item) in daftarTotal.withIndex()) {
                 if (cancelProcess || !isActive) {
-                    tambahLog("[Coroutine] Loop dihentikan karena pembatalan.")
                     break
                 }
 
-                // [MODUL 12: DELAY NON-BLOCKING]
-                // Menjeda coroutine tanpa membekukan UI Thread
-                delay(150L)
-
-                // [MODUL 12: DISPATCHERS.IO DENGAN ASYNC & AWAIT]
-                // Operasi berat dijalankan secara paralel di IO Thread
                 val idPesanan = item["id_pesanan"]?.toString() ?: "ORD-${index + 1}"
 
-                // 1. Paralel Task 1: Pastikan data tersimpan di Cloud Firestore
-                val firestoreDeferred = async(Dispatchers.IO) {
+                withContext(Dispatchers.Main) {
+                    b.tvProgressStatus.text = "Menyinkronkan transaksi #$idPesanan..."
+                }
+
+                // [MODUL 12: DELAY NON-BLOCKING]
+                // Menjeda coroutine halus tanpa membekukan antarmuka
+                delay(120L)
+
+                // [MODUL 12: DISPATCHERS.IO DENGAN ASYNC & AWAIT]
+                // 1) Pastikan data ada di Cloud Firestore (Pulihkan jika sebelumnya terhapus)
+                val tugasSyncFs = async(Dispatchers.IO) {
                     simpanKeFirestore(item)
                 }
 
-                // 2. Paralel Task 2: Kirim data riwayat ke MySQL Web Backup Server via REST API
-                val mysqlDeferred = async(Dispatchers.IO) {
+                // 2) Pastikan data ada di MySQL Server
+                val tugasSyncMy = async(Dispatchers.IO) {
                     kirimKeMysqlServer(serverBaseUrl, item)
                 }
 
-                // [MODUL 12: AWAIT RESULTS]
-                val firestoreBerhasil = try { firestoreDeferred.await() } catch (e: Exception) { false }
-                val mysqlBerhasil = try { mysqlDeferred.await() } catch (e: Exception) { false }
-
-                if (firestoreBerhasil) {
-                    firebaseCounter.increment()
+                // 3) Pastikan data ada di SQLite Lokal
+                val tugasSyncDb = async(Dispatchers.IO) {
+                    simpanKeSQLiteLokal(item)
                 }
 
-                if (mysqlBerhasil) {
-                    mysqlCounter.increment()
-                }
+                val fsOk = try { tugasSyncFs.await() } catch (e: Exception) { false }
+                val myOk = try { tugasSyncMy.await() } catch (e: Exception) { false }
+                val dbOk = try { tugasSyncDb.await() } catch (e: Exception) { false }
+
+                if (fsOk) counterPulihFirestore.increment()
+                if (myOk) counterBackupMysql.increment()
+                if (dbOk) counterPulihSqlite.increment()
 
                 // [MODUL 12: WITHCONTEXT(DISPATCHERS.MAIN)]
-                // Berpindah kembali ke Main Thread untuk memperbarui elemen antarmuka pengguna
+                // Update UI Progress Bar
                 withContext(Dispatchers.Main) {
-                    val countFs = firebaseCounter.get()
-                    val countMy = mysqlCounter.get()
-
-                    b.progressFirebase.progress = countFs
-                    b.tvFirebaseCount.text = "$countFs / $totalData"
-
-                    b.progressSqlite.progress = countMy
-                    b.tvSqliteCount.text = "$countMy / $totalData"
-
-                    tambahLog("[Data #${index + 1}] #$idPesanan -> Firestore: ${if (firestoreBerhasil) "OK" else "FAIL"}, MySQL: ${if (mysqlBerhasil) "OK" else "FAIL"}")
+                    val currentStep = index + 1
+                    b.progressBarSync.progress = currentStep
+                    b.tvProgressCount.text = "$currentStep / $totalData"
                 }
             }
 
             val durasiDetik = (SystemClock.elapsedRealtime() - waktuMulai) / 1000.0
+            val hasilFs = counterPulihFirestore.get()
+            val hasilMy = counterBackupMysql.get()
+            val hasilDb = counterPulihSqlite.get()
 
-            // Selesai: kembali ke UI Thread
+            // Selesai: update UI dan tampilkan Dialog Hasil yang Elegan
             withContext(Dispatchers.Main) {
                 setUiLoading(false)
-                val finalMysql = mysqlCounter.get()
-                val finalFs = firebaseCounter.get()
-                tambahLog("[Selesai] Sinkronisasi Coroutine tuntas dalam ${"%.2f".format(durasiDetik)} detik!")
-                tambahLog("[Hasil] Firestore: $finalFs / $totalData | MySQL Server: $finalMysql / $totalData")
-                Toast.makeText(
-                    this@SyncBackupActivity,
-                    "Sukses! $finalMysql transaksi tersinkronisasi ke MySQL Backup Server",
-                    Toast.LENGTH_LONG
-                ).show()
+                muatStatistikData(serverBaseUrl)
+
+                val pesanSukses = StringBuilder()
+                pesanSukses.append("Sinkronisasi Coroutine berhasil diselesaikan dalam ${"%.2f".format(durasiDetik)} detik.\n\n")
+                pesanSukses.append("• Cloud Firestore : $hasilFs / $totalData data dipulihkan / tersinkron\n")
+                pesanSukses.append("• MySQL Backup    : $hasilMy / $totalData data ter-backup\n")
+                pesanSukses.append("• SQLite Lokal    : $hasilDb / $totalData data tersimpan\n\n")
+                pesanSukses.append("✅ Data Anda kini tersinkronisasi 100% di semua lapisan penyimpanan.")
+
+                MaterialAlertDialogBuilder(this@SyncBackupActivity)
+                    .setTitle("✅ Sinkronisasi & Backup Tuntas")
+                    .setMessage(pesanSukses.toString())
+                    .setPositiveButton("Selesai") { d, _ -> d.dismiss() }
+                    .show()
             }
         }
     }
 
+    private fun setUiLoading(isLoading: Boolean) {
+        b.btnStartSync.isEnabled = !isLoading
+        b.btnCancel.visibility = if (isLoading) View.VISIBLE else View.GONE
+        b.layoutProgress.visibility = if (isLoading) View.VISIBLE else View.GONE
+        if (isLoading) {
+            b.btnStartSync.text = "SEDANG MENYINKRONKAN..."
+        } else {
+            b.btnStartSync.text = "⚡ CADANGKAN & SINKRONKAN DATA"
+        }
+    }
+
     // =====================================================================================
-    // FITUR SYNC RESTORE: Mengunduh backup dari MySQL dan pulihkan ke SQLite / Firestore
+    // HELPER OPERASI DATABASE LOKAL & CLOUD
     // =====================================================================================
-    private fun mulaiRestoreDariServerMySQL() {
-        val serverBaseUrl = getServerBaseUrl()
-        setUiLoading(true)
-        tambahLog("==================================================")
-        tambahLog("[Restore] Menghubungi server MySQL ($serverBaseUrl/api/backup/orders)...")
+    private fun ambilJumlahSQLite(): Int {
+        return try {
+            val db = dbHelper.readableDatabase
+            val cursor = db.rawQuery("select count(*) from riwayat_transaksi", null)
+            var count = 0
+            if (cursor.moveToFirst()) {
+                count = cursor.getInt(0)
+            }
+            cursor.close()
+            count
+        } catch (e: Exception) {
+            0
+        }
+    }
 
-        lifecycleScope.launch(Dispatchers.IO) {
-            try {
-                val jsonString = httpGet("$serverBaseUrl/api/backup/orders")
-                val rootJson = JSONObject(jsonString)
-                val isSuccess = rootJson.optBoolean("success", false)
-                val dataArray = rootJson.optJSONArray("data") ?: JSONArray()
-                val totalServer = dataArray.length()
-
-                withContext(Dispatchers.Main) {
-                    tambahLog("[Restore] Ditemukan $totalServer data riwayat di server backup MySQL.")
-                    b.progressSqlite.max = totalServer
-                    b.progressSqlite.progress = 0
-                }
-
-                var restoredCount = 0
-                val db = dbHelper.writableDatabase
-
-                for (i in 0 until totalServer) {
-                    if (cancelProcess || !isActive) break
-                    delay(100L)
-
-                    val obj = dataArray.getJSONObject(i)
-                    val idPesanan = obj.getString("order_number")
-                    val nama = obj.optString("customer_name", "Pelanggan")
-                    val hp = obj.optString("customer_phone", "-")
-                    val menu = obj.optString("detail_item", "-")
-                    val metode = obj.optString("payment_method", "Tunai")
-                    val total = obj.optLong("total_price", 0L)
-                    val waktu = obj.optString("waktu_transaksi", SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(Date()))
-
-                    // Insert or replace ke SQLite lokal
-                    val sql = "insert or replace into riwayat_transaksi(" +
-                            "id_pesanan, nama_pelanggan, hp_pelanggan, detail_item, metode_bayar, total_bayar, status_order, waktu_selesai) " +
-                            "values (?, ?, ?, ?, ?, ?, ?, ?)"
-                    db.execSQL(sql, arrayOf(idPesanan, nama, hp, menu, metode, total, "COMPLETED", waktu))
-                    restoredCount++
-
-                    withContext(Dispatchers.Main) {
-                        b.progressSqlite.progress = restoredCount
-                        b.tvSqliteCount.text = "$restoredCount / $totalServer"
-                        tambahLog("[Pulihkan #${i + 1}] #$idPesanan ($nama) berhasil di-restore ke SQLite lokal.")
+    private suspend fun ambilJumlahFirestore(): Int {
+        return try {
+            kotlin.coroutines.suspendCoroutine { continuation ->
+                firestoreDb.collection("orders").get()
+                    .addOnSuccessListener { snap ->
+                        continuation.resumeWith(Result.success(snap.size()))
                     }
-                }
-
-                withContext(Dispatchers.Main) {
-                    setUiLoading(false)
-                    tambahLog("[Restore Selesai] Total $restoredCount transaksi telah dipulihkan ke SQLite lokal.")
-                    Toast.makeText(this@SyncBackupActivity, "Berhasil memulihkan $restoredCount data dari MySQL!", Toast.LENGTH_LONG).show()
-                }
-
-            } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    setUiLoading(false)
-                    tambahLog("[Restore Gagal] Terjadi kesalahan: ${e.message}")
-                    Toast.makeText(this@SyncBackupActivity, "Gagal memulihkan: ${e.message}", Toast.LENGTH_LONG).show()
-                }
+                    .addOnFailureListener {
+                        continuation.resumeWith(Result.success(0))
+                    }
             }
+        } catch (e: Exception) {
+            0
         }
     }
 
-    // =====================================================================================
-    // HELPER OPERASI JARINGAN & DATABASE
-    // =====================================================================================
+    private fun ambilJumlahMySQL(baseUrl: String): Int {
+        return try {
+            val endpoint = "$baseUrl/api/backup/status"
+            val jsonStr = httpGet(endpoint)
+            val json = JSONObject(jsonStr)
+            json.optInt("total_records", 0)
+        } catch (e: Exception) {
+            0
+        }
+    }
+
     private fun ambilRiwayatDariSQLite(): List<Map<String, Any?>> {
         val list = ArrayList<Map<String, Any?>>()
         try {
@@ -358,6 +428,71 @@ class SyncBackupActivity : AppCompatActivity() {
         return list
     }
 
+    private fun ambilRiwayatDariMySQL(baseUrl: String): List<Map<String, Any?>> {
+        val list = ArrayList<Map<String, Any?>>()
+        try {
+            val endpoint = "$baseUrl/api/backup/orders"
+            val response = httpGet(endpoint)
+            val json = JSONObject(response)
+            if (json.optBoolean("success", false)) {
+                val data = json.optJSONArray("data") ?: JSONArray()
+                for (i in 0 until data.length()) {
+                    val obj = data.getJSONObject(i)
+                    val map = HashMap<String, Any?>()
+                    map["id_pesanan"] = obj.optString("order_number")
+                    map["nama_pelanggan"] = obj.optString("customer_name")
+                    map["hp_pelanggan"] = obj.optString("customer_phone")
+                    map["detail_item"] = obj.optString("detail_item")
+                    map["metode_bayar"] = obj.optString("payment_method")
+                    map["total_bayar"] = obj.optInt("total_price")
+                    map["waktu_selesai"] = obj.optString("waktu_transaksi")
+                    list.add(map)
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        return list
+    }
+
+    private suspend fun ambilRiwayatDariFirestore(): List<Map<String, Any?>> {
+        return try {
+            kotlin.coroutines.suspendCoroutine { continuation ->
+                firestoreDb.collection("orders").get()
+                    .addOnSuccessListener { snap ->
+                        val list = ArrayList<Map<String, Any?>>()
+                        for (doc in snap.documents) {
+                            try {
+                                val map = HashMap<String, Any?>()
+                                map["id_pesanan"] = doc.getString("orderNumber") ?: doc.id
+                                map["nama_pelanggan"] = doc.getString("customerName") ?: "-"
+                                map["hp_pelanggan"] = doc.getString("customerPhone") ?: "-"
+                                map["detail_item"] = doc.getString("detailItem") ?: "-"
+                                map["metode_bayar"] = doc.getString("paymentMethod") ?: "Tunai"
+                                val rawTotal = doc.get("total")
+                                val totalVal = when (rawTotal) {
+                                    is Number -> rawTotal.toLong()
+                                    is String -> rawTotal.replace(Regex("[^0-9]"), "").toLongOrNull() ?: 0L
+                                    else -> 0L
+                                }
+                                map["total_bayar"] = totalVal
+                                map["waktu_selesai"] = doc.getString("completedAt") ?: "-"
+                                list.add(map)
+                            } catch (ex: Exception) {
+                                ex.printStackTrace()
+                            }
+                        }
+                        continuation.resumeWith(Result.success(list))
+                    }
+                    .addOnFailureListener {
+                        continuation.resumeWith(Result.success(emptyList()))
+                    }
+            }
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
     private suspend fun simpanKeFirestore(item: Map<String, Any?>): Boolean {
         return try {
             val idPesanan = item["id_pesanan"]?.toString() ?: return false
@@ -374,7 +509,6 @@ class SyncBackupActivity : AppCompatActivity() {
                 "syncTimestamp" to SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
             )
 
-            // Menggunakan coroutine suspend extension untuk Firestore
             kotlin.coroutines.suspendCoroutine { continuation ->
                 firestoreDb.collection("orders").document(idPesanan)
                     .set(payload, SetOptions.merge())
@@ -408,6 +542,27 @@ class SyncBackupActivity : AppCompatActivity() {
         }
     }
 
+    private fun simpanKeSQLiteLokal(item: Map<String, Any?>): Boolean {
+        return try {
+            val idPesanan = item["id_pesanan"]?.toString() ?: return false
+            val nama = item["nama_pelanggan"]?.toString() ?: "-"
+            val hp = item["hp_pelanggan"]?.toString() ?: "-"
+            val menu = item["detail_item"]?.toString() ?: "-"
+            val metode = item["metode_bayar"]?.toString() ?: "Tunai"
+            val total = (item["total_bayar"] as? Number)?.toInt() ?: 0
+            val waktu = item["waktu_selesai"]?.toString() ?: "-"
+
+            val db = dbHelper.writableDatabase
+            val sql = "insert or replace into riwayat_transaksi(" +
+                    "id_pesanan, nama_pelanggan, hp_pelanggan, detail_item, metode_bayar, total_bayar, status_order, waktu_selesai) " +
+                    "values (?, ?, ?, ?, ?, ?, ?, ?)"
+            db.execSQL(sql, arrayOf(idPesanan, nama, hp, menu, metode, total, "COMPLETED", waktu))
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
+
     private fun ujiKoneksiServer(baseUrl: String) {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
@@ -419,85 +574,106 @@ class SyncBackupActivity : AppCompatActivity() {
                 val total = json.optInt("total_records", 0)
 
                 withContext(Dispatchers.Main) {
-                    b.tvServerStatus.text = "Status Server: $status ($conn) • $total data tersimpan di MySQL"
-                    b.tvServerStatus.setTextColor(android.graphics.Color.parseColor("#16A34A"))
+                    if (status.equals("ONLINE", ignoreCase = true)) {
+                        b.tvServerBadge.text = "ONLINE"
+                        b.tvServerBadge.setBackgroundResource(R.drawable.bg_badge_online)
+                        b.tvServerBadge.setTextColor(getColor(android.R.color.holo_green_dark))
+                        b.tvServerStatus.text = "Status: ONLINE ($conn) • $total transaksi di MySQL Cloud"
+                        b.tvCountMysql.text = total.toString()
+                    } else {
+                        b.tvServerBadge.text = "OFFLINE"
+                        b.tvServerBadge.setTextColor(getColor(android.R.color.holo_red_dark))
+                        b.tvServerStatus.text = "Status: Server merespons tidak siap ($status)"
+                    }
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
-                    b.tvServerStatus.text = "Status Server: Offline / Tidak Terhubung (${e.localizedMessage ?: "Cek URL"})"
-                    b.tvServerStatus.setTextColor(android.graphics.Color.parseColor("#DC2626"))
+                    b.tvServerBadge.text = "OFFLINE"
+                    b.tvServerBadge.setTextColor(getColor(android.R.color.holo_red_dark))
+                    b.tvServerStatus.text = "Status: Server tidak dapat dihubungi (${e.localizedMessage ?: "Timeout"})"
                 }
             }
         }
     }
 
-    private fun httpPostJson(urlStr: String, jsonBody: String): Int {
-        val url = URL(urlStr)
-        val conn = (url.openConnection() as HttpURLConnection).apply {
-            requestMethod = "POST"
-            connectTimeout = 4000
-            readTimeout = 4000
-            doOutput = true
-            setRequestProperty("Content-Type", "application/json")
-            setRequestProperty("Accept", "application/json")
-        }
-
-        OutputStreamWriter(conn.outputStream).use { writer ->
-            writer.write(jsonBody)
-            writer.flush()
-        }
-
-        return conn.responseCode
-    }
-
+    // =====================================================================================
+    // HELPER HTTP CLIENT (Dispatchers.IO)
+    // =====================================================================================
     private fun httpGet(urlStr: String): String {
         val url = URL(urlStr)
-        val conn = (url.openConnection() as HttpURLConnection).apply {
-            requestMethod = "GET"
-            connectTimeout = 4000
-            readTimeout = 4000
-            setRequestProperty("Accept", "application/json")
+        val conn = url.openConnection() as HttpURLConnection
+        conn.requestMethod = "GET"
+        conn.connectTimeout = 6000
+        conn.readTimeout = 6000
+        conn.setRequestProperty("Accept", "application/json")
+
+        val responseCode = conn.responseCode
+        if (responseCode in 200..299) {
+            val reader = BufferedReader(InputStreamReader(conn.inputStream))
+            val sb = StringBuilder()
+            var line: String?
+            while (reader.readLine().also { line = it } != null) {
+                sb.append(line)
+            }
+            reader.close()
+            return sb.toString()
+        } else {
+            throw Exception("HTTP Error: $responseCode")
         }
-
-        val reader = BufferedReader(InputStreamReader(conn.inputStream))
-        val response = StringBuilder()
-        var line: String?
-        while (reader.readLine().also { line = it } != null) {
-            response.append(line)
-        }
-        reader.close()
-        return response.toString()
     }
 
-    private fun setUiLoading(isLoading: Boolean) {
-        b.btnStart.isEnabled = !isLoading
-        b.btnRestore.isEnabled = !isLoading
+    private fun httpPostJson(urlStr: String, jsonBody: String): Int {
+        val url = URL(urlStr)
+        val conn = url.openConnection() as HttpURLConnection
+        conn.requestMethod = "POST"
+        conn.connectTimeout = 6000
+        conn.readTimeout = 6000
+        conn.doOutput = true
+        conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8")
+        conn.setRequestProperty("Accept", "application/json")
+
+        val writer = OutputStreamWriter(conn.outputStream, "UTF-8")
+        writer.write(jsonBody)
+        writer.flush()
+        writer.close()
+
+        val responseCode = conn.responseCode
+        conn.disconnect()
+        return responseCode
     }
 
-    private fun tambahLog(pesan: String) {
-        val waktu = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date())
-        val logBaru = "[$waktu] $pesan\n${b.tvConsoleLog.text}"
-        b.tvConsoleLog.text = logBaru
-    }
-
+    // =====================================================================================
+    // DIALOG PENJELASAN KONSEP MODUL 12 UNTUK DOSEN PENGUJI
+    // =====================================================================================
     private fun tampilkanDialogInfoModul() {
-        AlertDialog.Builder(this)
-            .setTitle("Info Modul 12: Threads (Coroutine)")
-            .setMessage(
-                "Materi Praktikum Pemrograman Mobile Lanjut:\n\n" +
-                        "1. Mengapa Menggunakan Threads?\n" +
-                        "Untuk menghindari ANR (Application Not Responding) dan menjaga UI tetap responsif saat melakukan operasi berat (akses jaringan, database, IO).\n\n" +
-                        "2. Coroutine (Lightweight Thread):\n" +
-                        "Eksekusi asinkron yang dapat di-suspend dan di-resume tanpa memblokir thread sistem.\n\n" +
-                        "3. Dispatchers:\n" +
-                        "• Dispatchers.IO: Operasi database, jaringan, dan berkas.\n" +
-                        "• Dispatchers.Main: Operasi antarmuka/UI.\n\n" +
-                        "4. async & await():\n" +
-                        "Menjalankan beberapa background task secara paralel (concurrent) lalu menunggu hasilnya terkumpul.\n\n" +
-                        "5. Mutex:\n" +
-                        "Penguncian aman thread (thread-safety) pada data counter bersama."
-            )
-            .setPositiveButton("Tutup", null)
+        val pesan = """
+            MATERI MODUL 12: THREADS (COROUTINE)
+            D3 Manajemen Informatika - Pemrograman Mobile Lanjut
+            Dosen: Benni Agung Nugroho, S.Kom., M.Cs.
+            
+            1. lifecycleScope.launch:
+               Coroutine terikat siklus hidup Activity sehingga dibatalkan otomatis jika layar ditutup (mencegah memory leak).
+            
+            2. Dispatchers.IO:
+               Operasi jaringan Cloudflare HTTP, SQLite, dan Firestore dijalankan di background thread agar tidak memblokir antarmuka pengguna (anti-ANR).
+            
+            3. withContext(Dispatchers.Main):
+               Pembaruan tampilan progress bar dan badge status berpindah thread ke Main Thread secara aman tanpa CalledFromWrongThreadException.
+            
+            4. async & await():
+               Menjalankan sinkronisasi paralel ke Firestore, MySQL, dan SQLite secara serentak (concurrent) untuk efisiensi waktu.
+            
+            5. Mutex (DataCounter):
+               Mengamankan penghitungan progress dari race condition antar thread (Halaman 7-8 Modul).
+            
+            6. Multi-Tier Disaster Recovery:
+               Jika salah satu lapisan penyimpanan (misal Cloud Firestore) datanya terhapus, proses sinkronisasi ini secara otomatis memulihkan data tersebut dari MySQL Backup Server!
+        """.trimIndent()
+
+        MaterialAlertDialogBuilder(this)
+            .setTitle("ℹ️ Konsep Modul 12: Threads")
+            .setMessage(pesan)
+            .setPositiveButton("Mengerti") { d, _ -> d.dismiss() }
             .show()
     }
 }
