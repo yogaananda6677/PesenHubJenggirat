@@ -45,6 +45,11 @@ class AkunFragment : Fragment() {
             simpanPerubahanBiodata()
         }
 
+        b.btnBukaSyncBackup.setOnClickListener {
+            val intent = Intent(requireContext(), SyncBackupActivity::class.java)
+            startActivity(intent)
+        }
+
         b.btnLogoutAkun.setOnClickListener {
             tampilkanDialogLogout()
         }

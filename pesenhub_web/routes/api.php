@@ -17,3 +17,13 @@ Route::get('/pesanan/{orderNumber}/status', [CustomerOrderController::class, 'ch
 // Submit pesanan via API
 Route::post('/pesanan', [CustomerOrderController::class, 'store']);
 
+// =========================================================================
+// MODUL 12: THREADS (COROUTINE) - SERVER BACKUP & SYNC DATA MYSQL
+// =========================================================================
+Route::prefix('backup')->group(function () {
+    Route::post('/push', [\App\Http\Controllers\BackupSyncController::class, 'push']);
+    Route::get('/orders', [\App\Http\Controllers\BackupSyncController::class, 'getOrders']);
+    Route::get('/status', [\App\Http\Controllers\BackupSyncController::class, 'status']);
+});
+
+

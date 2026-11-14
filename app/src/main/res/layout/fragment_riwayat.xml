@@ -124,6 +124,18 @@
         </LinearLayout>
     </LinearLayout>
 
+    <!-- Tombol Pintas Sinkronisasi & Backup Server MySQL (Modul 12 Threads) -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnSyncRiwayat"
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        android:layout_marginBottom="8dp"
+        android:text="⚡ Backup &amp; Sinkronkan ke MySQL (Threads Coroutine)"
+        android:textSize="12sp"
+        android:textColor="@color/white"
+        app:backgroundTint="#0284C7"
+        app:cornerRadius="8dp" />
+
     <!-- Teks bila belum ada riwayat -->
     <TextView
         android:id="@+id/txRiwayatKosong"
