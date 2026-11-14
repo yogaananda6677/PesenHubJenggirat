@@ -97,11 +97,13 @@ class SyncBackupActivity : AppCompatActivity() {
 
         // Load saved server URL from SharedPreferences
         val pref = getSharedPreferences("SyncConfig", Context.MODE_PRIVATE)
-        val savedUrl = pref.getString("server_url", "http://10.0.2.2:8000")
+        val savedUrl = (pref.getString("server_url", "http://10.0.2.2:8000") ?: "http://10.0.2.2:8000")
+            .replace("`", "")
+            .trim()
         b.edServerUrl.setText(savedUrl)
 
         // Cek status server awal di background
-        ujiKoneksiServer(b.edServerUrl.text.toString().trim())
+        ujiKoneksiServer(getServerBaseUrl())
 
         // 1. Tombol Mulai Kirim / Sync dengan Thread (Coroutine)
         b.btnStart.setOnClickListener {
@@ -130,8 +132,19 @@ class SyncBackupActivity : AppCompatActivity() {
         }
     }
 
+    private fun getServerBaseUrl(): String {
+        val raw = b.edServerUrl.text?.toString() ?: ""
+        return raw.trim()
+            .replace("`", "")
+            .replace("'", "")
+            .replace("\"", "")
+            .removeSuffix("/")
+            .ifEmpty { "http://10.0.2.2:8000" }
+    }
+
     private fun simpanServerUrl() {
-        val url = b.edServerUrl.text.toString().trim()
+        val url = getServerBaseUrl()
+        b.edServerUrl.setText(url)
         getSharedPreferences("SyncConfig", Context.MODE_PRIVATE)
             .edit()
             .putString("server_url", url)
@@ -164,7 +177,7 @@ class SyncBackupActivity : AppCompatActivity() {
         tambahLog("[Coroutine] Memulai sinkronisasi $totalData data ke MySQL & Firestore...")
         tambahLog("[Thread Active] Thread: ${Thread.currentThread().name}")
 
-        val serverBaseUrl = b.edServerUrl.text.toString().trim()
+        val serverBaseUrl = getServerBaseUrl()
 
         // [MODUL 12: LIFECYCLE SCOPE LAUNCH]
         // Menjalankan coroutine yang otomatis dibatalkan jika Activity ditutup
@@ -248,7 +261,7 @@ class SyncBackupActivity : AppCompatActivity() {
     // FITUR SYNC RESTORE: Mengunduh backup dari MySQL dan pulihkan ke SQLite / Firestore
     // =====================================================================================
     private fun mulaiRestoreDariServerMySQL() {
-        val serverBaseUrl = b.edServerUrl.text.toString().trim()
+        val serverBaseUrl = getServerBaseUrl()
         setUiLoading(true)
         tambahLog("==================================================")
         tambahLog("[Restore] Menghubungi server MySQL ($serverBaseUrl/api/backup/orders)...")
@@ -363,7 +376,7 @@ class SyncBackupActivity : AppCompatActivity() {
 
             // Menggunakan coroutine suspend extension untuk Firestore
             kotlin.coroutines.suspendCoroutine { continuation ->
-                firestoreDb.collection("orders_backup").document(idPesanan)
+                firestoreDb.collection("orders").document(idPesanan)
                     .set(payload, SetOptions.merge())
                     .addOnSuccessListener { continuation.resumeWith(Result.success(true)) }
                     .addOnFailureListener { continuation.resumeWith(Result.success(false)) }
