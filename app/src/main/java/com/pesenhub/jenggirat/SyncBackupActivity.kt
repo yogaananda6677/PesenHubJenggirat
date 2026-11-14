@@ -6,8 +6,8 @@ import android.os.SystemClock
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.widget.EditText
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -51,8 +51,8 @@ import java.util.Locale
  * 5. Mutex (Mutual Exclusion): Mekanisme penguncian thread-safe untuk mengamankan data
  *    counter dari race condition antar thread (Halaman 7-8 Modul).
  * 6. withContext(): Berpindah thread (dari IO ke Main) di tengah jalan lalu kembali lagi.
- * 7. Multi-Tier Disaster Recovery: Jika data di Firestore sengaja/tidak sengaja dihapus,
- *    sistem secara otomatis memulihkannya dari backup MySQL dan SQLite.
+ * 7. Multi-Tier Disaster Recovery: Jika data lokal SQLite terhapus atau data di Firestore
+ *    hilang, proses sinkronisasi otomatis memulihkan data tersebut dari MySQL server.
  */
 class SyncBackupActivity : AppCompatActivity() {
 
@@ -101,31 +101,22 @@ class SyncBackupActivity : AppCompatActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         b.toolbarSync.setNavigationOnClickListener { finish() }
 
-        // Memuat URL server tersimpan dari SharedPreferences
-        val pref = getSharedPreferences("SyncConfig", Context.MODE_PRIVATE)
-        val savedUrl = (pref.getString("server_url", DEFAULT_SERVER_URL) ?: DEFAULT_SERVER_URL)
-            .replace("`", "")
-            .trim()
-            .ifEmpty { DEFAULT_SERVER_URL }
-        b.edServerUrl.setText(savedUrl)
-
-        // Tombol Utama: Cadangkan & Sinkronkan Data (Coroutine)
+        // Tombol Utama: Sinkronkan Data (Coroutine)
         b.btnStartSync.setOnClickListener {
             cancelProcess = false
-            simpanServerUrl()
             mulaiSyncDenganCoroutine()
+        }
+
+        // Tombol Simulasi: Hapus Data Lokal (Untuk menguji pemulihan jika data lokal hilang)
+        b.btnHapusLokal.setOnClickListener {
+            konfirmasiHapusDataLokal()
         }
 
         // Tombol Batalkan Proses
         b.btnCancel.setOnClickListener {
             cancelProcess = true
-            Toast.makeText(this, "Proses sinkronisasi dibatalkan!", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Proses sinkronisasi dibatalkan", Toast.LENGTH_SHORT).show()
             b.tvProgressStatus.text = "Membatalkan proses..."
-        }
-
-        // Tombol Info Modul
-        b.btnInfoModul.setOnClickListener {
-            tampilkanDialogInfoModul()
         }
 
         // Uji koneksi server & muat statistik data awal
@@ -145,11 +136,11 @@ class SyncBackupActivity : AppCompatActivity() {
                 val baseUrl = getServerBaseUrl()
                 ujiKoneksiServer(baseUrl)
                 muatStatistikData(baseUrl)
-                Toast.makeText(this, "Memperbarui data & status server...", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Memperbarui data dan status server...", Toast.LENGTH_SHORT).show()
                 true
             }
-            R.id.action_info_modul -> {
-                tampilkanDialogInfoModul()
+            R.id.action_settings -> {
+                tampilkanDialogAturServerUrl()
                 true
             }
             else -> super.onOptionsItemSelected(item)
@@ -157,7 +148,8 @@ class SyncBackupActivity : AppCompatActivity() {
     }
 
     private fun getServerBaseUrl(): String {
-        val raw = b.edServerUrl.text?.toString() ?: ""
+        val pref = getSharedPreferences("SyncConfig", Context.MODE_PRIVATE)
+        val raw = pref.getString("server_url", DEFAULT_SERVER_URL) ?: DEFAULT_SERVER_URL
         return raw.trim()
             .replace("`", "")
             .replace("'", "")
@@ -166,13 +158,64 @@ class SyncBackupActivity : AppCompatActivity() {
             .ifEmpty { DEFAULT_SERVER_URL }
     }
 
-    private fun simpanServerUrl() {
-        val url = getServerBaseUrl()
-        b.edServerUrl.setText(url)
+    private fun simpanServerUrl(url: String) {
+        val cleaned = url.trim()
+            .replace("`", "")
+            .replace("'", "")
+            .replace("\"", "")
+            .removeSuffix("/")
+            .ifEmpty { DEFAULT_SERVER_URL }
+
         getSharedPreferences("SyncConfig", Context.MODE_PRIVATE)
             .edit()
-            .putString("server_url", url)
+            .putString("server_url", cleaned)
             .apply()
+
+        ujiKoneksiServer(cleaned)
+        muatStatistikData(cleaned)
+    }
+
+    private fun tampilkanDialogAturServerUrl() {
+        val currentUrl = getServerBaseUrl()
+        val input = EditText(this).apply {
+            setText(currentUrl)
+            setSelection(currentUrl.length)
+            setPadding(40, 30, 40, 30)
+        }
+
+        MaterialAlertDialogBuilder(this)
+            .setTitle("Pengaturan URL Server Backup")
+            .setMessage("Alamat endpoint REST API server Laravel:")
+            .setView(input)
+            .setPositiveButton("Simpan") { _, _ ->
+                val newUrl = input.text.toString()
+                simpanServerUrl(newUrl)
+                Toast.makeText(this, "URL server berhasil diperbarui", Toast.LENGTH_SHORT).show()
+            }
+            .setNegativeButton("Batal", null)
+            .show()
+    }
+
+    // =====================================================================================
+    // FITUR SIMULASI: HAPUS DATA LOKAL SQLITE
+    // Digunakan untuk membuktikan skenario pemulihan saat data lokal di perangkat hilang
+    // =====================================================================================
+    private fun konfirmasiHapusDataLokal() {
+        MaterialAlertDialogBuilder(this)
+            .setTitle("Hapus Data SQLite Lokal?")
+            .setMessage("Tindakan ini akan mengosongkan seluruh riwayat transaksi di penyimpanan lokal perangkat.\n\nAnda dapat menguji proses pemulihan data setelahnya dengan menekan tombol 'SINKRONKAN DATA'.")
+            .setPositiveButton("Hapus") { _, _ ->
+                try {
+                    val db = dbHelper.writableDatabase
+                    db.execSQL("delete from riwayat_transaksi")
+                    b.tvCountSqlite.text = "0"
+                    Toast.makeText(this, "Data lokal SQLite telah dikosongkan (0 Transaksi)", Toast.LENGTH_LONG).show()
+                } catch (e: Exception) {
+                    Toast.makeText(this, "Gagal mengosongkan data lokal: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .setNegativeButton("Batal", null)
+            .show()
     }
 
     // =====================================================================================
@@ -195,13 +238,15 @@ class SyncBackupActivity : AppCompatActivity() {
     // =====================================================================================
     // [MODUL 12: SINKRONISASI CERDAS MULTI-TIER DENGAN COROUTINE THREADS]
     // Menjamin data di SQLite, Firestore, dan MySQL sinkron 100%.
-    // Jika data di Firestore terhapus, otomatis dipulihkan dari MySQL / SQLite.
+    // Skenario 1: Data lokal kosong -> dipulihkan dari MySQL / Firestore.
+    // Skenario 2: Data di Firestore terhapus -> dipulihkan dari MySQL / SQLite.
+    // Skenario 3: Transaksi baru -> dicadangkan ke MySQL server.
     // =====================================================================================
     private fun mulaiSyncDenganCoroutine() {
         val serverBaseUrl = getServerBaseUrl()
         setUiLoading(true)
 
-        b.tvProgressStatus.text = "Mengumpulkan data transaksi dari SQLite, MySQL, & Firestore..."
+        b.tvProgressStatus.text = "Mengumpulkan data transaksi dari SQLite, MySQL, dan Firestore..."
         b.progressBarSync.isIndeterminate = true
 
         lifecycleScope.launch {
@@ -231,7 +276,6 @@ class SyncBackupActivity : AppCompatActivity() {
                 if (!mapGabungan.containsKey(id)) {
                     mapGabungan[id] = item.toMutableMap()
                 } else {
-                    // Update field jika di SQLite lebih lengkap
                     mapGabungan[id]?.putAll(item)
                 }
             }
@@ -249,7 +293,7 @@ class SyncBackupActivity : AppCompatActivity() {
             if (daftarTotal.isEmpty()) {
                 withContext(Dispatchers.Main) {
                     setUiLoading(false)
-                    Toast.makeText(this@SyncBackupActivity, "Belum ada transaksi untuk disinkronkan.", Toast.LENGTH_LONG).show()
+                    Toast.makeText(this@SyncBackupActivity, "Belum ada transaksi untuk disinkronkan", Toast.LENGTH_LONG).show()
                 }
                 return@launch
             }
@@ -295,7 +339,7 @@ class SyncBackupActivity : AppCompatActivity() {
                     kirimKeMysqlServer(serverBaseUrl, item)
                 }
 
-                // 3) Pastikan data ada di SQLite Lokal
+                // 3) Pastikan data ada di SQLite Lokal (Pulihkan jika sebelumnya dikosongkan)
                 val tugasSyncDb = async(Dispatchers.IO) {
                     simpanKeSQLiteLokal(item)
                 }
@@ -322,20 +366,20 @@ class SyncBackupActivity : AppCompatActivity() {
             val hasilMy = counterBackupMysql.get()
             val hasilDb = counterPulihSqlite.get()
 
-            // Selesai: update UI dan tampilkan Dialog Hasil yang Elegan
+            // Selesai: update UI dan tampilkan Dialog Hasil
             withContext(Dispatchers.Main) {
                 setUiLoading(false)
                 muatStatistikData(serverBaseUrl)
 
                 val pesanSukses = StringBuilder()
-                pesanSukses.append("Sinkronisasi Coroutine berhasil diselesaikan dalam ${"%.2f".format(durasiDetik)} detik.\n\n")
-                pesanSukses.append("• Cloud Firestore : $hasilFs / $totalData data dipulihkan / tersinkron\n")
-                pesanSukses.append("• MySQL Backup    : $hasilMy / $totalData data ter-backup\n")
-                pesanSukses.append("• SQLite Lokal    : $hasilDb / $totalData data tersimpan\n\n")
-                pesanSukses.append("✅ Data Anda kini tersinkronisasi 100% di semua lapisan penyimpanan.")
+                pesanSukses.append("Sinkronisasi data berhasil diselesaikan dalam ${"%.2f".format(durasiDetik)} detik.\n\n")
+                pesanSukses.append("• SQLite Lokal    : $hasilDb / $totalData data tersimpan\n")
+                pesanSukses.append("• Cloud Firestore : $hasilFs / $totalData data tersinkron\n")
+                pesanSukses.append("• Server MySQL    : $hasilMy / $totalData data ter-backup\n\n")
+                pesanSukses.append("Seluruh data kini konsisten dan selaras di semua media penyimpanan.")
 
                 MaterialAlertDialogBuilder(this@SyncBackupActivity)
-                    .setTitle("✅ Sinkronisasi & Backup Tuntas")
+                    .setTitle("Sinkronisasi Selesai")
                     .setMessage(pesanSukses.toString())
                     .setPositiveButton("Selesai") { d, _ -> d.dismiss() }
                     .show()
@@ -345,12 +389,13 @@ class SyncBackupActivity : AppCompatActivity() {
 
     private fun setUiLoading(isLoading: Boolean) {
         b.btnStartSync.isEnabled = !isLoading
+        b.btnHapusLokal.isEnabled = !isLoading
         b.btnCancel.visibility = if (isLoading) View.VISIBLE else View.GONE
         b.layoutProgress.visibility = if (isLoading) View.VISIBLE else View.GONE
         if (isLoading) {
             b.btnStartSync.text = "SEDANG MENYINKRONKAN..."
         } else {
-            b.btnStartSync.text = "⚡ CADANGKAN & SINKRONKAN DATA"
+            b.btnStartSync.text = "SINKRONKAN DATA"
         }
     }
 
@@ -578,19 +623,19 @@ class SyncBackupActivity : AppCompatActivity() {
                         b.tvServerBadge.text = "ONLINE"
                         b.tvServerBadge.setBackgroundResource(R.drawable.bg_badge_online)
                         b.tvServerBadge.setTextColor(getColor(android.R.color.holo_green_dark))
-                        b.tvServerStatus.text = "Status: ONLINE ($conn) • $total transaksi di MySQL Cloud"
+                        b.tvServerStatus.text = "Koneksi: Terhubung ($conn) • $total transaksi di MySQL"
                         b.tvCountMysql.text = total.toString()
                     } else {
                         b.tvServerBadge.text = "OFFLINE"
                         b.tvServerBadge.setTextColor(getColor(android.R.color.holo_red_dark))
-                        b.tvServerStatus.text = "Status: Server merespons tidak siap ($status)"
+                        b.tvServerStatus.text = "Koneksi: Server tidak siap ($status)"
                     }
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
                     b.tvServerBadge.text = "OFFLINE"
                     b.tvServerBadge.setTextColor(getColor(android.R.color.holo_red_dark))
-                    b.tvServerStatus.text = "Status: Server tidak dapat dihubungi (${e.localizedMessage ?: "Timeout"})"
+                    b.tvServerStatus.text = "Koneksi: Tidak dapat menghubungi server (${e.localizedMessage ?: "Timeout"})"
                 }
             }
         }
@@ -640,40 +685,5 @@ class SyncBackupActivity : AppCompatActivity() {
         val responseCode = conn.responseCode
         conn.disconnect()
         return responseCode
-    }
-
-    // =====================================================================================
-    // DIALOG PENJELASAN KONSEP MODUL 12 UNTUK DOSEN PENGUJI
-    // =====================================================================================
-    private fun tampilkanDialogInfoModul() {
-        val pesan = """
-            MATERI MODUL 12: THREADS (COROUTINE)
-            D3 Manajemen Informatika - Pemrograman Mobile Lanjut
-            Dosen: Benni Agung Nugroho, S.Kom., M.Cs.
-            
-            1. lifecycleScope.launch:
-               Coroutine terikat siklus hidup Activity sehingga dibatalkan otomatis jika layar ditutup (mencegah memory leak).
-            
-            2. Dispatchers.IO:
-               Operasi jaringan Cloudflare HTTP, SQLite, dan Firestore dijalankan di background thread agar tidak memblokir antarmuka pengguna (anti-ANR).
-            
-            3. withContext(Dispatchers.Main):
-               Pembaruan tampilan progress bar dan badge status berpindah thread ke Main Thread secara aman tanpa CalledFromWrongThreadException.
-            
-            4. async & await():
-               Menjalankan sinkronisasi paralel ke Firestore, MySQL, dan SQLite secara serentak (concurrent) untuk efisiensi waktu.
-            
-            5. Mutex (DataCounter):
-               Mengamankan penghitungan progress dari race condition antar thread (Halaman 7-8 Modul).
-            
-            6. Multi-Tier Disaster Recovery:
-               Jika salah satu lapisan penyimpanan (misal Cloud Firestore) datanya terhapus, proses sinkronisasi ini secara otomatis memulihkan data tersebut dari MySQL Backup Server!
-        """.trimIndent()
-
-        MaterialAlertDialogBuilder(this)
-            .setTitle("ℹ️ Konsep Modul 12: Threads")
-            .setMessage(pesan)
-            .setPositiveButton("Mengerti") { d, _ -> d.dismiss() }
-            .show()
     }
 }
